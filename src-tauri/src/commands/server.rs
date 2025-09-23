@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::{ops::Deref, sync::Arc};
 
 use aws_config::SdkConfig;
 use eyre::{Context, ContextCompat};
@@ -34,7 +34,7 @@ pub async fn server_get_all(db: State<'_, crate::database::DbPool>) -> CmdResult
 #[tauri::command]
 pub async fn server_load(
     db: State<'_, crate::database::DbPool>,
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     sdk_config: State<'_, SdkConfig>,
     server_id: Uuid,
     load_config: crate::server::LoadServerConfig,
@@ -46,14 +46,17 @@ pub async fn server_load(
     let _server = server_store
         .try_load_server(&sdk_config, server, load_config)
         .await
-        .context("server not found")?;
+        .context("failed to load server")?;
 
     Ok(())
 }
 
 /// Unload a server
 #[tauri::command]
-pub async fn server_unload(server_store: State<'_, ServerStore>, server_id: Uuid) -> CmdResult<()> {
+pub async fn server_unload(
+    server_store: State<'_, Arc<ServerStore>>,
+    server_id: Uuid,
+) -> CmdResult<()> {
     server_store.remove_server(server_id).await;
 
     Ok(())
@@ -62,7 +65,7 @@ pub async fn server_unload(server_store: State<'_, ServerStore>, server_id: Uuid
 /// Check if the server is active
 #[tauri::command]
 pub async fn server_is_active(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
 ) -> CmdResult<bool> {
     let server = server_store.get_server(server_id).await;
@@ -71,7 +74,9 @@ pub async fn server_is_active(
 
 /// Get a list of currently active servers
 #[tauri::command]
-pub async fn server_get_active(server_store: State<'_, ServerStore>) -> CmdResult<Vec<ServerId>> {
+pub async fn server_get_active(
+    server_store: State<'_, Arc<ServerStore>>,
+) -> CmdResult<Vec<ServerId>> {
     let server = server_store.get_servers().await;
     Ok(server.into_iter().map(|server| server.id).collect())
 }

@@ -23,6 +23,7 @@ pub struct Server {
     pub order: u32,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct CreateServer {
     pub id: ServerId,
     pub name: String,
@@ -31,16 +32,17 @@ pub struct CreateServer {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
 #[allow(clippy::large_enum_variant)]
 pub enum ServerConfig {
     /// Config is stored in an AWS secret
-    AwsSecret(String),
+    AwsSecret { secret_name: String },
 
     /// Config is stored directly
-    Config(ServerConfigData),
+    Config { data: ServerConfigData },
 
     /// Config is stored as an encrypted blob
-    Encrypted(Vec<u8>),
+    Encrypted { encrypted: Vec<u8> },
 }
 
 #[derive(Clone, Deserialize, Serialize)]

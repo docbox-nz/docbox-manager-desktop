@@ -6,7 +6,7 @@ use docbox_search::{SearchIndexFactory, SearchIndexFactoryError};
 use docbox_secrets::{SecretManager, SecretManagerError, SecretsManagerConfig};
 use docbox_storage::StorageLayerFactory;
 use moka::future::Cache;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::sync::Mutex;
 
@@ -72,9 +72,9 @@ pub enum LoadServerError {
     CreateSearchFactory(#[from] SearchIndexFactoryError),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct LoadServerConfig {
-    password: Option<String>,
+    pub password: Option<String>,
 }
 
 pub async fn load_server(
@@ -84,7 +84,7 @@ pub async fn load_server(
 ) -> Result<ActiveServer, LoadServerError> {
     let config: ServerConfigData = match server.config {
         // Load secret from AWS
-        ServerConfig::AwsSecret(secret_name) => {
+        ServerConfig::AwsSecret { secret_name } => {
             let secrets = SecretManager::from_config(aws_config, SecretsManagerConfig::Aws);
             secrets
                 .parsed_secret(&secret_name)
@@ -93,10 +93,10 @@ pub async fn load_server(
         }
 
         // Secret is directly available
-        ServerConfig::Config(server_config_data) => server_config_data,
+        ServerConfig::Config { data } => data,
 
         // Secret must be decrypted
-        ServerConfig::Encrypted(_items) => {
+        ServerConfig::Encrypted { encrypted: _ } => {
             let _password = match load_config.password {
                 Some(value) => value,
                 None => return Err(LoadServerError::MissingPassword),

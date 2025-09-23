@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use docbox_database::models::tenant::Tenant;
 use docbox_management::tenant::create_tenant::CreateTenantConfig;
 use eyre::ContextCompat;
@@ -9,7 +11,7 @@ use crate::{commands::CmdResult, server::ServerStore};
 /// Create a tenant
 #[tauri::command]
 pub async fn tenant_create(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
     config: CreateTenantConfig,
 ) -> CmdResult<Tenant> {
@@ -33,7 +35,7 @@ pub async fn tenant_create(
 /// List all tenants
 #[tauri::command]
 pub async fn tenant_get_all(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
 ) -> CmdResult<Vec<Tenant>> {
     let server = server_store
@@ -49,7 +51,7 @@ pub async fn tenant_get_all(
 /// Create a tenant
 #[tauri::command]
 pub async fn tenant_get(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
     env: String,
     tenant_id: Uuid,
@@ -69,7 +71,7 @@ pub async fn tenant_get(
 /// Delete a tenant
 #[tauri::command]
 pub async fn tenant_delete(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
     env: String,
     tenant_id: Uuid,
@@ -88,7 +90,7 @@ pub async fn tenant_delete(
 /// Migrate a tenant
 #[tauri::command]
 pub async fn tenant_migrate(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
 
     server_id: Uuid,
     env: String,

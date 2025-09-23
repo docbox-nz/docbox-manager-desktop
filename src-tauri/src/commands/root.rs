@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use docbox_database::models::tenant::Tenant;
 use docbox_management::tenant::{migrate_tenants::MigrateTenantsConfig, MigrateTenantsOutcome};
 use eyre::ContextCompat;
@@ -11,7 +13,7 @@ use crate::{commands::CmdResult, server::ServerStore};
 /// Check if the provided server is initialized
 #[tauri::command]
 pub async fn root_is_initialized(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
 ) -> CmdResult<bool> {
     let server = server_store
@@ -27,7 +29,7 @@ pub async fn root_is_initialized(
 /// Initialize the provided server
 #[tauri::command]
 pub async fn root_initialize(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
 ) -> CmdResult<()> {
     let server = server_store
@@ -53,7 +55,7 @@ pub struct TenantWithMigrations {
 /// Initialize the provided server
 #[tauri::command]
 pub async fn root_get_pending_migrations(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
 ) -> CmdResult<Vec<TenantWithMigrations>> {
     let server = server_store
@@ -85,7 +87,7 @@ pub async fn root_get_pending_migrations(
 /// Apply migrations on the server
 #[tauri::command]
 pub async fn root_apply_migrations(
-    server_store: State<'_, ServerStore>,
+    server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
     config: MigrateTenantsConfig,
 ) -> CmdResult<MigrateTenantsOutcome> {

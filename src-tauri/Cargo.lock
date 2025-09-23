@@ -1865,6 +1865,7 @@ dependencies = [
  "docbox-search",
  "docbox-secrets",
  "docbox-storage",
+ "dotenvy",
  "eyre",
  "futures",
  "itertools 0.14.0",
