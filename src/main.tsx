@@ -19,7 +19,7 @@ import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { InitializeGuard } from "./components/InitializeGuard.tsx";
-import ServerSelectionProvider from "./components/ServerSelectionProvider.tsx";
+import ServerSelectionProvider from "./components/server/ServerSelectionProvider.tsx";
 
 // Create a new router instance
 const router = createRouter({

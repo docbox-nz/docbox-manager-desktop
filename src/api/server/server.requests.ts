@@ -12,3 +12,7 @@ export function createServer(create: CreateServer) {
 export function loadServer(serverId: string, loadConfig: LoadServerConfig) {
   return invoke("server_load", { serverId, loadConfig });
 }
+
+export function deleteServer(serverId: string) {
+  return invoke("server_delete", { serverId });
+}

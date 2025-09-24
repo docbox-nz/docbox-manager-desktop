@@ -1,6 +1,6 @@
 import { ServerContext } from "@/context/server-context";
 import { PropsWithChildren, useState } from "react";
-import LoadingPage from "./LoadingPage";
+import LoadingPage from "../LoadingPage";
 import { useServers } from "@/api/server/server.queries";
 import { Container, Grid, Stack } from "@mui/system";
 import Typography from "@mui/material/Typography";
@@ -13,6 +13,7 @@ import AddServerForm from "@/components/server/add/AddServerForm";
 import Box from "@mui/material/Box";
 import { Server } from "@/api/server/server.types";
 import { useLoadServer } from "@/api/server/server.mutations";
+import ServerSelectItem from "./ServerSelectItem";
 
 type Props = PropsWithChildren<{}>;
 
@@ -73,30 +74,24 @@ export default function ServerSelectionProvider({ children }: Props) {
                 {serversQuery.data.length > 0 ? (
                   <List>
                     {serversQuery.data.map((server) => (
-                      <ListItem key={server.id}>
-                        <ListItemText
-                          primary={server.name}
-                          secondary={server.id}
-                        />
-
-                        <ListItemButton
-                          onClick={() => {
-                            loadServerMutation.mutate(
-                              {
-                                serverId: server.id,
-                                loadConfig: {},
+                      <ServerSelectItem
+                        key={server.id}
+                        serverId={server.id}
+                        name={server.name}
+                        onLoad={() => {
+                          loadServerMutation.mutate(
+                            {
+                              serverId: server.id,
+                              loadConfig: {},
+                            },
+                            {
+                              onSuccess() {
+                                setServer(server);
                               },
-                              {
-                                onSuccess() {
-                                  setServer(server);
-                                },
-                              }
-                            );
-                          }}
-                        >
-                          Open
-                        </ListItemButton>
-                      </ListItem>
+                            }
+                          );
+                        }}
+                      />
                     ))}
                   </List>
                 ) : (
@@ -117,7 +112,6 @@ export default function ServerSelectionProvider({ children }: Props) {
       </Container>
     );
   }
-  console.log("load");
 
   return (
     <ServerContext.Provider value={server}>{children}</ServerContext.Provider>

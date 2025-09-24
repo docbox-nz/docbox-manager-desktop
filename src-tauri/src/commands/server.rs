@@ -80,3 +80,19 @@ pub async fn server_get_active(
     let server = server_store.get_servers().await;
     Ok(server.into_iter().map(|server| server.id).collect())
 }
+
+/// Delete a server
+#[tauri::command]
+pub async fn server_delete(
+    db: State<'_, crate::database::DbPool>,
+    server_store: State<'_, Arc<ServerStore>>,
+    server_id: Uuid,
+) -> CmdResult<()> {
+    // Unload the server
+    server_store.remove_server(server_id).await;
+
+    // Delete the server
+    Server::delete_by_id(db.deref(), server_id).await?;
+
+    Ok(())
+}

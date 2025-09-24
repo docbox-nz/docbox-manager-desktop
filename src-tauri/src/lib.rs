@@ -23,8 +23,8 @@ pub fn run() {
             root_is_initialized,
         },
         server::{
-            server_create, server_get_active, server_get_all, server_is_active, server_load,
-            server_unload,
+            server_create, server_delete, server_get_active, server_get_all, server_is_active,
+            server_load, server_unload,
         },
         tenant::{tenant_create, tenant_delete, tenant_get, tenant_get_all, tenant_migrate},
     };
@@ -48,6 +48,7 @@ pub fn run() {
             server_unload,
             server_is_active,
             server_get_active,
+            server_delete,
             root_is_initialized,
             root_initialize,
             root_get_pending_migrations,

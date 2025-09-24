@@ -111,4 +111,13 @@ impl Server {
             .fetch_optional(db)
             .await
     }
+
+    /// Delete a server by `id`
+    pub async fn delete_by_id(db: impl DbExecutor<'_>, id: ServerId) -> DbResult<()> {
+        sqlx::query(r#"DELETE FROM "servers" WHERE "id" = $1"#)
+            .bind(id)
+            .execute(db)
+            .await?;
+        Ok(())
+    }
 }
