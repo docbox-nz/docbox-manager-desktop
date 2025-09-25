@@ -35,7 +35,12 @@ export default function PdfFilePreviewDialog({
   const isMobile = useResponsiveDown("md");
 
   return (
-    <Dialog open={open} onClose={onClose} fullScreen>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullScreen
+      sx={{ overflow: "hidden", display: "flex", flexFlow: "column" }}
+    >
       <DialogTitle>
         {isMobile ? (
           <Stack
@@ -132,7 +137,7 @@ export default function PdfFilePreviewDialog({
           p: 0,
           m: 0,
           width: 1,
-          height: "75vh",
+          flex: "auto",
           overflow: "hidden",
         }}
       >
