@@ -48,7 +48,7 @@ const columns: GridColDef<Tenant>[] = [
     renderCell: ({ row }) => (
       <Button
         component={RouterLink}
-        to="/tenant/$env/$id"
+        to="/servers/$serverId/tenant/$env/$id"
         params={{
           env: row.env,
           id: row.id,
@@ -84,7 +84,13 @@ function RouteComponent() {
               sx={{ px: 1, py: 1 }}
             >
               <Typography variant="h6">Tenants</Typography>
-              <Button href="/tenant/create">Create Tenant</Button>
+              <Button
+                component={RouterLink}
+                to="/servers/$serverId/tenant/create"
+                params={{ serverId }}
+              >
+                Create Tenant
+              </Button>
             </Stack>
 
             {tenantsError && (

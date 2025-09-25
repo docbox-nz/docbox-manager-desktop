@@ -613,7 +613,7 @@ function TenantCreate() {
                 size="small"
                 sx={{ mr: 0.5 }}
                 component={RouterLink}
-                to="/"
+                to="/servers/$serverId"
               >
                 <MdiChevronLeft width={32} height={32} />
               </IconButton>

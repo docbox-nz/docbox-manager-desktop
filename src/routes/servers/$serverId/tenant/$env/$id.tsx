@@ -81,7 +81,7 @@ function RouteComponent() {
                 size="small"
                 sx={{ mr: 1 }}
                 component={RouterLink}
-                to="/"
+                to="/servers/$serverId"
               >
                 <MdiChevronLeft width={32} height={32} />
               </IconButton>

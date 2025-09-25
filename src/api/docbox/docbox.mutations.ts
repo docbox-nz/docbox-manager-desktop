@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { docboxKeys } from "./docbox.keys";
-import { useDocboxClient } from "@/components/DocboxProvider";
+import { useDocboxClient } from "@/components/docbox/DocboxProvider";
 import { queryClient } from "@/integrations/tanstack-query/root-provider";
 import type {
   CreateFolder,
