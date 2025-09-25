@@ -10,6 +10,9 @@ import SolarLockPasswordBroken from "~icons/solar/lock-password-broken";
 import Button from "@mui/material/Button";
 import { createFileRoute } from "@tanstack/react-router";
 import RouterLink from "@/components/RouterLink";
+import Card from "@mui/material/Card";
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
 
 export const Route = createFileRoute("/servers/create/")({
   component: RouteComponent,
@@ -30,96 +33,103 @@ const CardButton = styled(ButtonBase)(({ theme }) => ({
 function RouteComponent() {
   return (
     <Container sx={{ py: 2 }}>
-      <Typography variant="h4">Add Server</Typography>
-      <Typography variant="body2">Add a new server for management</Typography>
-      <Button component={RouterLink} to="/">
-        Back
-      </Button>
+      <Card>
+        <CardHeader
+          title="Add Server"
+          subheader="Add a new server for management"
+          action={
+            <Button component={RouterLink} to="/" sx={{ my: 1, mr: 1 }}>
+              Back
+            </Button>
+          }
+        />
+        <CardContent>
+          <Stack sx={{ my: 2 }} spacing={1}>
+            <CardButton component={RouterLink} to="/servers/create/aws-secret">
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Box
+                  component={LogosAwsSecretsManager}
+                  sx={{ width: 80, height: 80 }}
+                />
+              </Box>
 
-      <Stack sx={{ my: 2 }} spacing={1}>
-        <CardButton component={RouterLink} to="/servers/create/aws-secret">
-          <Box
-            sx={{
-              width: 80,
-              height: 80,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Box
-              component={LogosAwsSecretsManager}
-              sx={{ width: 80, height: 80 }}
-            />
-          </Box>
+              <Stack sx={{ alignItems: "flex-start", p: 2, textAlign: "left" }}>
+                <Typography variant="h6">AWS Secret Manager</Typography>
+                <Typography variant="body2">
+                  Add a configuration that is stored within AWS secrets manager
+                </Typography>
+              </Stack>
+            </CardButton>
 
-          <Stack sx={{ alignItems: "flex-start", p: 2, textAlign: "left" }}>
-            <Typography variant="h6">AWS Secret Manager</Typography>
-            <Typography variant="body2">
-              Add a configuration that is stored within AWS secrets manager
-            </Typography>
+            <CardButton>
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Box
+                  component={SolarLockPasswordBoldDuotone}
+                  sx={{ width: 60, height: 60 }}
+                />
+              </Box>
+
+              <Stack sx={{ alignItems: "flex-start", p: 2, textAlign: "left" }}>
+                <Typography variant="h6">Encrypted Stored</Typography>
+                <Typography variant="body2">
+                  Add a configuration that will be stored within docbox manager
+                  encrypted with a password
+                </Typography>
+              </Stack>
+            </CardButton>
+
+            <CardButton>
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Box
+                  component={SolarLockPasswordBroken}
+                  sx={{ width: 60, height: 60 }}
+                />
+              </Box>
+
+              <Stack
+                sx={{
+                  alignItems: "flex-start",
+                  p: 2,
+                  textAlign: "left",
+                }}
+              >
+                <Typography variant="h6">Stored</Typography>
+                <Typography variant="body2">
+                  Stored within docbox manager. This is not encrypted and is not
+                  recommended for production
+                </Typography>
+              </Stack>
+            </CardButton>
           </Stack>
-        </CardButton>
-
-        <CardButton>
-          <Box
-            sx={{
-              width: 80,
-              height: 80,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Box
-              component={SolarLockPasswordBoldDuotone}
-              sx={{ width: 60, height: 60 }}
-            />
-          </Box>
-
-          <Stack sx={{ alignItems: "flex-start", p: 2, textAlign: "left" }}>
-            <Typography variant="h6">Encrypted Stored</Typography>
-            <Typography variant="body2">
-              Add a configuration that will be stored within docbox manager
-              encrypted with a password
-            </Typography>
-          </Stack>
-        </CardButton>
-
-        <CardButton>
-          <Box
-            sx={{
-              width: 80,
-              height: 80,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Box
-              component={SolarLockPasswordBroken}
-              sx={{ width: 60, height: 60 }}
-            />
-          </Box>
-
-          <Stack
-            sx={{
-              alignItems: "flex-start",
-              p: 2,
-              textAlign: "left",
-            }}
-          >
-            <Typography variant="h6">Stored</Typography>
-            <Typography variant="body2">
-              Stored within docbox manager. This is not encrypted and is not
-              recommended for production
-            </Typography>
-          </Stack>
-        </CardButton>
-      </Stack>
+        </CardContent>
+      </Card>
     </Container>
   );
 }

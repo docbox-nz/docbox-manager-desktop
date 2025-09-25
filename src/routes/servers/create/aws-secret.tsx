@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import Box from "@mui/material/Box";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import { useForm } from "@tanstack/react-form";
@@ -9,20 +8,21 @@ import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import Alert from "@mui/material/Alert";
 import { getAPIErrorMessage } from "@/api/axios";
-import Typography from "@mui/material/Typography";
-import Divider from "@mui/material/Divider";
 import { FormTextField } from "@/components/form/FormTextField";
 import { useCreateServer } from "@/api/server/server.mutations";
 
 import { v4 } from "uuid";
 import { ServerConfigType } from "@/api/server";
 import RouterLink from "@/components/RouterLink";
+import Container from "@mui/material/Container";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/servers/create/aws-secret")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
   const createServerMutation = useCreateServer();
 
   const form = useForm({
@@ -46,43 +46,27 @@ function RouteComponent() {
         },
         order: 0,
       });
+
+      toast.success("Added new server!");
+      navigate({ to: "/" });
     },
   });
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-      }}
-    >
-      <Card sx={{ maxWidth: 500, width: 1 }}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1}
-          sx={{ width: 1, px: 2, py: 3 }}
-        >
-          <Box component="img" src="/box.svg" width={32} height={32} />
-          <Typography variant="h6">Docbox Manager</Typography>
-        </Stack>
-
-        <Button component={RouterLink} to="/servers/create">
-          Back
-        </Button>
-
-        <Divider />
-
+    <Container sx={{ py: 2 }}>
+      <Card>
         <CardHeader
           title="AWS Secret Manager"
           subheader="Enter the secret that contains the server configuration"
-          slotProps={{
-            subheader: {
-              mt: 1,
-            },
-          }}
+          action={
+            <Button
+              component={RouterLink}
+              to="/servers/create"
+              sx={{ my: 1, mr: 1 }}
+            >
+              Back
+            </Button>
+          }
         />
         <CardContent sx={{ py: 0 }}>
           <form
@@ -136,6 +120,6 @@ function RouteComponent() {
           </form>
         </CardContent>
       </Card>
-    </Box>
+    </Container>
   );
 }

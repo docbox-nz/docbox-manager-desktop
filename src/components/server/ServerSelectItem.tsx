@@ -6,6 +6,10 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
 import SolarTrashBin2Bold from "~icons/solar/trash-bin-2-bold";
+
+import SolarServer2BoldDuotone from "~icons/solar/server-2-bold-duotone";
+import ListItemIcon from "@mui/material/ListItemIcon";
+
 type Props = {
   serverId: string;
   name: string;
@@ -19,6 +23,13 @@ export default function ServerSelectItem({ serverId, name, onLoad }: Props) {
 
   return (
     <ListItem>
+      <ListItemIcon>
+        <Box
+          component={SolarServer2BoldDuotone}
+          sx={{ width: 48, height: 48, mr: 2 }}
+        />
+      </ListItemIcon>
+
       <ListItemText primary={name} secondary={serverId} />
 
       <Stack direction="row" alignItems="center">
