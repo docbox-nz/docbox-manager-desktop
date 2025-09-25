@@ -227,7 +227,7 @@ const columns: GridColDef<DocboxItem>[] = [
 const INITIAL_STATE: GridInitialStateCommunity = {
   pagination: {
     paginationModel: {
-      pageSize: 25,
+      pageSize: 50,
     },
   },
   sorting: {
@@ -245,7 +245,7 @@ export default function DocboxItemsTable({ items, scope }: Props) {
           rows={items ?? []}
           columns={columns}
           initialState={INITIAL_STATE}
-          pageSizeOptions={[25, 50, 100]}
+          pageSizeOptions={[5, 10, 50, 100]}
           checkboxSelection
           disableRowSelectionOnClick
         />

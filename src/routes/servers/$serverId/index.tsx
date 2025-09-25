@@ -107,11 +107,11 @@ function RouteComponent() {
                 initialState={{
                   pagination: {
                     paginationModel: {
-                      pageSize: 5,
+                      pageSize: 50,
                     },
                   },
                 }}
-                pageSizeOptions={[5]}
+                pageSizeOptions={[5, 10, 50, 100]}
                 checkboxSelection
                 disableRowSelectionOnClick
                 getRowId={(row) => `${row.id}-${row.env}`}
