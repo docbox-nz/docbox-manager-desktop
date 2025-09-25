@@ -3,13 +3,13 @@ import {
   type DocFile,
   type DocumentBoxScope,
 } from "@docbox-nz/docbox-sdk";
-import { DocboxPdfPreviewDialog } from "@docbox-nz/docbox-ui";
 import { useDocboxClient, useDocboxEndpoint } from "./DocboxProvider";
 import { useFile } from "@/api/docbox/docbox.queries";
-import { FilePreviewType, getFilePreviewType } from "@docbox-nz/docbox-ui";
+import { FilePreviewType, getFilePreviewType } from "@/utils/file-type";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import Box from "@mui/material/Box";
+import PdfFilePreviewDialog from "./PdfFilePreviewDialog";
 
 type Props = {
   open: boolean;
@@ -35,17 +35,17 @@ export default function FilePreviewDialog({
   const endpoint = useDocboxEndpoint();
 
   const downloadURL = endpoint(
-    client.file.rawNamedURL(scope, file.id, file.name)
+    client.file.rawNamedURL(scope, file.id, file.name),
   );
 
   // PDF files
   if (previewFormat === FilePreviewType.PDF) {
     const previewURL = endpoint(
-      client.file.rawNamedURL(scope, file.id, file.name)
+      client.file.rawNamedURL(scope, file.id, file.name),
     );
 
     return (
-      <DocboxPdfPreviewDialog
+      <PdfFilePreviewDialog
         open={open}
         onClose={onClose}
         fileName={file.name}
@@ -62,12 +62,12 @@ export default function FilePreviewDialog({
         scope,
         file.id,
         GeneratedFileType.PDF,
-        file.name
-      )
+        file.name,
+      ),
     );
 
     return (
-      <DocboxPdfPreviewDialog
+      <PdfFilePreviewDialog
         open={open}
         onClose={onClose}
         fileName={file.name}
@@ -80,7 +80,7 @@ export default function FilePreviewDialog({
 
   if (previewFormat === FilePreviewType.IMAGE) {
     const previewURL = endpoint(
-      client.file.rawNamedURL(scope, file.id, file.name)
+      client.file.rawNamedURL(scope, file.id, file.name),
     );
 
     return (

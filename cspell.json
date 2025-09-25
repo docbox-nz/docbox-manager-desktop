@@ -1,6 +1,10 @@
 {
-    "words": [
-        "opensearch",
-        "typesense"
-    ]
+  "words": [
+    "opensearch",
+    "typesense",
+    "lucide",
+    "nowrap",
+    "frameBorder",
+    "pdfjs"
+  ]
 }

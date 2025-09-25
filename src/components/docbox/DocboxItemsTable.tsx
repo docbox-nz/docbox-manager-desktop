@@ -1,6 +1,7 @@
 import { fData } from "@/utils/format-number";
 import { DocboxItemType, type DocboxItem } from "@docbox-nz/docbox-sdk";
-import { FileTypeIcon, getFileTypeFromMime } from "@docbox-nz/docbox-ui";
+import { getFileTypeFromMime } from "@/utils/file-type";
+import FileTypeIcon from "@/components/docbox/FileTypeIcon";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";

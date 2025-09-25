@@ -12,7 +12,7 @@ import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
 import type { DocFile, DocumentBoxScope } from "@docbox-nz/docbox-sdk";
 import { toast } from "sonner";
-import { getFileExtension } from "@docbox-nz/docbox-ui";
+import { getFileExtension } from "@/utils/file-type";
 import InputAdornment from "@mui/material/InputAdornment";
 import Typography from "@mui/material/Typography";
 

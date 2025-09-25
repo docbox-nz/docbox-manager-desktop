@@ -4,7 +4,6 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Toaster } from "sonner";
-import "@docbox-nz/docbox-ui/style.css";
 
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
@@ -59,7 +58,7 @@ if (rootElement && !rootElement.innerHTML) {
 
         <Toaster />
       </ThemeProvider>
-    </StrictMode>
+    </StrictMode>,
   );
 }
 
