@@ -1,4 +1,3 @@
-import { useDeleteServer } from "@/api/server/server.mutations";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
@@ -9,6 +8,8 @@ import SolarTrashBin2Bold from "~icons/solar/trash-bin-2-bold";
 
 import SolarServer2BoldDuotone from "~icons/solar/server-2-bold-duotone";
 import ListItemIcon from "@mui/material/ListItemIcon";
+import { useState } from "react";
+import { ConfirmDeleteServerItem } from "./ConfirmDeleteServerItem";
 
 type Props = {
   serverId: string;
@@ -18,8 +19,7 @@ type Props = {
 };
 
 export default function ServerSelectItem({ serverId, name, onLoad }: Props) {
-  const { mutate: deleteServer, isPending: isDeleting } =
-    useDeleteServer(serverId);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
     <ListItem>
@@ -41,9 +41,16 @@ export default function ServerSelectItem({ serverId, name, onLoad }: Props) {
           Connect
         </Button>
 
-        <IconButton onClick={() => deleteServer()} loading={isDeleting}>
+        <IconButton onClick={() => setConfirmDelete(true)}>
           <Box component={SolarTrashBin2Bold} />
         </IconButton>
+
+        <ConfirmDeleteServerItem
+          open={confirmDelete}
+          onClose={() => setConfirmDelete(false)}
+          serverId={serverId}
+          serverName={name}
+        />
       </Stack>
     </ListItem>
   );

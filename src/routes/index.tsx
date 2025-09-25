@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import List from "@mui/material/List";
 import { useLoadServer } from "@/api/server/server.mutations";
-import ServerSelectItem from "@/components/server/ServerSelectItem";
+import ServerItem from "@/components/server/ServerItem";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
@@ -67,7 +67,7 @@ function App() {
             <List>
               {serversQuery.data.length > 0 ? (
                 serversQuery.data.map((server) => (
-                  <ServerSelectItem
+                  <ServerItem
                     key={server.id}
                     serverId={server.id}
                     name={server.name}
