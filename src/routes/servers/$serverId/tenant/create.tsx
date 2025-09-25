@@ -28,9 +28,8 @@ import { toast } from "sonner";
 import MdiChevronLeft from "~icons/mdi/chevron-left";
 import IconButton from "@mui/material/IconButton";
 import RouterLink from "@/components/RouterLink";
-import { useServerContext } from "@/context/server-context";
 
-export const Route = createFileRoute("/tenant/create")({
+export const Route = createFileRoute("/servers/$serverId/tenant/create")({
   component: TenantCreate,
 });
 
@@ -50,8 +49,8 @@ const tagValidation = z
   });
 
 function TenantCreate() {
-  const server = useServerContext();
-  const createTenantMutation = useCreateTenant(server.id);
+  const { serverId } = Route.useParams();
+  const createTenantMutation = useCreateTenant(serverId);
   const navigate = useNavigate();
 
   const form = useForm({

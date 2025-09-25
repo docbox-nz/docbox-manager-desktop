@@ -18,8 +18,6 @@ import { routeTree } from "./routeTree.gen";
 import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { InitializeGuard } from "./components/InitializeGuard.tsx";
-import ServerSelectionProvider from "./components/server/ServerSelectionProvider.tsx";
 
 // Create a new router instance
 const router = createRouter({
@@ -54,11 +52,7 @@ if (rootElement && !rootElement.innerHTML) {
     <StrictMode>
       <ThemeProvider theme={darkTheme}>
         <TanStackQueryProvider.Provider>
-          <ServerSelectionProvider>
-            <InitializeGuard>
-              <RouterProvider router={router} />
-            </InitializeGuard>
-          </ServerSelectionProvider>
+          <RouterProvider router={router} />
         </TanStackQueryProvider.Provider>
 
         <CssBaseline enableColorScheme />

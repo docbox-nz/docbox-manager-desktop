@@ -1,20 +1,19 @@
 import Box from "@mui/material/Box";
 import ButtonBase from "@mui/material/ButtonBase";
-import Card, { cardClasses } from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import { Container } from "@mui/system";
-import { useState } from "react";
 import LogosAwsSecretsManager from "~icons/logos/aws-secrets-manager";
 import SolarLockPasswordBoldDuotone from "~icons/solar/lock-password-bold-duotone";
 import SolarLockPasswordBroken from "~icons/solar/lock-password-broken";
-import AddServerFormAwsSecret from "./AddServerFormAwsSecret";
 import Button from "@mui/material/Button";
+import { createFileRoute } from "@tanstack/react-router";
+import RouterLink from "@/components/RouterLink";
 
-type Props = {
-  onCancel: VoidFunction;
-};
+export const Route = createFileRoute("/servers/create/")({
+  component: RouteComponent,
+});
 
 const CardButton = styled(ButtonBase)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
@@ -28,27 +27,17 @@ const CardButton = styled(ButtonBase)(({ theme }) => ({
   border: "none",
 }));
 
-enum AddMode {
-  AwsSecret,
-  Encrypted,
-  Config,
-}
-
-export default function AddServerForm({ onCancel }: Props) {
-  const [addMode, setAddMode] = useState<AddMode | null>(null);
-
-  if (addMode === AddMode.AwsSecret) {
-    return <AddServerFormAwsSecret onCancel={() => setAddMode(null)} />;
-  }
-
+function RouteComponent() {
   return (
     <Container sx={{ py: 2 }}>
       <Typography variant="h4">Add Server</Typography>
       <Typography variant="body2">Add a new server for management</Typography>
-      <Button onClick={() => onCancel()}>Back</Button>
+      <Button component={RouterLink} to="/">
+        Back
+      </Button>
 
       <Stack sx={{ my: 2 }} spacing={1}>
-        <CardButton onClick={() => setAddMode(AddMode.AwsSecret)}>
+        <CardButton component={RouterLink} to="/servers/create/aws-secret">
           <Box
             sx={{
               width: 80,

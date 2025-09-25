@@ -16,10 +16,8 @@ import MdiFolder from "~icons/mdi/folder";
 import Link from "@mui/material/Link";
 import type { LinkProps } from "@tanstack/react-router";
 import type { GridInitialStateCommunity } from "node_modules/@mui/x-data-grid/esm/models/gridStateCommunity";
-import Checkbox from "@mui/material/Checkbox";
-import { useDocboxClient } from "../DocboxProvider";
-import DocboxItemPinned from "../DocboxItemPinned";
-import { createContext, useContext, type PropsWithChildren } from "react";
+import DocboxItemPinned from "./DocboxItemPinned";
+import { createContext, useContext } from "react";
 
 type Props = {
   items: DocboxItem[];

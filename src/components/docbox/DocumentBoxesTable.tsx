@@ -7,7 +7,7 @@ import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import { getAPIErrorMessage } from "@/api/axios";
 import Box from "@mui/material/Box";
-import RouterLink from "./RouterLink";
+import RouterLink from "../RouterLink";
 
 const columns: GridColDef<DocumentBox>[] = [
   {

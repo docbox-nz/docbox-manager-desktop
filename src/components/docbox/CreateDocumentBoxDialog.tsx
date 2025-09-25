@@ -6,7 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { FormTextField } from "./form/FormTextField";
+import { FormTextField } from "../form/FormTextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";

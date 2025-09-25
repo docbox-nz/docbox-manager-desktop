@@ -2,13 +2,17 @@ import type { PropsWithChildren } from "react";
 import { useInitialized } from "@/api/root/root.queries";
 import LoadingPage from "./LoadingPage";
 import InitializePage from "./InitializePage";
-import { useServerContext } from "@/context/server-context";
 import { getAPIErrorMessage } from "@/api/axios";
 
-export function InitializeGuard({ children }: PropsWithChildren<{}>) {
-  const server = useServerContext();
+type Props = {
+  serverId: string;
+};
 
-  const { data, isError, isLoading, error } = useInitialized(server.id);
+export function InitializeGuard({
+  serverId,
+  children,
+}: PropsWithChildren<Props>) {
+  const { data, isError, isLoading, error } = useInitialized(serverId);
 
   if (isError) {
     return getAPIErrorMessage(error);
@@ -20,7 +24,7 @@ export function InitializeGuard({ children }: PropsWithChildren<{}>) {
 
   const initialized = data ?? false;
   if (!initialized) {
-    return <InitializePage serverId={server.id} />;
+    return <InitializePage serverId={serverId} />;
   }
 
   return children;

@@ -9,75 +9,130 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as InitializeRouteImport } from './routes/initialize'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TenantCreateRouteImport } from './routes/tenant.create'
-import { Route as TenantEnvIdRouteImport } from './routes/tenant.$env.$id'
+import { Route as ServersServerIdRouteRouteImport } from './routes/servers/$serverId/route'
+import { Route as ServersCreateIndexRouteImport } from './routes/servers/create/index'
+import { Route as ServersServerIdIndexRouteImport } from './routes/servers/$serverId/index'
+import { Route as ServersCreateAwsSecretRouteImport } from './routes/servers/create/aws-secret'
+import { Route as ServersServerIdInitializeRouteImport } from './routes/servers/$serverId/initialize'
+import { Route as ServersServerIdTenantCreateRouteImport } from './routes/servers/$serverId/tenant/create'
+import { Route as ServersServerIdTenantEnvIdRouteImport } from './routes/servers/$serverId/tenant/$env/$id'
 
-const InitializeRoute = InitializeRouteImport.update({
-  id: '/initialize',
-  path: '/initialize',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TenantCreateRoute = TenantCreateRouteImport.update({
-  id: '/tenant/create',
-  path: '/tenant/create',
+const ServersServerIdRouteRoute = ServersServerIdRouteRouteImport.update({
+  id: '/servers/$serverId',
+  path: '/servers/$serverId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TenantEnvIdRoute = TenantEnvIdRouteImport.update({
-  id: '/tenant/$env/$id',
-  path: '/tenant/$env/$id',
+const ServersCreateIndexRoute = ServersCreateIndexRouteImport.update({
+  id: '/servers/create/',
+  path: '/servers/create/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServersServerIdIndexRoute = ServersServerIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ServersServerIdRouteRoute,
+} as any)
+const ServersCreateAwsSecretRoute = ServersCreateAwsSecretRouteImport.update({
+  id: '/servers/create/aws-secret',
+  path: '/servers/create/aws-secret',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServersServerIdInitializeRoute =
+  ServersServerIdInitializeRouteImport.update({
+    id: '/initialize',
+    path: '/initialize',
+    getParentRoute: () => ServersServerIdRouteRoute,
+  } as any)
+const ServersServerIdTenantCreateRoute =
+  ServersServerIdTenantCreateRouteImport.update({
+    id: '/tenant/create',
+    path: '/tenant/create',
+    getParentRoute: () => ServersServerIdRouteRoute,
+  } as any)
+const ServersServerIdTenantEnvIdRoute =
+  ServersServerIdTenantEnvIdRouteImport.update({
+    id: '/tenant/$env/$id',
+    path: '/tenant/$env/$id',
+    getParentRoute: () => ServersServerIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/initialize': typeof InitializeRoute
-  '/tenant/create': typeof TenantCreateRoute
-  '/tenant/$env/$id': typeof TenantEnvIdRoute
+  '/servers/$serverId': typeof ServersServerIdRouteRouteWithChildren
+  '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
+  '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
+  '/servers/$serverId/': typeof ServersServerIdIndexRoute
+  '/servers/create': typeof ServersCreateIndexRoute
+  '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
+  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/initialize': typeof InitializeRoute
-  '/tenant/create': typeof TenantCreateRoute
-  '/tenant/$env/$id': typeof TenantEnvIdRoute
+  '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
+  '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
+  '/servers/$serverId': typeof ServersServerIdIndexRoute
+  '/servers/create': typeof ServersCreateIndexRoute
+  '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
+  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/initialize': typeof InitializeRoute
-  '/tenant/create': typeof TenantCreateRoute
-  '/tenant/$env/$id': typeof TenantEnvIdRoute
+  '/servers/$serverId': typeof ServersServerIdRouteRouteWithChildren
+  '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
+  '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
+  '/servers/$serverId/': typeof ServersServerIdIndexRoute
+  '/servers/create/': typeof ServersCreateIndexRoute
+  '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
+  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/initialize' | '/tenant/create' | '/tenant/$env/$id'
+  fullPaths:
+    | '/'
+    | '/servers/$serverId'
+    | '/servers/$serverId/initialize'
+    | '/servers/create/aws-secret'
+    | '/servers/$serverId/'
+    | '/servers/create'
+    | '/servers/$serverId/tenant/create'
+    | '/servers/$serverId/tenant/$env/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/initialize' | '/tenant/create' | '/tenant/$env/$id'
-  id: '__root__' | '/' | '/initialize' | '/tenant/create' | '/tenant/$env/$id'
+  to:
+    | '/'
+    | '/servers/$serverId/initialize'
+    | '/servers/create/aws-secret'
+    | '/servers/$serverId'
+    | '/servers/create'
+    | '/servers/$serverId/tenant/create'
+    | '/servers/$serverId/tenant/$env/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/servers/$serverId'
+    | '/servers/$serverId/initialize'
+    | '/servers/create/aws-secret'
+    | '/servers/$serverId/'
+    | '/servers/create/'
+    | '/servers/$serverId/tenant/create'
+    | '/servers/$serverId/tenant/$env/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  InitializeRoute: typeof InitializeRoute
-  TenantCreateRoute: typeof TenantCreateRoute
-  TenantEnvIdRoute: typeof TenantEnvIdRoute
+  ServersServerIdRouteRoute: typeof ServersServerIdRouteRouteWithChildren
+  ServersCreateAwsSecretRoute: typeof ServersCreateAwsSecretRoute
+  ServersCreateIndexRoute: typeof ServersCreateIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/initialize': {
-      id: '/initialize'
-      path: '/initialize'
-      fullPath: '/initialize'
-      preLoaderRoute: typeof InitializeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -85,28 +140,80 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tenant/create': {
-      id: '/tenant/create'
-      path: '/tenant/create'
-      fullPath: '/tenant/create'
-      preLoaderRoute: typeof TenantCreateRouteImport
+    '/servers/$serverId': {
+      id: '/servers/$serverId'
+      path: '/servers/$serverId'
+      fullPath: '/servers/$serverId'
+      preLoaderRoute: typeof ServersServerIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tenant/$env/$id': {
-      id: '/tenant/$env/$id'
-      path: '/tenant/$env/$id'
-      fullPath: '/tenant/$env/$id'
-      preLoaderRoute: typeof TenantEnvIdRouteImport
+    '/servers/create/': {
+      id: '/servers/create/'
+      path: '/servers/create'
+      fullPath: '/servers/create'
+      preLoaderRoute: typeof ServersCreateIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/servers/$serverId/': {
+      id: '/servers/$serverId/'
+      path: '/'
+      fullPath: '/servers/$serverId/'
+      preLoaderRoute: typeof ServersServerIdIndexRouteImport
+      parentRoute: typeof ServersServerIdRouteRoute
+    }
+    '/servers/create/aws-secret': {
+      id: '/servers/create/aws-secret'
+      path: '/servers/create/aws-secret'
+      fullPath: '/servers/create/aws-secret'
+      preLoaderRoute: typeof ServersCreateAwsSecretRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/servers/$serverId/initialize': {
+      id: '/servers/$serverId/initialize'
+      path: '/initialize'
+      fullPath: '/servers/$serverId/initialize'
+      preLoaderRoute: typeof ServersServerIdInitializeRouteImport
+      parentRoute: typeof ServersServerIdRouteRoute
+    }
+    '/servers/$serverId/tenant/create': {
+      id: '/servers/$serverId/tenant/create'
+      path: '/tenant/create'
+      fullPath: '/servers/$serverId/tenant/create'
+      preLoaderRoute: typeof ServersServerIdTenantCreateRouteImport
+      parentRoute: typeof ServersServerIdRouteRoute
+    }
+    '/servers/$serverId/tenant/$env/$id': {
+      id: '/servers/$serverId/tenant/$env/$id'
+      path: '/tenant/$env/$id'
+      fullPath: '/servers/$serverId/tenant/$env/$id'
+      preLoaderRoute: typeof ServersServerIdTenantEnvIdRouteImport
+      parentRoute: typeof ServersServerIdRouteRoute
     }
   }
 }
 
+interface ServersServerIdRouteRouteChildren {
+  ServersServerIdInitializeRoute: typeof ServersServerIdInitializeRoute
+  ServersServerIdIndexRoute: typeof ServersServerIdIndexRoute
+  ServersServerIdTenantCreateRoute: typeof ServersServerIdTenantCreateRoute
+  ServersServerIdTenantEnvIdRoute: typeof ServersServerIdTenantEnvIdRoute
+}
+
+const ServersServerIdRouteRouteChildren: ServersServerIdRouteRouteChildren = {
+  ServersServerIdInitializeRoute: ServersServerIdInitializeRoute,
+  ServersServerIdIndexRoute: ServersServerIdIndexRoute,
+  ServersServerIdTenantCreateRoute: ServersServerIdTenantCreateRoute,
+  ServersServerIdTenantEnvIdRoute: ServersServerIdTenantEnvIdRoute,
+}
+
+const ServersServerIdRouteRouteWithChildren =
+  ServersServerIdRouteRoute._addFileChildren(ServersServerIdRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  InitializeRoute: InitializeRoute,
-  TenantCreateRoute: TenantCreateRoute,
-  TenantEnvIdRoute: TenantEnvIdRoute,
+  ServersServerIdRouteRoute: ServersServerIdRouteRouteWithChildren,
+  ServersCreateAwsSecretRoute: ServersCreateAwsSecretRoute,
+  ServersCreateIndexRoute: ServersCreateIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,121 +1,106 @@
-import { useTenants } from "@/api/tenant/tenant.queries";
-import type { Tenant } from "@/api/tenant/tenant.types";
-import { createFileRoute } from "@tanstack/react-router";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
-import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import LoadingPage from "@/components/LoadingPage";
+import { useServers } from "@/api/server/server.queries";
+import { Container, Grid } from "@mui/system";
 import Typography from "@mui/material/Typography";
-import { getAPIErrorMessage } from "@/api/axios";
-import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import List from "@mui/material/List";
+import { useLoadServer } from "@/api/server/server.mutations";
+import ServerSelectItem from "@/components/server/ServerSelectItem";
+import Card from "@mui/material/Card";
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
 import RouterLink from "@/components/RouterLink";
-import PendingMigrationsLoader from "@/components/PendingMigrationsLoader";
-import { useServerContext } from "@/context/server-context";
 
 export const Route = createFileRoute("/")({
   component: App,
 });
 
-const columns: GridColDef<Tenant>[] = [
-  {
-    field: "id",
-    width: 300,
-    headerName: "ID",
-  },
-  {
-    field: "name",
-    flex: 1,
-    headerName: "Name",
-  },
-  {
-    field: "env",
-    headerName: "Environment",
-  },
-  {
-    field: "db_name",
-    width: 300,
-    headerName: "Database Name",
-  },
-  {
-    field: "s3_name",
-    width: 300,
-    headerName: "Storage Bucket Name",
-  },
-  {
-    field: "actions",
-    headerName: "Actions",
-    renderCell: ({ row }) => (
-      <Button
-        component={RouterLink}
-        to="/tenant/$env/$id"
-        params={{
-          env: row.env,
-          id: row.id,
-        }}
-        variant="contained"
-        size="small"
-        style={{ marginLeft: 16 }}
-      >
-        View
-      </Button>
-    ),
-  },
-];
-
 function App() {
-  const server = useServerContext();
+  const navigate = useNavigate();
 
-  const {
-    data: tenants,
-    isLoading: tenantsLoading,
-    error: tenantsError,
-  } = useTenants(server.id);
+  const serversQuery = useServers();
+  const loadServerMutation = useLoadServer();
+
+  if (serversQuery.isError) {
+    return "Error";
+  }
+
+  if (loadServerMutation.isError) {
+    return (
+      <Container sx={{ py: 2 }}>
+        Failed to load server
+        <Button onClick={() => loadServerMutation.reset()}>Back</Button>
+      </Container>
+    );
+  }
+
+  if (serversQuery.isLoading || loadServerMutation.isPending) {
+    return <LoadingPage />;
+  }
 
   return (
-    <>
-      <PendingMigrationsLoader serverId={server.id} />
-      <Card sx={{ m: 3 }}>
+    <Container sx={{ py: 2 }}>
+      <Card>
+        <CardHeader
+          title="Connect"
+          subheader="Add or connect to your docbox server"
+        />
+
         <CardContent>
-          <Stack spacing={1}>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ px: 1, py: 1 }}
-            >
-              <Typography variant="h6">Tenants</Typography>
-              <Button href="/tenant/create">Create Tenant</Button>
-            </Stack>
+          <Grid container sx={{ mt: 3 }}>
+            <Grid size={{ xs: 5 }}>
+              <Typography textAlign="center" variant="h6" sx={{ mb: 3 }}>
+                Existing Server
+              </Typography>
 
-            {tenantsError && (
-              <Alert color="error">
-                Failed to load tenants: {getAPIErrorMessage(tenantsError)}
-              </Alert>
-            )}
+              {serversQuery.data && (
+                <>
+                  {serversQuery.data.length > 0 ? (
+                    <List>
+                      {serversQuery.data.map((server) => (
+                        <ServerSelectItem
+                          key={server.id}
+                          serverId={server.id}
+                          name={server.name}
+                          onLoad={() => {
+                            loadServerMutation.mutate(
+                              {
+                                serverId: server.id,
+                                loadConfig: {},
+                              },
+                              {
+                                onSuccess() {
+                                  navigate({
+                                    to: "/servers/$serverId",
+                                    params: { serverId: server.id },
+                                  });
+                                },
+                              }
+                            );
+                          }}
+                        />
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography>No servers available</Typography>
+                  )}
+                </>
+              )}
+            </Grid>
+            <Grid size={{ xs: 2 }}>or</Grid>
+            <Grid size={{ xs: 5 }}>
+              <Typography textAlign="center" variant="h6" sx={{ mb: 3 }}>
+                New Server
+              </Typography>
 
-            <Box sx={{ mt: 3, height: 1, width: "100%" }}>
-              <DataGrid
-                loading={tenantsLoading}
-                rows={tenants ?? []}
-                columns={columns}
-                initialState={{
-                  pagination: {
-                    paginationModel: {
-                      pageSize: 5,
-                    },
-                  },
-                }}
-                pageSizeOptions={[5]}
-                checkboxSelection
-                disableRowSelectionOnClick
-                getRowId={(row) => `${row.id}-${row.env}`}
-              />
-            </Box>
-          </Stack>
+              <Button component={RouterLink} to="/servers/create">
+                Add New Server
+              </Button>
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
-    </>
+    </Container>
   );
 }

@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -15,12 +16,13 @@ import { useCreateServer } from "@/api/server/server.mutations";
 
 import { v4 } from "uuid";
 import { ServerConfigType } from "@/api/server";
+import RouterLink from "@/components/RouterLink";
 
-type Props = {
-  onCancel: VoidFunction;
-};
+export const Route = createFileRoute("/servers/create/aws-secret")({
+  component: RouteComponent,
+});
 
-export default function AddServerFormAwsSecret({ onCancel }: Props) {
+function RouteComponent() {
   const createServerMutation = useCreateServer();
 
   const form = useForm({
@@ -66,6 +68,10 @@ export default function AddServerFormAwsSecret({ onCancel }: Props) {
           <Box component="img" src="/box.svg" width={32} height={32} />
           <Typography variant="h6">Docbox Manager</Typography>
         </Stack>
+
+        <Button component={RouterLink} to="/servers/create">
+          Back
+        </Button>
 
         <Divider />
 

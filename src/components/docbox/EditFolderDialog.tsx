@@ -1,40 +1,37 @@
 import { getAPIErrorMessage } from "@/api/axios";
-import { useUpdateFile } from "@/api/docbox/docbox.mutations";
+import { useUpdateFolder } from "@/api/docbox/docbox.mutations";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { FormTextField } from "./form/FormTextField";
+import { FormTextField } from "@/components/form/FormTextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
-import type { DocFile, DocumentBoxScope } from "@docbox-nz/docbox-sdk";
+import type { DocFolder, DocumentBoxScope } from "@docbox-nz/docbox-sdk";
 import { toast } from "sonner";
-import { getFileExtension } from "@docbox-nz/docbox-ui";
-import InputAdornment from "@mui/material/InputAdornment";
-import Typography from "@mui/material/Typography";
 
 type Props = {
   open: boolean;
   onClose: VoidFunction;
 
-  file: DocFile;
+  folder: DocFolder;
   scope: DocumentBoxScope;
 };
 
-export default function EditFileDialog({ open, onClose, file, scope }: Props) {
-  const updateFile = useUpdateFile();
-
-  const extension = getFileExtension(file.name);
-  const nameWithoutExtension = extension
-    ? file.name.substring(0, file.name.length - (extension.length + 1))
-    : file.name;
+export default function EditFolderDialog({
+  open,
+  onClose,
+  folder,
+  scope,
+}: Props) {
+  const updateFolder = useUpdateFolder();
 
   const form = useForm({
     defaultValues: {
-      name: nameWithoutExtension,
+      name: folder.name,
     },
     validators: {
       onChange: z.object({
@@ -42,14 +39,14 @@ export default function EditFileDialog({ open, onClose, file, scope }: Props) {
       }),
     },
     onSubmit: async ({ value }) => {
-      await updateFile.mutateAsync({
-        file_id: file.id,
-        data: { name: `${value.name}.${extension}` },
+      await updateFolder.mutateAsync({
+        folder_id: folder.id,
+        data: { name: value.name },
         scope,
       });
 
       onCloseReset();
-      toast.success("Updated file");
+      toast.success("Updated folder");
     },
   });
 
@@ -60,7 +57,7 @@ export default function EditFileDialog({ open, onClose, file, scope }: Props) {
 
   return (
     <Dialog open={open} onClose={onCloseReset} fullWidth maxWidth="xs">
-      <DialogTitle>Edit File</DialogTitle>
+      <DialogTitle>Edit Folder</DialogTitle>
       <DialogContent>
         <form
           onSubmit={(e) => {
@@ -77,24 +74,13 @@ export default function EditFileDialog({ open, onClose, file, scope }: Props) {
                   variant="outlined"
                   size="medium"
                   label="Name"
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Typography color="text.secondary">
-                            .{extension}
-                          </Typography>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
                 />
               )}
             />
 
-            {updateFile.isError && (
+            {updateFolder.isError && (
               <Alert color="error">
-                Failed to save: {getAPIErrorMessage(updateFile.error)}
+                Failed to save: {getAPIErrorMessage(updateFolder.error)}
               </Alert>
             )}
 
@@ -105,7 +91,7 @@ export default function EditFileDialog({ open, onClose, file, scope }: Props) {
               <Button
                 type="submit"
                 variant="contained"
-                loading={updateFile.isPending}
+                loading={updateFolder.isPending}
               >
                 Save
               </Button>

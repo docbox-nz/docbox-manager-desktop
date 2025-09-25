@@ -1,33 +1,38 @@
 import { getAPIErrorMessage } from "@/api/axios";
-import { useUpdateLink } from "@/api/docbox/docbox.mutations";
+import { useCreateLink } from "@/api/docbox/docbox.mutations";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { FormTextField } from "./form/FormTextField";
+import { FormTextField } from "../form/FormTextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
-import type { DocLink, DocumentBoxScope } from "@docbox-nz/docbox-sdk";
+import type { DocumentBoxScope, FolderId } from "@docbox-nz/docbox-sdk";
 import { toast } from "sonner";
 
 type Props = {
   open: boolean;
   onClose: VoidFunction;
 
-  link: DocLink;
+  folder_id: FolderId;
   scope: DocumentBoxScope;
 };
 
-export default function EditLinkDialog({ open, onClose, link, scope }: Props) {
-  const updateLink = useUpdateLink();
+export default function CreateLinkDialog({
+  open,
+  onClose,
+  folder_id,
+  scope,
+}: Props) {
+  const createLinkMutation = useCreateLink();
 
   const form = useForm({
     defaultValues: {
-      name: link.name,
-      value: link.value,
+      name: "",
+      value: "",
     },
     validators: {
       onChange: z.object({
@@ -36,14 +41,13 @@ export default function EditLinkDialog({ open, onClose, link, scope }: Props) {
       }),
     },
     onSubmit: async ({ value }) => {
-      await updateLink.mutateAsync({
-        link_id: link.id,
-        data: { name: value.name, value: value.value },
+      await createLinkMutation.mutateAsync({
+        data: { name: value.name, folder_id: folder_id, value: value.value },
         scope,
       });
 
       onCloseReset();
-      toast.success("Updated link");
+      toast.success("Created folder");
     },
   });
 
@@ -54,7 +58,7 @@ export default function EditLinkDialog({ open, onClose, link, scope }: Props) {
 
   return (
     <Dialog open={open} onClose={onCloseReset} fullWidth maxWidth="xs">
-      <DialogTitle>Edit Link</DialogTitle>
+      <DialogTitle>Create Link</DialogTitle>
       <DialogContent>
         <form
           onSubmit={(e) => {
@@ -87,9 +91,9 @@ export default function EditLinkDialog({ open, onClose, link, scope }: Props) {
               )}
             />
 
-            {updateLink.isError && (
+            {createLinkMutation.isError && (
               <Alert color="error">
-                Failed to save: {getAPIErrorMessage(updateLink.error)}
+                Failed to create: {getAPIErrorMessage(createLinkMutation.error)}
               </Alert>
             )}
 
@@ -100,9 +104,9 @@ export default function EditLinkDialog({ open, onClose, link, scope }: Props) {
               <Button
                 type="submit"
                 variant="contained"
-                loading={updateLink.isPending}
+                loading={createLinkMutation.isPending}
               >
-                Save
+                Create
               </Button>
             </DialogActions>
           </Stack>

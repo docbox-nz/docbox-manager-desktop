@@ -1,4 +1,4 @@
-import { useDocboxClient } from "@/components/DocboxProvider";
+import { useDocboxClient } from "@/components/docbox/DocboxProvider";
 import { useQuery } from "@tanstack/react-query";
 import { docboxKeys } from "./docbox.keys";
 import type { DocumentBoxesQuery } from "./docbox.types";

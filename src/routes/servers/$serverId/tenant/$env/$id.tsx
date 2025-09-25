@@ -1,5 +1,5 @@
 import { useTenant } from "@/api/tenant/tenant.queries";
-import DocboxProvider from "@/components/DocboxProvider";
+import DocboxProvider from "@/components/docbox/DocboxProvider";
 import LoadingPage from "@/components/LoadingPage";
 import ErrorPage from "@/components/ErrorPage";
 import Card from "@mui/material/Card";
@@ -15,7 +15,6 @@ import TenantFileBrowser from "@/components/TenantFileBrowser";
 import IconButton from "@mui/material/IconButton";
 import MdiChevronLeft from "~icons/mdi/chevron-left";
 import RouterLink from "@/components/RouterLink";
-import { useServerContext } from "@/context/server-context";
 
 const docboxSchema = z.object({
   scope: z.string().optional(),
@@ -26,14 +25,13 @@ const docboxSchema = z.object({
   delete: z.string().optional(),
 });
 
-export const Route = createFileRoute("/tenant/$env/$id")({
+export const Route = createFileRoute("/servers/$serverId/tenant/$env/$id")({
   component: RouteComponent,
   validateSearch: docboxSchema,
 });
 
 function RouteComponent() {
-  const server = useServerContext();
-  const { env, id } = Route.useParams();
+  const { serverId, env, id } = Route.useParams();
   const { scope, folder, preview, edit, delete: deleteId } = Route.useSearch();
   const navigate = Route.useNavigate();
 
@@ -41,7 +39,7 @@ function RouteComponent() {
     data: tenant,
     isLoading: tenantLoading,
     error: tenantError,
-  } = useTenant(server.id, env, id);
+  } = useTenant(serverId, env, id);
 
   const onClosePreview = () =>
     navigate({
@@ -74,7 +72,7 @@ function RouteComponent() {
   }
 
   return (
-    <DocboxProvider serverId={server.id} tenantId={id} env={env}>
+    <DocboxProvider serverId={serverId} tenantId={id} env={env}>
       <Card sx={{ m: 3 }}>
         <CardContent>
           <Stack spacing={1}>

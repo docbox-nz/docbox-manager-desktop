@@ -1,51 +1,49 @@
 import { getAPIErrorMessage } from "@/api/axios";
-import { useCreateFolder } from "@/api/docbox/docbox.mutations";
+import { useUpdateLink } from "@/api/docbox/docbox.mutations";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { FormTextField } from "./form/FormTextField";
+import { FormTextField } from "@/components/form/FormTextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
-import type { DocumentBoxScope, FolderId } from "@docbox-nz/docbox-sdk";
+import type { DocLink, DocumentBoxScope } from "@docbox-nz/docbox-sdk";
 import { toast } from "sonner";
 
 type Props = {
   open: boolean;
   onClose: VoidFunction;
 
-  folder_id: FolderId;
+  link: DocLink;
   scope: DocumentBoxScope;
 };
 
-export default function CreateFolderDialog({
-  open,
-  onClose,
-  folder_id,
-  scope,
-}: Props) {
-  const createFolderMutation = useCreateFolder();
+export default function EditLinkDialog({ open, onClose, link, scope }: Props) {
+  const updateLink = useUpdateLink();
 
   const form = useForm({
     defaultValues: {
-      name: "",
+      name: link.name,
+      value: link.value,
     },
     validators: {
       onChange: z.object({
         name: z.string().min(1).max(255),
+        value: z.url(),
       }),
     },
     onSubmit: async ({ value }) => {
-      await createFolderMutation.mutateAsync({
-        data: { name: value.name, folder_id: folder_id },
+      await updateLink.mutateAsync({
+        link_id: link.id,
+        data: { name: value.name, value: value.value },
         scope,
       });
 
       onCloseReset();
-      toast.success("Created folder");
+      toast.success("Updated link");
     },
   });
 
@@ -56,7 +54,7 @@ export default function CreateFolderDialog({
 
   return (
     <Dialog open={open} onClose={onCloseReset} fullWidth maxWidth="xs">
-      <DialogTitle>Create Folder</DialogTitle>
+      <DialogTitle>Edit Link</DialogTitle>
       <DialogContent>
         <form
           onSubmit={(e) => {
@@ -77,10 +75,21 @@ export default function CreateFolderDialog({
               )}
             />
 
-            {createFolderMutation.isError && (
+            <form.Field
+              name="value"
+              children={(field) => (
+                <FormTextField
+                  field={field}
+                  variant="outlined"
+                  size="medium"
+                  label="URL"
+                />
+              )}
+            />
+
+            {updateLink.isError && (
               <Alert color="error">
-                Failed to create:{" "}
-                {getAPIErrorMessage(createFolderMutation.error)}
+                Failed to save: {getAPIErrorMessage(updateLink.error)}
               </Alert>
             )}
 
@@ -91,9 +100,9 @@ export default function CreateFolderDialog({
               <Button
                 type="submit"
                 variant="contained"
-                loading={createFolderMutation.isPending}
+                loading={updateLink.isPending}
               >
-                Create
+                Save
               </Button>
             </DialogActions>
           </Stack>

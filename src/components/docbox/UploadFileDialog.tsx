@@ -9,7 +9,7 @@ import { z } from "zod/v4";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
-import FormUploadFile from "./form/FormUploadFile";
+import FormUploadFile from "../form/FormUploadFile";
 import type { DocumentBoxScope } from "@docbox-nz/docbox-sdk";
 import { toast } from "sonner";
 
