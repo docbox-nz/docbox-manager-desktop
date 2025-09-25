@@ -1,0 +1,19 @@
+diff --git a/node_modules/axios/lib/adapters/xhr.js b/node_modules/axios/lib/adapters/xhr.js
+index 0223618..6cddf65 100644
+--- a/node_modules/axios/lib/adapters/xhr.js
++++ b/node_modules/axios/lib/adapters/xhr.js
+@@ -186,14 +186,6 @@ export default isXHRAdapterSupported && function (config) {
+       }
+     }
+ 
+-    const protocol = parseProtocol(_config.url);
+-
+-    if (protocol && platform.protocols.indexOf(protocol) === -1) {
+-      reject(new AxiosError('Unsupported protocol ' + protocol + ':', AxiosError.ERR_BAD_REQUEST, config));
+-      return;
+-    }
+-
+-
+     // Send the request
+     request.send(requestData || null);
+   });

@@ -30,6 +30,7 @@ pub fn run() {
     };
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .register_asynchronous_uri_scheme_protocol("docbox", |ctx, request, responder| {
             let app = ctx.app_handle();

@@ -6,6 +6,7 @@ import {
   useMemo,
   type PropsWithChildren,
 } from "react";
+import { platform } from "@tauri-apps/plugin-os";
 
 interface DocboxContextType {
   baseURL: string;
@@ -43,7 +44,17 @@ export default function DocboxProvider({
   children,
 }: Props) {
   const value: DocboxContextType = useMemo(() => {
-    const baseURL = `http://docbox.localhost/${serverId}/${tenantId}/${env}`; // TODO: NEed to load this dynamically to handle the platform variants
+    const p = platform();
+
+    let internalBase;
+    if (p === "windows" || p === "android") {
+      internalBase = "http://docbox.localhost/";
+    } else {
+      internalBase = "docbox://localhost/";
+    }
+
+    const baseURL = `${internalBase}${serverId}/${tenantId}/${env}`; // TODO: NEed to load this dynamically to handle the platform variants
+
     const axiosInstance = axios.create({
       baseURL,
       headers: {
