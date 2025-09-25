@@ -5481,7 +5481,7 @@ const defaultOptions = {
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   enableScripting: {
-    value: true,
+    value: false,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   enableSignatureEditor: {
@@ -6242,7 +6242,7 @@ class BasePreferences {
     enableOptimizedPartialRendering: false,
     enablePermissions: false,
     enablePrintAutoRotate: true,
-    enableScripting: true,
+    enableScripting: false,
     enableSignatureEditor: false,
     enableUpdatedAddImage: false,
     externalLinkTarget: 0,
@@ -20738,7 +20738,7 @@ const PDFViewerApplication = {
       signatureManager,
       editorUndoBar: this.editorUndoBar,
       findController,
-      scriptingManager: AppOptions.get("enableScripting") && pdfScriptingManager,
+      scriptingManager: null,
       l10n,
       textLayerMode: AppOptions.get("textLayerMode"),
       annotationMode: AppOptions.get("annotationMode"),
