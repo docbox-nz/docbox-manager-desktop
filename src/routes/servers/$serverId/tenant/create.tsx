@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import MdiChevronLeft from "~icons/mdi/chevron-left";
 import IconButton from "@mui/material/IconButton";
 import RouterLink from "@/components/RouterLink";
+import FormValidIndicator from "@/components/form/FormValidIndicator";
 
 export const Route = createFileRoute("/servers/$serverId/tenant/create")({
   component: TenantCreate,
@@ -267,29 +268,6 @@ function TenantCreate() {
     </Card>
   );
 
-  const validationIndicator = (isValid: boolean) => {
-    return (
-      <Box
-        component="span"
-        sx={{ color: isValid ? "success.main" : "error.main", mr: 1 }}
-      >
-        {isValid ? (
-          <MdiCheckCircle
-            width={22}
-            height={22}
-            style={{ verticalAlign: "middle" }}
-          />
-        ) : (
-          <MdiError
-            width={22}
-            height={20}
-            style={{ verticalAlign: "middle" }}
-          />
-        )}
-      </Box>
-    );
-  };
-
   const renderDatabase = (
     <Accordion elevation={2}>
       <AccordionSummary
@@ -307,7 +285,7 @@ function TenantCreate() {
                 state.fieldMeta["database.db_secret_name"].isValid
               );
             }}
-            children={(isValid) => validationIndicator(isValid)}
+            children={(valid) => <FormValidIndicator valid={valid} />}
           />
           Database
         </Typography>
@@ -407,7 +385,7 @@ function TenantCreate() {
                 state.fieldMeta["storage.storage_cors_origins"].isValid
               );
             }}
-            children={(isValid) => validationIndicator(isValid)}
+            children={(valid) => <FormValidIndicator valid={valid} />}
           />
           Storage
         </Typography>
@@ -528,7 +506,7 @@ function TenantCreate() {
                 state.fieldMeta["search.search_index_name"].isValid
               );
             }}
-            children={(isValid) => validationIndicator(isValid)}
+            children={(valid) => <FormValidIndicator valid={valid} />}
           />
           Search
         </Typography>
@@ -574,7 +552,7 @@ function TenantCreate() {
                 state.fieldMeta["event_queue_url"].isValid
               );
             }}
-            children={(isValid) => validationIndicator(isValid)}
+            children={(valid) => <FormValidIndicator valid={valid} />}
           />
           Event Notifications
         </Typography>

@@ -12,13 +12,10 @@ import { FormTextField } from "@/components/form/FormTextField";
 import { useCreateServer } from "@/api/server/server.mutations";
 import MdiArrowDownDrop from "~icons/mdi/arrow-down-drop";
 
-import { v4 } from "uuid";
 import {
   S3EndpointType,
   SearchIndexFactoryConfigType,
   SecretsManagerConfigType,
-  serverConfigDataSchema,
-  ServerConfigType,
   StorageLayerFactoryConfigType,
 } from "@/api/server";
 import RouterLink from "@/components/RouterLink";
@@ -27,8 +24,6 @@ import { toast } from "sonner";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import InputAdornment from "@mui/material/InputAdornment";
-import AlertTitle from "@mui/material/AlertTitle";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import FormControl from "@mui/material/FormControl";
@@ -37,73 +32,185 @@ import Typography from "@mui/material/Typography";
 import { FormNumberField } from "@/components/form/FormNumberField";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
+import FormValidIndicator from "@/components/form/FormValidIndicator";
 
 export const Route = createFileRoute("/servers/create/stored")({
   component: RouteComponent,
 });
 
-const formSchema = z.object({
-  name: z.string().nonempty(),
-  api_url: z.string(),
-  api_key: z.string(),
-  database: z.object({
-    host: z.string(),
-    port: z.number(),
-    setup_user: z.object({
-      username: z.string(),
-      password: z.string(),
-      secret_name: z.string(),
-      use_secret: z.boolean(),
-    }),
-    root_secret_name: z.string(),
+const setupUserBaseSchema = z.object({
+  use_secret: z.boolean(),
+  username: z.string(),
+  password: z.string(),
+  secret_name: z.string(),
+});
+
+const secretsBaseSchema = z.object({
+  provider: z.enum(SecretsManagerConfigType),
+  memory: z.object({
+    secrets: z.array(
+      z.object({
+        key: z.string(),
+        value: z.string(),
+      })
+    ),
+    default: z.string(),
   }),
-  secrets: z.object({
-    provider: z.enum(SecretsManagerConfigType),
+  json: z.object({
+    key: z.string(),
+    path: z.string(),
+  }),
+});
+
+const typesenseApiKeyBaseSchema = z.object({
+  api_key: z.string(),
+  api_key_secret_name: z.string(),
+  use_secret: z.boolean(),
+});
+
+const searchBaseSchema = z.object({
+  provider: z.enum(SearchIndexFactoryConfigType),
+  typesense: z.object({
+    url: z.string(),
+    api_key: typesenseApiKeyBaseSchema,
+  }),
+  opensearch: z.object({
+    url: z.string(),
+  }),
+});
+
+const storageEndpointBaseSchema = z.object({
+  type: z.enum(S3EndpointType),
+  custom: z.object({
+    endpoint: z.string(),
+    access_key_id: z.string(),
+    access_key_secret: z.string(),
+  }),
+});
+
+const storageBaseSchema = z.object({
+  provider: z.enum(StorageLayerFactoryConfigType),
+  endpoint: storageEndpointBaseSchema,
+});
+
+const apiSchema = z.object({
+  url: z.url(),
+  api_key: z.string(),
+});
+
+const databaseSchema = z.object({
+  // Base credentials
+  host: z.string().nonempty(),
+  port: z.number(),
+
+  setup_user: z.discriminatedUnion("use_secret", [
+    // Setup user when using a secret
+    setupUserBaseSchema.extend({
+      use_secret: z.literal(true),
+      secret_name: z.string().nonempty(),
+    }),
+
+    // Setup user when using provided username and password
+    setupUserBaseSchema.extend({
+      use_secret: z.literal(false),
+      username: z.string().nonempty(),
+      password: z.string().nonempty(),
+    }),
+  ]),
+
+  // Root secret
+  root_secret_name: z.string().nonempty(),
+});
+
+const secretsSchema = z.discriminatedUnion("provider", [
+  secretsBaseSchema.extend({
+    provider: z.literal(SecretsManagerConfigType.Aws),
+  }),
+  secretsBaseSchema.extend({
+    provider: z.literal(SecretsManagerConfigType.Json),
+    json: z.object({
+      key: z.string().nonempty(),
+      path: z.string().nonempty(),
+    }),
+  }),
+  secretsBaseSchema.extend({
+    provider: z.literal(SecretsManagerConfigType.Memory),
     memory: z.object({
       secrets: z.array(
         z.object({
           key: z.string(),
           value: z.string(),
-        }),
+        })
       ),
       default: z.string(),
     }),
-    json: z.object({
-      key: z.string(),
-      path: z.string(),
-    }),
   }),
-  search: z.object({
-    provider: z.enum(SearchIndexFactoryConfigType),
+]);
+
+const searchSchema = z.discriminatedUnion("provider", [
+  searchBaseSchema.omit({ typesense: true }).extend({
+    provider: z.literal(SearchIndexFactoryConfigType.Typesense),
     typesense: z.object({
-      url: z.string(),
-      api_key: z.string(),
-      api_key_secret_name: z.string(),
-      use_secret: z.boolean(),
+      url: z.url(),
+      api_key: z.discriminatedUnion("use_secret", [
+        typesenseApiKeyBaseSchema.extend({
+          use_secret: z.literal(true),
+          api_key_secret_name: z.string().nonempty(),
+        }),
+        typesenseApiKeyBaseSchema.extend({
+          use_secret: z.literal(false),
+          api_key: z.string().nonempty(),
+        }),
+      ]),
     }),
+  }),
+  searchBaseSchema.omit({ opensearch: true }).extend({
+    provider: z.literal(SearchIndexFactoryConfigType.OpenSearch),
     opensearch: z.object({
-      url: z.string(),
+      url: z.url(),
     }),
   }),
-  storage: z.object({
-    provider: z.enum(StorageLayerFactoryConfigType),
-    endpoint: z.object({
-      type: z.enum(S3EndpointType),
-      custom: z.object({
-        endpoint: z.string(),
-        access_key_id: z.string(),
-        access_key_secret: z.string(),
+  searchBaseSchema.extend({
+    provider: z.literal(SearchIndexFactoryConfigType.Database),
+  }),
+]);
+
+const storageSchema = z.discriminatedUnion("provider", [
+  storageBaseSchema.extend({
+    provider: z.literal(StorageLayerFactoryConfigType.S3),
+    endpoint: z.discriminatedUnion("type", [
+      storageEndpointBaseSchema.extend({
+        type: z.literal(S3EndpointType.Aws),
       }),
-    }),
+      storageEndpointBaseSchema.extend({
+        type: z.literal(S3EndpointType.Custom),
+        custom: z.object({
+          endpoint: z.url(),
+          access_key_id: z.string().nonempty(),
+          access_key_secret: z.string().nonempty(),
+        }),
+      }),
+    ]),
   }),
+]);
+
+const formSchema = z.object({
+  name: z.string().nonempty(),
+  api: apiSchema,
+  database: databaseSchema,
+  secrets: secretsSchema,
+  search: searchSchema,
+  storage: storageSchema,
 });
 
-type FormSchema = z.infer<typeof formSchema>;
+type FormSchema = z.input<typeof formSchema>;
 
 const defaultValues: FormSchema = {
   name: "",
-  api_url: "",
-  api_key: "",
+  api: {
+    url: "",
+    api_key: "",
+  },
   database: {
     host: "",
     port: 5432,
@@ -130,9 +237,11 @@ const defaultValues: FormSchema = {
     provider: SearchIndexFactoryConfigType.Typesense,
     typesense: {
       url: "",
-      api_key: "",
-      api_key_secret_name: "",
-      use_secret: true,
+      api_key: {
+        use_secret: true,
+        api_key: "",
+        api_key_secret_name: "",
+      },
     },
     opensearch: {
       url: "",
@@ -188,26 +297,51 @@ function RouteComponent() {
       <AccordionSummary
         expandIcon={<MdiArrowDownDrop width={28} height={28} />}
       >
-        <Typography variant="h6">Docbox API</Typography>
+        <Typography variant="h6">
+          <form.Subscribe
+            selector={(state) => {
+              return (
+                state.fieldMeta["api.url"] &&
+                state.fieldMeta["api.url"].isValid &&
+                state.fieldMeta["api.api_key"] &&
+                state.fieldMeta["api.api_key"].isValid
+              );
+            }}
+            children={(valid) => <FormValidIndicator valid={valid} />}
+          />
+          Docbox API
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ maxWidth: "sm" }}
+          >
+            Credentials for connecting to docbox, these are required to perform
+            tenant browsing to allow looking through the boxes, files, links,
+            and folders within each tenant.
+          </Typography>
+
+          {/* URL */}
           <form.Field
-            name="api_url"
+            name="api.url"
             children={(field) => (
               <FormTextField
                 field={field}
                 variant="outlined"
                 size="medium"
-                label="Docbox URL"
+                label="Docbox API URL"
                 helperText="HTTP URL of the docbox app"
                 placeholder="http://example.com:8080"
               />
             )}
           />
 
+          {/* API KEY */}
           <form.Field
-            name="api_key"
+            name="api.api_key"
             children={(field) => (
               <FormTextField
                 field={field}
@@ -229,7 +363,15 @@ function RouteComponent() {
       <AccordionSummary
         expandIcon={<MdiArrowDownDrop width={28} height={28} />}
       >
-        <Typography variant="h6">Database</Typography>
+        <Typography variant="h6">
+          <form.Subscribe
+            selector={(state) =>
+              databaseSchema.safeParse(state.values.database).success
+            }
+            children={(valid) => <FormValidIndicator valid={valid} />}
+          />
+          Database
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
@@ -337,7 +479,7 @@ function RouteComponent() {
                     />
 
                     <form.Field
-                      name="database.port"
+                      name="database.setup_user.password"
                       children={(field) => (
                         <FormTextField
                           field={field}
@@ -377,7 +519,15 @@ function RouteComponent() {
       <AccordionSummary
         expandIcon={<MdiArrowDownDrop width={28} height={28} />}
       >
-        <Typography variant="h6">Secrets</Typography>
+        <Typography variant="h6">
+          <form.Subscribe
+            selector={(state) =>
+              secretsSchema.safeParse(state.values.secrets).success
+            }
+            children={(valid) => <FormValidIndicator valid={valid} />}
+          />
+          Secrets
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
@@ -483,7 +633,15 @@ function RouteComponent() {
       <AccordionSummary
         expandIcon={<MdiArrowDownDrop width={28} height={28} />}
       >
-        <Typography variant="h6">Search</Typography>
+        <Typography variant="h6">
+          <form.Subscribe
+            selector={(state) =>
+              searchSchema.safeParse(state.values.search).success
+            }
+            children={(valid) => <FormValidIndicator valid={valid} />}
+          />
+          Search
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
@@ -548,7 +706,7 @@ function RouteComponent() {
                     />
 
                     <form.Field
-                      name="search.typesense.use_secret"
+                      name="search.typesense.api_key.use_secret"
                       children={(field) => (
                         <FormControl>
                           <FormControlLabel
@@ -574,13 +732,13 @@ function RouteComponent() {
 
                     <form.Subscribe
                       selector={(state) =>
-                        state.values.search.typesense.use_secret
+                        state.values.search.typesense.api_key.use_secret
                       }
                       children={(useSecret) =>
                         useSecret ? (
                           <>
                             <form.Field
-                              name="search.typesense.api_key_secret_name"
+                              name="search.typesense.api_key.api_key_secret_name"
                               children={(field) => (
                                 <FormTextField
                                   field={field}
@@ -600,7 +758,7 @@ function RouteComponent() {
                         ) : (
                           <>
                             <form.Field
-                              name="search.typesense.api_key"
+                              name="search.typesense.api_key.api_key"
                               children={(field) => (
                                 <FormTextField
                                   field={field}
@@ -648,7 +806,15 @@ function RouteComponent() {
       <AccordionSummary
         expandIcon={<MdiArrowDownDrop width={28} height={28} />}
       >
-        <Typography variant="h6">Storage</Typography>
+        <Typography variant="h6">
+          <form.Subscribe
+            selector={(state) =>
+              storageSchema.safeParse(state.values.storage).success
+            }
+            children={(valid) => <FormValidIndicator valid={valid} />}
+          />
+          Storage
+        </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
