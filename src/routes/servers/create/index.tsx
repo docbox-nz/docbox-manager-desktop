@@ -70,7 +70,7 @@ function RouteComponent() {
               </Stack>
             </CardButton>
 
-            <CardButton>
+            <CardButton component={RouterLink} to="/servers/create/stored">
               <Box
                 sx={{
                   width: 80,
@@ -87,32 +87,6 @@ function RouteComponent() {
                 />
               </Box>
 
-              <Stack sx={{ alignItems: "flex-start", p: 2, textAlign: "left" }}>
-                <Typography variant="h6">Encrypted Stored</Typography>
-                <Typography variant="body2">
-                  Add a configuration that will be stored within docbox manager
-                  encrypted with a password
-                </Typography>
-              </Stack>
-            </CardButton>
-
-            <CardButton>
-              <Box
-                sx={{
-                  width: 80,
-                  height: 80,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <Box
-                  component={SolarLockPasswordBroken}
-                  sx={{ width: 60, height: 60 }}
-                />
-              </Box>
-
               <Stack
                 sx={{
                   alignItems: "flex-start",
@@ -122,8 +96,8 @@ function RouteComponent() {
               >
                 <Typography variant="h6">Stored</Typography>
                 <Typography variant="body2">
-                  Stored within docbox manager. This is not encrypted and is not
-                  recommended for production
+                  Create an optionally encrypted secret stored within docbox
+                  manager
                 </Typography>
               </Stack>
             </CardButton>

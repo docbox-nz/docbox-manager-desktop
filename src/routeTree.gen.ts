@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ServersServerIdRouteRouteImport } from './routes/servers/$serverId/route'
 import { Route as ServersCreateIndexRouteImport } from './routes/servers/create/index'
 import { Route as ServersServerIdIndexRouteImport } from './routes/servers/$serverId/index'
+import { Route as ServersCreateStoredRouteImport } from './routes/servers/create/stored'
 import { Route as ServersCreateAwsSecretRouteImport } from './routes/servers/create/aws-secret'
 import { Route as ServersServerIdInitializeRouteImport } from './routes/servers/$serverId/initialize'
 import { Route as ServersServerIdTenantCreateRouteImport } from './routes/servers/$serverId/tenant/create'
@@ -37,6 +38,11 @@ const ServersServerIdIndexRoute = ServersServerIdIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ServersServerIdRouteRoute,
+} as any)
+const ServersCreateStoredRoute = ServersCreateStoredRouteImport.update({
+  id: '/servers/create/stored',
+  path: '/servers/create/stored',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ServersCreateAwsSecretRoute = ServersCreateAwsSecretRouteImport.update({
   id: '/servers/create/aws-secret',
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/servers/$serverId': typeof ServersServerIdRouteRouteWithChildren
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
+  '/servers/create/stored': typeof ServersCreateStoredRoute
   '/servers/$serverId/': typeof ServersServerIdIndexRoute
   '/servers/create': typeof ServersCreateIndexRoute
   '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
+  '/servers/create/stored': typeof ServersCreateStoredRoute
   '/servers/$serverId': typeof ServersServerIdIndexRoute
   '/servers/create': typeof ServersCreateIndexRoute
   '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/servers/$serverId': typeof ServersServerIdRouteRouteWithChildren
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
+  '/servers/create/stored': typeof ServersCreateStoredRoute
   '/servers/$serverId/': typeof ServersServerIdIndexRoute
   '/servers/create/': typeof ServersCreateIndexRoute
   '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/servers/$serverId'
     | '/servers/$serverId/initialize'
     | '/servers/create/aws-secret'
+    | '/servers/create/stored'
     | '/servers/$serverId/'
     | '/servers/create'
     | '/servers/$serverId/tenant/create'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/'
     | '/servers/$serverId/initialize'
     | '/servers/create/aws-secret'
+    | '/servers/create/stored'
     | '/servers/$serverId'
     | '/servers/create'
     | '/servers/$serverId/tenant/create'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/servers/$serverId'
     | '/servers/$serverId/initialize'
     | '/servers/create/aws-secret'
+    | '/servers/create/stored'
     | '/servers/$serverId/'
     | '/servers/create/'
     | '/servers/$serverId/tenant/create'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ServersServerIdRouteRoute: typeof ServersServerIdRouteRouteWithChildren
   ServersCreateAwsSecretRoute: typeof ServersCreateAwsSecretRoute
+  ServersCreateStoredRoute: typeof ServersCreateStoredRoute
   ServersCreateIndexRoute: typeof ServersCreateIndexRoute
 }
 
@@ -160,6 +173,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/servers/$serverId/'
       preLoaderRoute: typeof ServersServerIdIndexRouteImport
       parentRoute: typeof ServersServerIdRouteRoute
+    }
+    '/servers/create/stored': {
+      id: '/servers/create/stored'
+      path: '/servers/create/stored'
+      fullPath: '/servers/create/stored'
+      preLoaderRoute: typeof ServersCreateStoredRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/servers/create/aws-secret': {
       id: '/servers/create/aws-secret'
@@ -213,6 +233,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ServersServerIdRouteRoute: ServersServerIdRouteRouteWithChildren,
   ServersCreateAwsSecretRoute: ServersCreateAwsSecretRoute,
+  ServersCreateStoredRoute: ServersCreateStoredRoute,
   ServersCreateIndexRoute: ServersCreateIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -35,6 +35,7 @@ export type AwsS3Endpoint = z.infer<typeof awsS3EndpointSchema>;
 
 export const customS3EndpointSchema = z.object({
   type: z.literal(S3EndpointType.Custom),
+  endpoint: z.string(),
   access_key_id: z.string(),
   access_key_secret: z.string(),
 });
@@ -55,7 +56,7 @@ export const s3StorageLayerFactoryConfig = z.object({
 
 export const storageLayerFactoryConfigSchema = z.discriminatedUnion(
   "provider",
-  [s3StorageLayerFactoryConfig]
+  [s3StorageLayerFactoryConfig],
 );
 
 export const typesenseSearchConfigSchema = z.object({
@@ -109,7 +110,7 @@ export const adminDatabaseSetupUserConfigSchema = z.object({
 
 export const adminDatabaseConfigSchema = z.object({
   host: z.string(),
-  port: z.string(),
+  port: z.number(),
   setup_user: adminDatabaseSetupUserConfigSchema.optional().nullable(),
   setup_user_secret_name: z.string().optional().nullable(),
   root_secret_name: z.string(),
@@ -117,6 +118,7 @@ export const adminDatabaseConfigSchema = z.object({
 
 export const serverConfigDataSchema = z.object({
   api_url: z.string(),
+  api_key: z.string().optional(),
   database: adminDatabaseConfigSchema,
   secrets: secretManagerConfigSchema,
   search: searchConfigSchema,
