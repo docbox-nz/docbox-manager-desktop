@@ -35,6 +35,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import FormValidIndicator from "@/components/form/FormValidIndicator";
 import Paper from "@mui/material/Paper";
 import SolarInfoCircleBold from "~icons/solar/info-circle-bold";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/servers/create/stored")({
   component: RouteComponent,
@@ -269,6 +270,7 @@ function RouteComponent() {
   const form = useForm({
     defaultValues,
     validators: {
+      onMount: formSchema,
       onChange: formSchema,
     },
     onSubmit: async ({ value }) => {
