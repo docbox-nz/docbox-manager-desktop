@@ -6,9 +6,9 @@ use tauri::State;
 use uuid::Uuid;
 
 use crate::{
-    commands::CmdResult,
+    commands::{CmdError, CmdResult},
     database::entity::server::{CreateServer, Server, ServerId},
-    server::ServerStore,
+    server::{LoadServerError, ServerStore},
 };
 
 /// Create a server
@@ -43,10 +43,21 @@ pub async fn server_load(
         .await?
         .context("server not found")?;
 
-    let _server = server_store
+    let _server = match server_store
         .try_load_server(&sdk_config, server, load_config)
         .await
-        .context("failed to load server")?;
+    {
+        Ok(value) => value,
+        Err(error) => {
+            return match &error {
+                LoadServerError::MissingPassword => Err(CmdError::coded(error, "MISSING_PASSWORD")),
+                LoadServerError::IncorrectPassword => {
+                    Err(CmdError::coded(error, "INCORRECT_PASSWORD"))
+                }
+                _ => Err(CmdError::coded(error, "OTHER")),
+            }
+        }
+    };
 
     Ok(())
 }

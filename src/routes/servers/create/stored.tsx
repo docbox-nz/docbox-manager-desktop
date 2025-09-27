@@ -135,8 +135,6 @@ function RouteComponent() {
     },
   });
 
-  console.log(form.getAllErrors());
-
   return (
     <Container sx={{ py: 2 }}>
       <Card>

@@ -12,8 +12,9 @@ import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
 import RouterLink from "@/components/RouterLink";
 import ErrorPage from "@/components/ErrorPage";
-import { getAPIErrorMessage } from "@/api/axios";
+import { getAPIErrorMessage, getAPIErrorMessageCode } from "@/api/axios";
 import ListItem from "@mui/material/ListItem";
+import EncryptedLogin from "@/features/server/load/encrypted-login";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -30,11 +31,60 @@ function App() {
   }
 
   if (loadServerMutation.isError) {
-    return (
-      <ErrorPage error={getAPIErrorMessage(loadServerMutation.error)}>
-        <Button onClick={() => loadServerMutation.reset()}>Back</Button>
-      </ErrorPage>
-    );
+    const errorCode = getAPIErrorMessageCode(loadServerMutation.error);
+    switch (errorCode) {
+      case "MISSING_PASSWORD": {
+        const serverId = loadServerMutation.variables.serverId;
+        const server = serversQuery.data?.find(
+          (server) => server.id === serverId
+        );
+
+        if (server === undefined) {
+          return (
+            <ErrorPage error="Unable to find local server, it may have been removed">
+              <Button onClick={() => loadServerMutation.reset()}>Back</Button>
+            </ErrorPage>
+          );
+        }
+
+        return (
+          <EncryptedLogin
+            onSubmit={(password) => {
+              loadServerMutation.mutate(
+                {
+                  serverId: server.id,
+                  loadConfig: {
+                    password,
+                  },
+                },
+                {
+                  onSuccess() {
+                    navigate({
+                      to: "/servers/$serverId",
+                      params: { serverId: server.id },
+                    });
+                  },
+                }
+              );
+            }}
+          />
+        );
+      }
+
+      case "INCORRECT_PASSWORD":
+        return (
+          <ErrorPage error="Incorrect password">
+            <Button onClick={() => loadServerMutation.reset()}>Back</Button>
+          </ErrorPage>
+        );
+
+      default:
+        return (
+          <ErrorPage error={getAPIErrorMessage(loadServerMutation.error)}>
+            <Button onClick={() => loadServerMutation.reset()}>Back</Button>
+          </ErrorPage>
+        );
+    }
   }
 
   if (serversQuery.isLoading) {

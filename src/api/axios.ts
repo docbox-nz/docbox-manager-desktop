@@ -18,6 +18,7 @@ function getAPIErrorMessageInner(error: any): string {
     if (error.response && error.response.data && error.response.data.message) {
       return error.response.data.message;
     }
+
     if (error.response && error.response.data && error.response.data.reason) {
       return error.response.data.reason;
     }
@@ -26,6 +27,10 @@ function getAPIErrorMessageInner(error: any): string {
       return error.response.data;
     }
 
+    return error.message;
+  }
+
+  if (typeof error === "object" && "message" in error) {
     return error.message;
   }
 
@@ -38,4 +43,12 @@ function getAPIErrorMessageInner(error: any): string {
   }
 
   return "Something went wrong";
+}
+
+export function getAPIErrorMessageCode(error: any): string | null {
+  if (typeof error === "object" && "code" in error) {
+    return error.code;
+  }
+
+  return null;
 }

@@ -6,7 +6,6 @@ import Typography from "@mui/material/Typography";
 import { Container } from "@mui/system";
 import LogosAwsSecretsManager from "~icons/logos/aws-secrets-manager";
 import SolarLockPasswordBoldDuotone from "~icons/solar/lock-password-bold-duotone";
-import SolarLockPasswordBroken from "~icons/solar/lock-password-broken";
 import Button from "@mui/material/Button";
 import { createFileRoute } from "@tanstack/react-router";
 import RouterLink from "@/components/RouterLink";

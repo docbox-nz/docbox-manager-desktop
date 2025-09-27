@@ -7,14 +7,20 @@ pub mod utils;
 
 type CmdResult<T> = Result<T, CmdError>;
 
-pub struct CmdError(eyre::Error);
+/// Error output from a handler
+#[derive(Debug, Serialize)]
+pub struct CmdError {
+    message: String,
+    code: Option<String>,
+}
 
-impl Serialize for CmdError {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&format!("{:?}", self.0))
+impl CmdError {
+    pub fn coded<E: Into<eyre::Report>>(error: E, code: impl Into<String>) -> Self {
+        let error: eyre::Report = error.into();
+        CmdError {
+            message: error.to_string(),
+            code: Some(code.into()),
+        }
     }
 }
 
@@ -23,6 +29,10 @@ where
     E: Into<eyre::Report>,
 {
     fn from(value: E) -> Self {
-        CmdError(value.into())
+        let error: eyre::Report = value.into();
+        CmdError {
+            message: format!("{error:?}"),
+            code: None,
+        }
     }
 }
