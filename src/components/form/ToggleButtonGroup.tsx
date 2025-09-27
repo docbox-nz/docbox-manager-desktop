@@ -13,12 +13,14 @@ type ToggleButtonGroupProps = Omit<
 > & {
   label?: string;
   helperText?: string;
+  disableClearable?: boolean;
 };
 
 export default function ToggleButtonGroup({
   label,
   helperText,
   children,
+  disableClearable,
   ...rest
 }: ToggleButtonGroupProps) {
   const field = useFieldContext<string>();
@@ -33,8 +35,13 @@ export default function ToggleButtonGroup({
 
       <MuiToggleButtonGroup
         {...rest}
+        sx={{ ...rest.sx, mb: 1 }}
         value={field.state.value}
         onChange={(_event, value) => {
+          if (value === null && disableClearable) {
+            return;
+          }
+
           field.handleChange(value);
         }}
         onBlur={field.handleBlur}

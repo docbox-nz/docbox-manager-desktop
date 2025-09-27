@@ -5,7 +5,7 @@ import TextField from "@components/form/TextField";
 import Switch from "@components/form/Switch";
 import ToggleButtonGroup from "@components/form/ToggleButtonGroup";
 
-export const { useAppForm } = createFormHook({
+export const { useAppForm, withFieldGroup, withForm } = createFormHook({
   fieldContext,
   formContext,
   fieldComponents: {

@@ -1,266 +1,74 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import { formOptions, useForm } from "@tanstack/react-form";
+import { formOptions } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import Alert from "@mui/material/Alert";
 import { getAPIErrorMessage } from "@/api/axios";
-import { FormTextField } from "@/components/form/FormTextField";
 import { useCreateServer } from "@/api/server/server.mutations";
-import MdiArrowDownDrop from "~icons/mdi/arrow-down-drop";
 
-import {
-  S3EndpointType,
-  SearchIndexFactoryConfigType,
-  SecretsManagerConfigType,
-  StorageLayerFactoryConfigType,
-} from "@/api/server";
 import RouterLink from "@/components/RouterLink";
 import Container from "@mui/material/Container";
 import { toast } from "sonner";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-import FormControl from "@mui/material/FormControl";
-import FormHelperText from "@mui/material/FormHelperText";
-import Typography from "@mui/material/Typography";
-import { FormNumberField } from "@/components/form/FormNumberField";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ToggleButton from "@mui/material/ToggleButton";
-import FormValidIndicator from "@/components/form/FormValidIndicator";
-import Paper from "@mui/material/Paper";
-import SolarInfoCircleBold from "~icons/solar/info-circle-bold";
 import { useAppForm } from "@/hooks/use-app-form";
+import {
+  ApiSection,
+  apiSectionDefaultValues,
+  apiSectionSchema,
+} from "@/features/server/create/stored/api-section";
+import {
+  DatabaseSection,
+  databaseSectionDefaultValues,
+  databaseSectionSchema,
+} from "@/features/server/create/stored/database-section";
+import {
+  SecretsSection,
+  secretsSectionDefaultValues,
+  secretsSectionSchema,
+} from "@/features/server/create/stored/secrets-section";
+import {
+  SearchSection,
+  searchSectionDefaultValues,
+  searchSectionSchema,
+} from "@/features/server/create/stored/search-section";
+import {
+  StorageSection,
+  storageSectionDefaultValues,
+  storageSectionSchema,
+} from "@/features/server/create/stored/storage-section";
+import {
+  EncryptionSection,
+  encryptionSectionDefaultValues,
+  encryptionSectionSchema,
+} from "@/features/server/create/stored/encryption-section";
 
 export const Route = createFileRoute("/servers/create/stored")({
   component: RouteComponent,
 });
 
-const setupUserBaseSchema = z.object({
-  use_secret: z.boolean(),
-  username: z.string(),
-  password: z.string(),
-  secret_name: z.string(),
-});
-
-const secretsBaseSchema = z.object({
-  provider: z.enum(SecretsManagerConfigType),
-  memory: z.object({
-    secrets: z.array(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-      })
-    ),
-    default: z.string(),
-  }),
-  json: z.object({
-    key: z.string(),
-    path: z.string(),
-  }),
-});
-
-const typesenseApiKeyBaseSchema = z.object({
-  api_key: z.string(),
-  api_key_secret_name: z.string(),
-  use_secret: z.boolean(),
-});
-
-const searchBaseSchema = z.object({
-  provider: z.enum(SearchIndexFactoryConfigType),
-  typesense: z.object({
-    url: z.string(),
-    api_key: typesenseApiKeyBaseSchema,
-  }),
-  opensearch: z.object({
-    url: z.string(),
-  }),
-});
-
-const storageEndpointBaseSchema = z.object({
-  type: z.enum(S3EndpointType),
-  custom: z.object({
-    endpoint: z.string(),
-    access_key_id: z.string(),
-    access_key_secret: z.string(),
-  }),
-});
-
-const storageBaseSchema = z.object({
-  provider: z.enum(StorageLayerFactoryConfigType),
-  endpoint: storageEndpointBaseSchema,
-});
-
-const apiSchema = z.object({
-  url: z.url(),
-  api_key: z.string(),
-});
-
-const databaseSchema = z.object({
-  // Base credentials
-  host: z.string().nonempty(),
-  port: z.number(),
-
-  setup_user: z.discriminatedUnion("use_secret", [
-    // Setup user when using a secret
-    setupUserBaseSchema.extend({
-      use_secret: z.literal(true),
-      secret_name: z.string().nonempty(),
-    }),
-
-    // Setup user when using provided username and password
-    setupUserBaseSchema.extend({
-      use_secret: z.literal(false),
-      username: z.string().nonempty(),
-      password: z.string().nonempty(),
-    }),
-  ]),
-
-  // Root secret
-  root_secret_name: z.string().nonempty(),
-});
-
-const secretsSchema = z.discriminatedUnion("provider", [
-  secretsBaseSchema.extend({
-    provider: z.literal(SecretsManagerConfigType.Aws),
-  }),
-  secretsBaseSchema.extend({
-    provider: z.literal(SecretsManagerConfigType.Json),
-    json: z.object({
-      key: z.string().nonempty(),
-      path: z.string().nonempty(),
-    }),
-  }),
-  secretsBaseSchema.extend({
-    provider: z.literal(SecretsManagerConfigType.Memory),
-    memory: z.object({
-      secrets: z.array(
-        z.object({
-          key: z.string(),
-          value: z.string(),
-        })
-      ),
-      default: z.string(),
-    }),
-  }),
-]);
-
-const searchSchema = z.discriminatedUnion("provider", [
-  searchBaseSchema.omit({ typesense: true }).extend({
-    provider: z.literal(SearchIndexFactoryConfigType.Typesense),
-    typesense: z.object({
-      url: z.url(),
-      api_key: z.discriminatedUnion("use_secret", [
-        typesenseApiKeyBaseSchema.extend({
-          use_secret: z.literal(true),
-          api_key_secret_name: z.string().nonempty(),
-        }),
-        typesenseApiKeyBaseSchema.extend({
-          use_secret: z.literal(false),
-          api_key: z.string().nonempty(),
-        }),
-      ]),
-    }),
-  }),
-  searchBaseSchema.omit({ opensearch: true }).extend({
-    provider: z.literal(SearchIndexFactoryConfigType.OpenSearch),
-    opensearch: z.object({
-      url: z.url(),
-    }),
-  }),
-  searchBaseSchema.extend({
-    provider: z.literal(SearchIndexFactoryConfigType.Database),
-  }),
-]);
-
-const storageSchema = z.discriminatedUnion("provider", [
-  storageBaseSchema.extend({
-    provider: z.literal(StorageLayerFactoryConfigType.S3),
-    endpoint: z.discriminatedUnion("type", [
-      storageEndpointBaseSchema.extend({
-        type: z.literal(S3EndpointType.Aws),
-      }),
-      storageEndpointBaseSchema.extend({
-        type: z.literal(S3EndpointType.Custom),
-        custom: z.object({
-          endpoint: z.url(),
-          access_key_id: z.string().nonempty(),
-          access_key_secret: z.string().nonempty(),
-        }),
-      }),
-    ]),
-  }),
-]);
-
 const formSchema = z.object({
   name: z.string().nonempty(),
-  api: apiSchema,
-  database: databaseSchema,
-  secrets: secretsSchema,
-  search: searchSchema,
-  storage: storageSchema,
+  api: apiSectionSchema,
+  database: databaseSectionSchema,
+  secrets: secretsSectionSchema,
+  search: searchSectionSchema,
+  storage: storageSectionSchema,
+  encryption: encryptionSectionSchema,
 });
 
 type FormSchema = z.input<typeof formSchema>;
 
 const defaultValues: FormSchema = {
   name: "",
-  api: {
-    url: "",
-    api_key: "",
-  },
-  database: {
-    host: "",
-    port: 5432,
-    setup_user: {
-      username: "",
-      password: "",
-      secret_name: "postgres/docbox/master",
-      use_secret: true,
-    },
-    root_secret_name: "postgres/docbox/config",
-  },
-  secrets: {
-    provider: SecretsManagerConfigType.Aws,
-    memory: {
-      secrets: [],
-      default: "",
-    },
-    json: {
-      key: "",
-      path: "",
-    },
-  },
-  search: {
-    provider: SearchIndexFactoryConfigType.Typesense,
-    typesense: {
-      url: "",
-      api_key: {
-        use_secret: true,
-        api_key: "",
-        api_key_secret_name: "typesense/docbox/credentials",
-      },
-    },
-    opensearch: {
-      url: "",
-    },
-  },
-  storage: {
-    provider: StorageLayerFactoryConfigType.S3,
-    endpoint: {
-      type: S3EndpointType.Aws,
-      custom: {
-        endpoint: "",
-        access_key_id: "",
-        access_key_secret: "",
-      },
-    },
-  },
+  api: apiSectionDefaultValues,
+  database: databaseSectionDefaultValues,
+  secrets: secretsSectionDefaultValues,
+  search: searchSectionDefaultValues,
+  storage: storageSectionDefaultValues,
+  encryption: encryptionSectionDefaultValues,
 };
 
 const formOpts = formOptions({
@@ -300,562 +108,6 @@ function RouteComponent() {
     },
   });
 
-  const renderApi = (
-    <Accordion elevation={2}>
-      <AccordionSummary
-        expandIcon={<MdiArrowDownDrop width={28} height={28} />}
-      >
-        <Typography variant="h6">
-          <form.Subscribe
-            selector={(state) => apiSchema.safeParse(state.values.api).success}
-            children={(valid) => <FormValidIndicator valid={valid} />}
-          />
-          Docbox API
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Stack spacing={3}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ maxWidth: "sm" }}
-          >
-            Credentials for connecting to docbox, these are required to perform
-            tenant browsing to allow looking through the boxes, files, links,
-            and folders within each tenant.
-          </Typography>
-
-          {/* URL */}
-          <form.AppField
-            name="api.url"
-            children={(field) => (
-              <field.TextField
-                required
-                variant="outlined"
-                size="medium"
-                label="Docbox API URL"
-                helperText="HTTP URL of the docbox app"
-                placeholder="http://example.com:8080"
-              />
-            )}
-          />
-
-          {/* API KEY */}
-          <form.AppField
-            name="api.api_key"
-            children={(field) => (
-              <field.TextField
-                type="password"
-                variant="outlined"
-                size="medium"
-                label="Docbox API Key"
-                helperText="API key for accessing docbox if configured on the server. Leave empty if not configured"
-              />
-            )}
-          />
-        </Stack>
-      </AccordionDetails>
-    </Accordion>
-  );
-
-  const renderDatabase = (
-    <Accordion elevation={2}>
-      <AccordionSummary
-        expandIcon={<MdiArrowDownDrop width={28} height={28} />}
-      >
-        <Typography variant="h6">
-          <form.Subscribe
-            selector={(state) =>
-              databaseSchema.safeParse(state.values.database).success
-            }
-            children={(valid) => <FormValidIndicator valid={valid} />}
-          />
-          Database
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Stack spacing={3}>
-          <form.AppField
-            name="database.host"
-            children={(field) => (
-              <field.TextField
-                required
-                variant="outlined"
-                size="medium"
-                label="Database Host"
-                helperText="Host of the postgres database"
-              />
-            )}
-          />
-
-          <form.AppField
-            name="database.port"
-            children={(field) => (
-              <field.TextField
-                required
-                type="number"
-                variant="outlined"
-                size="medium"
-                label="Database Port"
-                helperText="Port of the postgres database"
-              />
-            )}
-          />
-          <form.AppField
-            name="database.root_secret_name"
-            children={(field) => (
-              <field.TextField
-                required
-                variant="outlined"
-                size="medium"
-                label="Database Root Secret Name"
-                helperText="Name of the secret manager secret that will store the root database credentials"
-              />
-            )}
-          />
-
-          <Stack component={Paper} elevation={4} sx={{ p: 3 }} spacing={3}>
-            <Stack>
-              <Typography variant="body1">Setup User</Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ maxWidth: "sm" }}
-              >
-                The setup user is a privileged database user that is used for
-                setting up docbox databases, running migrations, and querying
-                tenants
-              </Typography>
-            </Stack>
-
-            <form.AppField
-              name="database.setup_user.use_secret"
-              children={(field) => (
-                <field.Switch
-                  label="Use secrets manager"
-                  helperText="Load the database setup user from a secret manager secret"
-                />
-              )}
-            />
-
-            <form.Subscribe
-              selector={(state) => state.values.database.setup_user.use_secret}
-              children={(useSecret) =>
-                useSecret ? (
-                  <>
-                    <form.AppField
-                      name="database.setup_user.secret_name"
-                      children={(field) => (
-                        <field.TextField
-                          required
-                          variant="outlined"
-                          size="medium"
-                          label="Database Setup User Secret Name"
-                          helperText="Secret manager secret name containing the database setup user credentials"
-                        />
-                      )}
-                    />
-
-                    <Alert
-                      color="info"
-                      icon={<SolarInfoCircleBold fontSize={18} />}
-                    >
-                      The secret stored in the secret manager must be in the
-                      following format:
-                      <pre>
-                        {JSON.stringify({
-                          username: "username",
-                          password: "password",
-                        })}
-                      </pre>
-                    </Alert>
-                  </>
-                ) : (
-                  <>
-                    <form.AppField
-                      name="database.setup_user.username"
-                      children={(field) => (
-                        <field.TextField
-                          required
-                          variant="outlined"
-                          size="medium"
-                          label="Username"
-                          helperText="Username for the setup database user"
-                        />
-                      )}
-                    />
-
-                    <form.AppField
-                      name="database.setup_user.password"
-                      children={(field) => (
-                        <field.TextField
-                          required
-                          type="password"
-                          variant="outlined"
-                          size="medium"
-                          label="Password"
-                          helperText="Password for the setup database user"
-                        />
-                      )}
-                    />
-                  </>
-                )
-              }
-            />
-          </Stack>
-        </Stack>
-      </AccordionDetails>
-    </Accordion>
-  );
-
-  const renderSecrets = (
-    <Accordion elevation={2}>
-      <AccordionSummary
-        expandIcon={<MdiArrowDownDrop width={28} height={28} />}
-      >
-        <Typography variant="h6">
-          <form.Subscribe
-            selector={(state) =>
-              secretsSchema.safeParse(state.values.secrets).success
-            }
-            children={(valid) => <FormValidIndicator valid={valid} />}
-          />
-          Secrets
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Stack spacing={3}>
-          <form.AppField
-            name="secrets.provider"
-            children={(field) => (
-              <field.ToggleButtonGroup
-                exclusive
-                label="Secrets Provider"
-                helperText="Select a provider for where secrets should be sourced from and stored in"
-              >
-                <ToggleButton value={SecretsManagerConfigType.Aws}>
-                  AWS
-                </ToggleButton>
-                <ToggleButton value={SecretsManagerConfigType.Json}>
-                  Encrypted JSON
-                </ToggleButton>
-                <ToggleButton value={SecretsManagerConfigType.Memory}>
-                  Memory
-                </ToggleButton>
-              </field.ToggleButtonGroup>
-            )}
-          />
-
-          <form.Subscribe
-            selector={(state) => state.values.secrets.provider}
-            children={(provider) => (
-              <>
-                {provider === SecretsManagerConfigType.Json && (
-                  <>
-                    <form.AppField
-                      name="secrets.json.key"
-                      children={(field) => (
-                        <field.TextField
-                          required
-                          type="password"
-                          variant="outlined"
-                          size="medium"
-                          label="Secrets Encryption Key"
-                          helperText="Encryption key / password for encrypting and decrypting the secrets file"
-                        />
-                      )}
-                    />
-
-                    <form.AppField
-                      name="secrets.json.path"
-                      children={(field) => (
-                        <field.TextField
-                          required
-                          variant="outlined"
-                          size="medium"
-                          label="Secrets Path"
-                          helperText="Path to the secrets json file, the file must be copied for all uses (Manager and docbox itself)"
-                        />
-                      )}
-                    />
-                  </>
-                )}
-
-                {provider === SecretsManagerConfigType.Memory && (
-                  <>
-                    {/* TODO: secrets */}
-
-                    <form.AppField
-                      name="secrets.memory.default"
-                      children={(field) => (
-                        <field.TextField
-                          variant="outlined"
-                          size="medium"
-                          label="Default Secret"
-                          helperText="Default secret value to provide when one is not found (Optional)"
-                        />
-                      )}
-                    />
-                  </>
-                )}
-              </>
-            )}
-          />
-        </Stack>
-      </AccordionDetails>
-    </Accordion>
-  );
-
-  const renderSearch = (
-    <Accordion elevation={2}>
-      <AccordionSummary
-        expandIcon={<MdiArrowDownDrop width={28} height={28} />}
-      >
-        <Typography variant="h6">
-          <form.Subscribe
-            selector={(state) =>
-              searchSchema.safeParse(state.values.search).success
-            }
-            children={(valid) => <FormValidIndicator valid={valid} />}
-          />
-          Search
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Stack spacing={3}>
-          <form.AppField
-            name="search.provider"
-            children={(field) => (
-              <field.ToggleButtonGroup
-                exclusive
-                label="Search Provider"
-                helperText="Select a provider that should be used for search index data"
-              >
-                <ToggleButton value={SearchIndexFactoryConfigType.Typesense}>
-                  Typesense
-                </ToggleButton>
-                <ToggleButton value={SearchIndexFactoryConfigType.Database}>
-                  Database
-                </ToggleButton>
-                <ToggleButton value={SearchIndexFactoryConfigType.OpenSearch}>
-                  OpenSearch
-                </ToggleButton>
-              </field.ToggleButtonGroup>
-            )}
-          />
-
-          <form.Subscribe
-            selector={(state) => state.values.search.provider}
-            children={(provider) => (
-              <>
-                {provider === SearchIndexFactoryConfigType.Typesense && (
-                  <>
-                    <form.AppField
-                      name="search.typesense.url"
-                      children={(field) => (
-                        <field.TextField
-                          variant="outlined"
-                          size="medium"
-                          label="URL"
-                          helperText="Base URL for the typesense search server"
-                        />
-                      )}
-                    />
-
-                    <form.AppField
-                      name="search.typesense.api_key.use_secret"
-                      children={(field) => (
-                        <field.Switch
-                          label="Use secrets manager"
-                          helperText="Load the typesense API key from from a secret manager secret"
-                        />
-                      )}
-                    />
-
-                    <form.Subscribe
-                      selector={(state) =>
-                        state.values.search.typesense.api_key.use_secret
-                      }
-                      children={(useSecret) =>
-                        useSecret ? (
-                          <>
-                            <form.AppField
-                              name="search.typesense.api_key.api_key_secret_name"
-                              children={(field) => (
-                                <field.TextField
-                                  variant="outlined"
-                                  size="medium"
-                                  label="API Key Secret Name"
-                                  helperText="Secret manager secret name containing the search API key"
-                                />
-                              )}
-                            />
-
-                            <Alert
-                              color="info"
-                              icon={<SolarInfoCircleBold fontSize={18} />}
-                            >
-                              The secret stored in the secret manager must be a
-                              plain text secret containing the API key
-                            </Alert>
-                          </>
-                        ) : (
-                          <>
-                            <form.AppField
-                              name="search.typesense.api_key.api_key"
-                              children={(field) => (
-                                <field.TextField
-                                  type="password"
-                                  variant="outlined"
-                                  size="medium"
-                                  label="API Key"
-                                  helperText="API key for the search index"
-                                />
-                              )}
-                            />
-                          </>
-                        )
-                      }
-                    />
-                  </>
-                )}
-
-                {provider === SearchIndexFactoryConfigType.OpenSearch && (
-                  <>
-                    <form.AppField
-                      name="search.opensearch.url"
-                      children={(field) => (
-                        <field.TextField
-                          variant="outlined"
-                          size="medium"
-                          label="URL"
-                          helperText="Base URL for the OpenSearch server"
-                        />
-                      )}
-                    />
-                  </>
-                )}
-              </>
-            )}
-          />
-        </Stack>
-      </AccordionDetails>
-    </Accordion>
-  );
-
-  const renderStorage = (
-    <Accordion elevation={2}>
-      <AccordionSummary
-        expandIcon={<MdiArrowDownDrop width={28} height={28} />}
-      >
-        <Typography variant="h6">
-          <form.Subscribe
-            selector={(state) =>
-              storageSchema.safeParse(state.values.storage).success
-            }
-            children={(valid) => <FormValidIndicator valid={valid} />}
-          />
-          Storage
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Stack spacing={3}>
-          <form.AppField
-            name="storage.provider"
-            children={(field) => (
-              <field.ToggleButtonGroup
-                exclusive
-                label="Storage Provider"
-                helperText="Select a provider that should be used for storage"
-              >
-                <ToggleButton value={StorageLayerFactoryConfigType.S3}>
-                  S3 Compatible
-                </ToggleButton>
-              </field.ToggleButtonGroup>
-            )}
-          />
-
-          <form.Subscribe
-            selector={(state) => state.values.storage.provider}
-            children={(provider) => (
-              <>
-                {provider === StorageLayerFactoryConfigType.S3 && (
-                  <>
-                    <form.AppField
-                      name="storage.endpoint.type"
-                      children={(field) => (
-                        <field.ToggleButtonGroup
-                          exclusive
-                          label="Storage Endpoint"
-                          helperText="Select a S3 endpoint that should be used for storage"
-                        >
-                          <ToggleButton value={S3EndpointType.Aws}>
-                            AWS S3
-                          </ToggleButton>
-                          <ToggleButton value={S3EndpointType.Custom}>
-                            S3 Compatible
-                          </ToggleButton>
-                        </field.ToggleButtonGroup>
-                      )}
-                    />
-
-                    <form.Subscribe
-                      selector={(state) => state.values.storage.endpoint.type}
-                      children={(provider) => (
-                        <>
-                          {provider === S3EndpointType.Custom && (
-                            <>
-                              <form.AppField
-                                name="storage.endpoint.custom.endpoint"
-                                children={(field) => (
-                                  <field.TextField
-                                    variant="outlined"
-                                    size="medium"
-                                    label="Endpoint"
-                                    helperText="URL endpoint for accessing the custom S3"
-                                  />
-                                )}
-                              />
-
-                              <form.AppField
-                                name="storage.endpoint.custom.access_key_id"
-                                children={(field) => (
-                                  <field.TextField
-                                    variant="outlined"
-                                    size="medium"
-                                    label="Access Key ID"
-                                    helperText="Access Key ID for accessing the custom endpoint"
-                                  />
-                                )}
-                              />
-
-                              <form.AppField
-                                name="storage.endpoint.custom.access_key_secret"
-                                children={(field) => (
-                                  <field.TextField
-                                    type="password"
-                                    variant="outlined"
-                                    size="medium"
-                                    label="Access Key Secret"
-                                    helperText="Access Key Secret for accessing the custom endpoint"
-                                  />
-                                )}
-                              />
-                            </>
-                          )}
-                        </>
-                      )}
-                    />
-                  </>
-                )}
-              </>
-            )}
-          />
-        </Stack>
-      </AccordionDetails>
-    </Accordion>
-  );
-
   return (
     <Container sx={{ py: 2 }}>
       <Card>
@@ -892,11 +144,12 @@ function RouteComponent() {
                 )}
               />
 
-              {renderApi}
-              {renderDatabase}
-              {renderSecrets}
-              {renderSearch}
-              {renderStorage}
+              <ApiSection form={form} fields="api" />
+              <DatabaseSection form={form} fields="database" />
+              <SecretsSection form={form} fields="secrets" />
+              <SearchSection form={form} fields="search" />
+              <StorageSection form={form} fields="storage" />
+              <EncryptionSection form={form} fields="encryption" />
 
               {createServerMutation.isError && (
                 <Alert color="error">
