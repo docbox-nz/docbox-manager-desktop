@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import { useForm } from "@tanstack/react-form";
+import { formOptions, useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -35,7 +35,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 import FormValidIndicator from "@/components/form/FormValidIndicator";
 import Paper from "@mui/material/Paper";
 import SolarInfoCircleBold from "~icons/solar/info-circle-bold";
-import { useEffect } from "react";
+import { useAppForm } from "@/hooks/use-app-form";
 
 export const Route = createFileRoute("/servers/create/stored")({
   component: RouteComponent,
@@ -263,16 +263,20 @@ const defaultValues: FormSchema = {
   },
 };
 
+const formOpts = formOptions({
+  defaultValues,
+  validators: {
+    onMount: formSchema,
+    onChange: formSchema,
+  },
+});
+
 function RouteComponent() {
   const navigate = useNavigate();
   const createServerMutation = useCreateServer();
 
-  const form = useForm({
-    defaultValues,
-    validators: {
-      onMount: formSchema,
-      onChange: formSchema,
-    },
+  const form = useAppForm({
+    ...formOpts,
     onSubmit: async ({ value }) => {
       // await createServerMutation.mutateAsync({
       //   id: v4(),
@@ -322,11 +326,10 @@ function RouteComponent() {
           </Typography>
 
           {/* URL */}
-          <form.Field
+          <form.AppField
             name="api.url"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 required
                 variant="outlined"
                 size="medium"
@@ -338,11 +341,10 @@ function RouteComponent() {
           />
 
           {/* API KEY */}
-          <form.Field
+          <form.AppField
             name="api.api_key"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 type="password"
                 variant="outlined"
                 size="medium"
@@ -373,11 +375,10 @@ function RouteComponent() {
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
-          <form.Field
+          <form.AppField
             name="database.host"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 required
                 variant="outlined"
                 size="medium"
@@ -387,11 +388,10 @@ function RouteComponent() {
             )}
           />
 
-          <form.Field
+          <form.AppField
             name="database.port"
             children={(field) => (
-              <FormNumberField
-                field={field}
+              <field.TextField
                 required
                 type="number"
                 variant="outlined"
@@ -401,11 +401,10 @@ function RouteComponent() {
               />
             )}
           />
-          <form.Field
+          <form.AppField
             name="database.root_secret_name"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 required
                 variant="outlined"
                 size="medium"
@@ -429,27 +428,13 @@ function RouteComponent() {
               </Typography>
             </Stack>
 
-            <form.Field
+            <form.AppField
               name="database.setup_user.use_secret"
               children={(field) => (
-                <FormControl>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        name={field.name}
-                        checked={field.state.value}
-                        onChange={(_event, checked) => {
-                          field.handleChange(checked);
-                        }}
-                        onBlur={field.handleBlur}
-                      />
-                    }
-                    label="Use secrets manager"
-                  />
-                  <FormHelperText>
-                    Load the database setup user from a secret manager secret
-                  </FormHelperText>
-                </FormControl>
+                <field.Switch
+                  label="Use secrets manager"
+                  helperText="Load the database setup user from a secret manager secret"
+                />
               )}
             />
 
@@ -458,11 +443,10 @@ function RouteComponent() {
               children={(useSecret) =>
                 useSecret ? (
                   <>
-                    <form.Field
+                    <form.AppField
                       name="database.setup_user.secret_name"
                       children={(field) => (
-                        <FormTextField
-                          field={field}
+                        <field.TextField
                           required
                           variant="outlined"
                           size="medium"
@@ -488,11 +472,10 @@ function RouteComponent() {
                   </>
                 ) : (
                   <>
-                    <form.Field
+                    <form.AppField
                       name="database.setup_user.username"
                       children={(field) => (
-                        <FormTextField
-                          field={field}
+                        <field.TextField
                           required
                           variant="outlined"
                           size="medium"
@@ -502,11 +485,10 @@ function RouteComponent() {
                       )}
                     />
 
-                    <form.Field
+                    <form.AppField
                       name="database.setup_user.password"
                       children={(field) => (
-                        <FormTextField
-                          field={field}
+                        <field.TextField
                           required
                           type="password"
                           variant="outlined"
@@ -543,38 +525,24 @@ function RouteComponent() {
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
-          <form.Field
+          <form.AppField
             name="secrets.provider"
             children={(field) => (
-              <FormControl>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  Secrets Provider
-                </Typography>
-
-                <ToggleButtonGroup
-                  value={field.state.value}
-                  onChange={(_event, value) => {
-                    field.handleChange(value);
-                  }}
-                  onBlur={field.handleBlur}
-                  exclusive
-                >
-                  <ToggleButton value={SecretsManagerConfigType.Aws}>
-                    AWS
-                  </ToggleButton>
-                  <ToggleButton value={SecretsManagerConfigType.Json}>
-                    Encrypted JSON
-                  </ToggleButton>
-                  <ToggleButton value={SecretsManagerConfigType.Memory}>
-                    Memory
-                  </ToggleButton>
-                </ToggleButtonGroup>
-
-                <FormHelperText>
-                  Select a provider for where secrets should be sourced from and
-                  stored in
-                </FormHelperText>
-              </FormControl>
+              <field.ToggleButtonGroup
+                exclusive
+                label="Secrets Provider"
+                helperText="Select a provider for where secrets should be sourced from and stored in"
+              >
+                <ToggleButton value={SecretsManagerConfigType.Aws}>
+                  AWS
+                </ToggleButton>
+                <ToggleButton value={SecretsManagerConfigType.Json}>
+                  Encrypted JSON
+                </ToggleButton>
+                <ToggleButton value={SecretsManagerConfigType.Memory}>
+                  Memory
+                </ToggleButton>
+              </field.ToggleButtonGroup>
             )}
           />
 
@@ -584,11 +552,10 @@ function RouteComponent() {
               <>
                 {provider === SecretsManagerConfigType.Json && (
                   <>
-                    <form.Field
+                    <form.AppField
                       name="secrets.json.key"
                       children={(field) => (
-                        <FormTextField
-                          field={field}
+                        <field.TextField
                           required
                           type="password"
                           variant="outlined"
@@ -599,11 +566,10 @@ function RouteComponent() {
                       )}
                     />
 
-                    <form.Field
+                    <form.AppField
                       name="secrets.json.path"
                       children={(field) => (
-                        <FormTextField
-                          field={field}
+                        <field.TextField
                           required
                           variant="outlined"
                           size="medium"
@@ -619,11 +585,10 @@ function RouteComponent() {
                   <>
                     {/* TODO: secrets */}
 
-                    <form.Field
+                    <form.AppField
                       name="secrets.memory.default"
                       children={(field) => (
-                        <FormTextField
-                          field={field}
+                        <field.TextField
                           variant="outlined"
                           size="medium"
                           label="Default Secret"
@@ -658,37 +623,24 @@ function RouteComponent() {
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
-          <form.Field
+          <form.AppField
             name="search.provider"
             children={(field) => (
-              <FormControl>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  Search Provider
-                </Typography>
-
-                <ToggleButtonGroup
-                  value={field.state.value}
-                  onChange={(_event, value) => {
-                    field.handleChange(value);
-                  }}
-                  onBlur={field.handleBlur}
-                  exclusive
-                >
-                  <ToggleButton value={SearchIndexFactoryConfigType.Typesense}>
-                    Typesense
-                  </ToggleButton>
-                  <ToggleButton value={SearchIndexFactoryConfigType.Database}>
-                    Database
-                  </ToggleButton>
-                  <ToggleButton value={SearchIndexFactoryConfigType.OpenSearch}>
-                    OpenSearch
-                  </ToggleButton>
-                </ToggleButtonGroup>
-
-                <FormHelperText>
-                  Select a provider that should be used for search index data
-                </FormHelperText>
-              </FormControl>
+              <field.ToggleButtonGroup
+                exclusive
+                label="Search Provider"
+                helperText="Select a provider that should be used for search index data"
+              >
+                <ToggleButton value={SearchIndexFactoryConfigType.Typesense}>
+                  Typesense
+                </ToggleButton>
+                <ToggleButton value={SearchIndexFactoryConfigType.Database}>
+                  Database
+                </ToggleButton>
+                <ToggleButton value={SearchIndexFactoryConfigType.OpenSearch}>
+                  OpenSearch
+                </ToggleButton>
+              </field.ToggleButtonGroup>
             )}
           />
 
@@ -698,11 +650,10 @@ function RouteComponent() {
               <>
                 {provider === SearchIndexFactoryConfigType.Typesense && (
                   <>
-                    <form.Field
+                    <form.AppField
                       name="search.typesense.url"
                       children={(field) => (
-                        <FormTextField
-                          field={field}
+                        <field.TextField
                           variant="outlined"
                           size="medium"
                           label="URL"
@@ -711,28 +662,13 @@ function RouteComponent() {
                       )}
                     />
 
-                    <form.Field
+                    <form.AppField
                       name="search.typesense.api_key.use_secret"
                       children={(field) => (
-                        <FormControl>
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                name={field.name}
-                                checked={field.state.value}
-                                onChange={(_event, checked) => {
-                                  field.handleChange(checked);
-                                }}
-                                onBlur={field.handleBlur}
-                              />
-                            }
-                            label="Use secrets manager"
-                          />
-                          <FormHelperText>
-                            Load the typesense API key from from a secret
-                            manager secret
-                          </FormHelperText>
-                        </FormControl>
+                        <field.Switch
+                          label="Use secrets manager"
+                          helperText="Load the typesense API key from from a secret manager secret"
+                        />
                       )}
                     />
 
@@ -743,11 +679,10 @@ function RouteComponent() {
                       children={(useSecret) =>
                         useSecret ? (
                           <>
-                            <form.Field
+                            <form.AppField
                               name="search.typesense.api_key.api_key_secret_name"
                               children={(field) => (
-                                <FormTextField
-                                  field={field}
+                                <field.TextField
                                   variant="outlined"
                                   size="medium"
                                   label="API Key Secret Name"
@@ -766,11 +701,10 @@ function RouteComponent() {
                           </>
                         ) : (
                           <>
-                            <form.Field
+                            <form.AppField
                               name="search.typesense.api_key.api_key"
                               children={(field) => (
-                                <FormTextField
-                                  field={field}
+                                <field.TextField
                                   type="password"
                                   variant="outlined"
                                   size="medium"
@@ -788,11 +722,10 @@ function RouteComponent() {
 
                 {provider === SearchIndexFactoryConfigType.OpenSearch && (
                   <>
-                    <form.Field
+                    <form.AppField
                       name="search.opensearch.url"
                       children={(field) => (
-                        <FormTextField
-                          field={field}
+                        <field.TextField
                           variant="outlined"
                           size="medium"
                           label="URL"
@@ -827,31 +760,18 @@ function RouteComponent() {
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
-          <form.Field
+          <form.AppField
             name="storage.provider"
             children={(field) => (
-              <FormControl>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  Storage Provider
-                </Typography>
-
-                <ToggleButtonGroup
-                  value={field.state.value}
-                  onChange={(_event, value) => {
-                    field.handleChange(value);
-                  }}
-                  onBlur={field.handleBlur}
-                  exclusive
-                >
-                  <ToggleButton value={StorageLayerFactoryConfigType.S3}>
-                    S3 Compatible
-                  </ToggleButton>
-                </ToggleButtonGroup>
-
-                <FormHelperText>
-                  Select a provider that should be used for storage
-                </FormHelperText>
-              </FormControl>
+              <field.ToggleButtonGroup
+                exclusive
+                label="Storage Provider"
+                helperText="Select a provider that should be used for storage"
+              >
+                <ToggleButton value={StorageLayerFactoryConfigType.S3}>
+                  S3 Compatible
+                </ToggleButton>
+              </field.ToggleButtonGroup>
             )}
           />
 
@@ -861,34 +781,21 @@ function RouteComponent() {
               <>
                 {provider === StorageLayerFactoryConfigType.S3 && (
                   <>
-                    <form.Field
+                    <form.AppField
                       name="storage.endpoint.type"
                       children={(field) => (
-                        <FormControl>
-                          <Typography variant="body1" sx={{ mb: 1 }}>
-                            Storage Endpoint
-                          </Typography>
-
-                          <ToggleButtonGroup
-                            value={field.state.value}
-                            onChange={(_event, value) => {
-                              field.handleChange(value);
-                            }}
-                            onBlur={field.handleBlur}
-                            exclusive
-                          >
-                            <ToggleButton value={S3EndpointType.Aws}>
-                              AWS S3
-                            </ToggleButton>
-                            <ToggleButton value={S3EndpointType.Custom}>
-                              S3 Compatible
-                            </ToggleButton>
-                          </ToggleButtonGroup>
-
-                          <FormHelperText>
-                            Select a S3 endpoint that should be used for storage
-                          </FormHelperText>
-                        </FormControl>
+                        <field.ToggleButtonGroup
+                          exclusive
+                          label="Storage Endpoint"
+                          helperText="Select a S3 endpoint that should be used for storage"
+                        >
+                          <ToggleButton value={S3EndpointType.Aws}>
+                            AWS S3
+                          </ToggleButton>
+                          <ToggleButton value={S3EndpointType.Custom}>
+                            S3 Compatible
+                          </ToggleButton>
+                        </field.ToggleButtonGroup>
                       )}
                     />
 
@@ -898,11 +805,10 @@ function RouteComponent() {
                         <>
                           {provider === S3EndpointType.Custom && (
                             <>
-                              <form.Field
+                              <form.AppField
                                 name="storage.endpoint.custom.endpoint"
                                 children={(field) => (
-                                  <FormTextField
-                                    field={field}
+                                  <field.TextField
                                     variant="outlined"
                                     size="medium"
                                     label="Endpoint"
@@ -911,11 +817,10 @@ function RouteComponent() {
                                 )}
                               />
 
-                              <form.Field
+                              <form.AppField
                                 name="storage.endpoint.custom.access_key_id"
                                 children={(field) => (
-                                  <FormTextField
-                                    field={field}
+                                  <field.TextField
                                     variant="outlined"
                                     size="medium"
                                     label="Access Key ID"
@@ -924,11 +829,10 @@ function RouteComponent() {
                                 )}
                               />
 
-                              <form.Field
+                              <form.AppField
                                 name="storage.endpoint.custom.access_key_secret"
                                 children={(field) => (
-                                  <FormTextField
-                                    field={field}
+                                  <field.TextField
                                     type="password"
                                     variant="outlined"
                                     size="medium"
@@ -976,11 +880,10 @@ function RouteComponent() {
             }}
           >
             <Stack spacing={3}>
-              <form.Field
+              <form.AppField
                 name="name"
                 children={(field) => (
-                  <FormTextField
-                    field={field}
+                  <field.TextField
                     variant="outlined"
                     size="medium"
                     label="Server Name"
