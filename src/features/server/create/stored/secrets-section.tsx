@@ -1,16 +1,18 @@
-import { SecretsManagerConfigType } from "@/api/server";
+import { SecretManagerConfig, SecretsManagerConfigType } from "@/api/server";
 import FormSectionAccordion from "@/components/form/FormSectionAccordion";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import { useStore } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import ToggleButton from "@mui/material/ToggleButton";
 import {
+  createJsonSecretsConfig,
   jsonBaseSchema,
   jsonDefaultValues,
   jsonSchema,
   SecretsJson,
 } from "./secrets/secrets-json";
 import {
+  createMemorySecretsConfig,
   memoryBaseSchema,
   memoryDefaultValues,
   memorySchema,
@@ -45,6 +47,21 @@ export const secretsSectionDefaultValues: z.input<typeof secretsBaseSchema> = {
   json: jsonDefaultValues,
 };
 
+export function createSecretsConfig(
+  values: z.output<typeof secretsSectionSchema>
+): SecretManagerConfig {
+  switch (values.provider) {
+    case SecretsManagerConfigType.Memory:
+      return createMemorySecretsConfig(values.memory);
+    case SecretsManagerConfigType.Json:
+      return createJsonSecretsConfig(values.json);
+    case SecretsManagerConfigType.Aws:
+      return { provider: SecretsManagerConfigType.Aws };
+    default:
+      throw new Error("unhandled secrets manager provider");
+  }
+}
+
 export const SecretsSection = withFieldGroup({
   defaultValues: secretsSectionDefaultValues,
   render: function Render({ group }) {
@@ -59,6 +76,13 @@ export const SecretsSection = withFieldGroup({
       <FormSectionAccordion title="Secrets" valid={valid}>
         <group.AppField
           name="provider"
+          listeners={{
+            onChange: () => {
+              // Changing the variant requires a revalidating the group to remove errors
+              // from hidden variants
+              group.validateAllFields("change");
+            },
+          }}
           children={(field) => (
             <field.ToggleButtonGroup
               disableClearable

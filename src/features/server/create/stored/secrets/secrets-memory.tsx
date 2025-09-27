@@ -1,3 +1,4 @@
+import { SecretManagerConfig, SecretsManagerConfigType } from "@/api/server";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import { z } from "zod/v4";
 
@@ -27,6 +28,27 @@ export const memoryDefaultValues: z.input<typeof memoryBaseSchema> = {
   secrets: [],
   default: "",
 };
+
+export function createMemorySecretsConfig(
+  values: z.output<typeof memorySchema>
+): SecretManagerConfig {
+  let defaultValue: string | undefined = values.default;
+  if (defaultValue.trim().length < 1) {
+    defaultValue = undefined;
+  }
+
+  return {
+    provider: SecretsManagerConfigType.Memory,
+    secrets: values.secrets.reduce(
+      (output, { key, value }) => {
+        output[key] = value;
+        return output;
+      },
+      {} as Record<string, string>
+    ),
+    default: defaultValue,
+  };
+}
 
 export const SecretsMemory = withFieldGroup({
   defaultValues: memoryDefaultValues,

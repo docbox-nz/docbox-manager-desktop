@@ -58,6 +58,13 @@ export const DatabaseSetupUser = withFieldGroup({
 
         <group.AppField
           name="use_secret"
+          listeners={{
+            onChange: () => {
+              // Changing the variant requires a revalidating the group to remove errors
+              // from hidden variants
+              group.validateAllFields("change");
+            },
+          }}
           children={(field) => (
             <field.Switch
               label="Use secrets manager"

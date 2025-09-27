@@ -3,6 +3,7 @@ use serde::Serialize;
 pub mod root;
 pub mod server;
 pub mod tenant;
+pub mod utils;
 
 type CmdResult<T> = Result<T, CmdError>;
 

@@ -51,6 +51,13 @@ export const EncryptionSection = withFieldGroup({
       <FormSectionAccordion title="Encryption" valid={valid}>
         <group.AppField
           name="encrypted"
+          listeners={{
+            onChange: () => {
+              // Changing the variant requires a revalidating the group to remove errors
+              // from hidden variants
+              group.validateAllFields("change");
+            },
+          }}
           children={(field) => (
             <field.Switch
               label="Encrypted"

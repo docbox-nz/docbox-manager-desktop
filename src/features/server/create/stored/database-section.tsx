@@ -7,6 +7,10 @@ import {
   setupUserDefaultValues,
   setupUserSchema,
 } from "./database/database-setup-user";
+import {
+  AdminDatabaseConfig,
+  AdminDatabaseSetupUserConfig,
+} from "@/api/server";
 
 export const databaseSectionSchema = z.object({
   // Base credentials
@@ -28,6 +32,30 @@ export const databaseSectionDefaultValues: z.input<
   setup_user: setupUserDefaultValues,
   root_secret_name: "postgres/docbox/config",
 };
+
+export function createAdminDatabaseConfig(
+  values: z.output<typeof databaseSectionSchema>
+): AdminDatabaseConfig {
+  let setup_user: AdminDatabaseSetupUserConfig | undefined;
+  let setup_user_secret_name: string | undefined;
+
+  if (values.setup_user.use_secret) {
+    setup_user_secret_name = values.setup_user.secret_name;
+  } else {
+    setup_user = {
+      username: values.setup_user.username,
+      password: values.setup_user.password,
+    };
+  }
+
+  return {
+    host: values.host,
+    port: values.port,
+    root_secret_name: values.root_secret_name,
+    setup_user,
+    setup_user_secret_name,
+  };
+}
 
 export const DatabaseSection = withFieldGroup({
   defaultValues: databaseSectionDefaultValues,

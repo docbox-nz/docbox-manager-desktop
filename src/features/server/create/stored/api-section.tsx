@@ -1,3 +1,4 @@
+import { ApiConfig } from "@/api/server";
 import FormSectionAccordion from "@/components/form/FormSectionAccordion";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import Typography from "@mui/material/Typography";
@@ -13,6 +14,21 @@ export const apiSectionDefaultValues: z.input<typeof apiSectionSchema> = {
   url: "",
   api_key: "",
 };
+
+export function createApiConfig(
+  values: z.output<typeof apiSectionSchema>
+): ApiConfig {
+  const url = values.url;
+  let api_key: string | undefined = values.api_key.trim();
+  if (api_key.length < 1) {
+    api_key = undefined;
+  }
+
+  return {
+    url,
+    api_key,
+  };
+}
 
 export const ApiSection = withFieldGroup({
   defaultValues: apiSectionDefaultValues,

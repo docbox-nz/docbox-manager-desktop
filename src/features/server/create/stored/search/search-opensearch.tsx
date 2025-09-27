@@ -1,3 +1,4 @@
+import { SearchConfig, SearchIndexFactoryConfigType } from "@/api/server";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import { z } from "zod/v4";
 
@@ -13,6 +14,15 @@ export const opensearchSchema = z.object({
 export const opensearchDefaultValues: z.input<typeof opensearchBaseSchema> = {
   url: "",
 };
+
+export function createOpensearchSearchConfig(
+  values: z.output<typeof opensearchSchema>
+): SearchConfig {
+  return {
+    provider: SearchIndexFactoryConfigType.OpenSearch,
+    url: values.url,
+  };
+}
 
 export const SearchOpensearch = withFieldGroup({
   defaultValues: opensearchDefaultValues,

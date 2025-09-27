@@ -1,4 +1,7 @@
-import { StorageLayerFactoryConfigType } from "@/api/server";
+import {
+  StorageLayerConfig,
+  StorageLayerFactoryConfigType,
+} from "@/api/server";
 import FormSectionAccordion from "@/components/form/FormSectionAccordion";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import { useStore } from "@tanstack/react-form";
@@ -6,6 +9,7 @@ import { z } from "zod/v4";
 import ToggleButton from "@mui/material/ToggleButton";
 
 import {
+  createS3StorageConfig,
   s3BaseSchema,
   s3DefaultValues,
   s3Schema,
@@ -31,6 +35,17 @@ export const storageSectionDefaultValues: z.input<typeof storageBaseSchema> = {
   s3: s3DefaultValues,
 };
 
+export function createStorageConfig(
+  values: z.output<typeof storageSectionSchema>
+): StorageLayerConfig {
+  switch (values.provider) {
+    case StorageLayerFactoryConfigType.S3:
+      return createS3StorageConfig(values.s3);
+    default:
+      throw new Error("unhandled secrets manager provider");
+  }
+}
+
 export const StorageSection = withFieldGroup({
   defaultValues: storageSectionDefaultValues,
   render: function Render({ group }) {
@@ -45,6 +60,13 @@ export const StorageSection = withFieldGroup({
       <FormSectionAccordion title="Storage" valid={valid}>
         <group.AppField
           name="provider"
+          listeners={{
+            onChange: () => {
+              // Changing the variant requires a revalidating the group to remove errors
+              // from hidden variants
+              group.validateAllFields("change");
+            },
+          }}
           children={(field) => (
             <field.ToggleButtonGroup
               disableClearable

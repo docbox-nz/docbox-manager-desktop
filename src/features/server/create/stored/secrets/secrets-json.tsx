@@ -1,3 +1,4 @@
+import { SecretManagerConfig, SecretsManagerConfigType } from "@/api/server";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import { z } from "zod/v4";
 
@@ -17,6 +18,16 @@ export const jsonDefaultValues: z.input<typeof jsonBaseSchema> = {
   key: "",
   path: "",
 };
+
+export function createJsonSecretsConfig(
+  values: z.output<typeof jsonSchema>
+): SecretManagerConfig {
+  return {
+    provider: SecretsManagerConfigType.Json,
+    key: values.key,
+    path: values.path,
+  };
+}
 
 export const SecretsJson = withFieldGroup({
   defaultValues: jsonDefaultValues,

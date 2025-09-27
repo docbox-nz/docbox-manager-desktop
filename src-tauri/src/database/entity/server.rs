@@ -42,7 +42,11 @@ pub enum ServerConfig {
     Config { data: ServerConfigData },
 
     /// Config is stored as an encrypted blob
-    Encrypted { encrypted: Vec<u8> },
+    Encrypted {
+        salt: Vec<u8>,
+        nonce: Vec<u8>,
+        data: Vec<u8>,
+    },
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -62,8 +66,14 @@ pub struct AdminDatabaseSetupUserConfig {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
+pub struct ApiConfig {
+    pub url: String,
+    pub api_key: Option<String>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
 pub struct ServerConfigData {
-    pub api_url: String,
+    pub api: ApiConfig,
     pub database: AdminDatabaseConfiguration,
     pub secrets: SecretsManagerConfig,
     pub search: SearchIndexFactoryConfig,

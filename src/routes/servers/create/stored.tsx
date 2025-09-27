@@ -18,23 +18,28 @@ import {
   ApiSection,
   apiSectionDefaultValues,
   apiSectionSchema,
+  createApiConfig,
 } from "@/features/server/create/stored/api-section";
 import {
+  createAdminDatabaseConfig,
   DatabaseSection,
   databaseSectionDefaultValues,
   databaseSectionSchema,
 } from "@/features/server/create/stored/database-section";
 import {
+  createSecretsConfig,
   SecretsSection,
   secretsSectionDefaultValues,
   secretsSectionSchema,
 } from "@/features/server/create/stored/secrets-section";
 import {
+  createSearchConfig,
   SearchSection,
   searchSectionDefaultValues,
   searchSectionSchema,
 } from "@/features/server/create/stored/search-section";
 import {
+  createStorageConfig,
   StorageSection,
   storageSectionDefaultValues,
   storageSectionSchema,
@@ -44,6 +49,10 @@ import {
   encryptionSectionDefaultValues,
   encryptionSectionSchema,
 } from "@/features/server/create/stored/encryption-section";
+import { ServerConfigData, ServerConfigType } from "@/api/server";
+import { encrypt } from "@/api/utils/utils.requests";
+import { ServerConfig } from "@/api/server/server.types";
+import { v4 } from "uuid";
 
 export const Route = createFileRoute("/servers/create/stored")({
   component: RouteComponent,
@@ -74,8 +83,7 @@ const defaultValues: FormSchema = {
 const formOpts = formOptions({
   defaultValues,
   validators: {
-    onMount: formSchema,
-    onChange: formSchema,
+    onSubmit: formSchema,
   },
 });
 
@@ -86,27 +94,48 @@ function RouteComponent() {
   const form = useAppForm({
     ...formOpts,
     onSubmit: async ({ value }) => {
-      // await createServerMutation.mutateAsync({
-      //   id: v4(),
-      //   name: value.name,
-      //   config: {
-      //     type: ServerConfigType.Config,
-      //     data: {
-      //       api_url: value.api_url,
-      //       api_key: value.api_key,
-      //       database: {
-      //         host: value.database.host,
-      //         port: value.database.port,
-      //       },
-      //     },
-      //   },
-      //   order: 0,
-      // });
+      const config: ServerConfigData = {
+        api: createApiConfig(value.api),
+        database: createAdminDatabaseConfig(value.database),
+        secrets: createSecretsConfig(value.secrets),
+        search: createSearchConfig(value.search),
+        storage: createStorageConfig(value.storage),
+      };
+
+      let serverConfig: ServerConfig;
+
+      if (value.encryption.encrypted) {
+        const encryptedConfig = await encrypt(
+          value.encryption.password,
+          JSON.stringify(config)
+        );
+
+        serverConfig = {
+          type: ServerConfigType.Encrypted,
+          salt: encryptedConfig.salt,
+          nonce: encryptedConfig.nonce,
+          data: encryptedConfig.data,
+        };
+      } else {
+        serverConfig = {
+          type: ServerConfigType.Config,
+          data: config,
+        };
+      }
+
+      await createServerMutation.mutateAsync({
+        id: v4(),
+        name: value.name,
+        config: serverConfig,
+        order: 0,
+      });
 
       toast.success("Added new server!");
       navigate({ to: "/" });
     },
   });
+
+  console.log(form.getAllErrors());
 
   return (
     <Container sx={{ py: 2 }}>

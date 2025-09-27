@@ -1,16 +1,18 @@
-import { SearchIndexFactoryConfigType } from "@/api/server";
+import { SearchConfig, SearchIndexFactoryConfigType } from "@/api/server";
 import FormSectionAccordion from "@/components/form/FormSectionAccordion";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import { useStore } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import ToggleButton from "@mui/material/ToggleButton";
 import {
+  createTypesenseSearchConfig,
   SearchTypesense,
   typesenseBaseSchema,
   typesenseDefaultValues,
   typesenseSchema,
 } from "./search/search-typesense";
 import {
+  createOpensearchSearchConfig,
   opensearchBaseSchema,
   opensearchDefaultValues,
   opensearchSchema,
@@ -45,6 +47,21 @@ export const searchSectionDefaultValues: z.input<typeof searchBaseSchema> = {
   opensearch: opensearchDefaultValues,
 };
 
+export function createSearchConfig(
+  values: z.output<typeof searchSectionSchema>
+): SearchConfig {
+  switch (values.provider) {
+    case SearchIndexFactoryConfigType.Typesense:
+      return createTypesenseSearchConfig(values.typesense);
+    case SearchIndexFactoryConfigType.OpenSearch:
+      return createOpensearchSearchConfig(values.opensearch);
+    case SearchIndexFactoryConfigType.Database:
+      return { provider: SearchIndexFactoryConfigType.Database };
+    default:
+      throw new Error("unhandled secrets manager provider");
+  }
+}
+
 export const SearchSection = withFieldGroup({
   defaultValues: searchSectionDefaultValues,
   render: function Render({ group }) {
@@ -59,6 +76,13 @@ export const SearchSection = withFieldGroup({
       <FormSectionAccordion title="Search" valid={valid}>
         <group.AppField
           name="provider"
+          listeners={{
+            onChange: () => {
+              // Changing the variant requires a revalidating the group to remove errors
+              // from hidden variants
+              group.validateAllFields("change");
+            },
+          }}
           children={(field) => (
             <field.ToggleButtonGroup
               disableClearable

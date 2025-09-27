@@ -33,7 +33,9 @@ export interface ServerConfigConfig {
 }
 
 export interface ServerConfigEncrypted {
-  encrypted: number[];
+  salt: number[];
+  nonce: number[];
+  data: number[];
 }
 
 export interface LoadServerConfig {

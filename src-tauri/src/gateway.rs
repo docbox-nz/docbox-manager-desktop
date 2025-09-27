@@ -72,7 +72,7 @@ pub async fn handle_gateway_request(
         .query()
         .map(|q| format!("?{q}"))
         .unwrap_or_default();
-    let new_uri = format!("{}/{}{}", &server.config.api_url, path, query);
+    let new_uri = format!("{}/{}{}", &server.config.api.url, path, query);
     dbg!(&new_uri);
 
     let client = reqwest::Client::new();
@@ -90,6 +90,13 @@ pub async fn handle_gateway_request(
 
     if let Some(header) = parts.headers.get("content-length") {
         req_builder = req_builder.header(reqwest::header::CONTENT_LENGTH, header);
+    }
+
+    if let Some(api_key) = server.config.api.api_key.as_ref() {
+        req_builder = req_builder.header(
+            reqwest::header::HeaderName::from_static("x-docbox-api-key"),
+            HeaderValue::from_str(&api_key).unwrap(),
+        );
     }
 
     let resp = req_builder

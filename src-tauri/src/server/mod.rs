@@ -10,9 +10,12 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::sync::Mutex;
 
-use crate::database::entity::server::{
-    AdminDatabaseConfiguration, AdminDatabaseSetupUserConfig, Server, ServerConfig,
-    ServerConfigData, ServerId,
+use crate::{
+    database::entity::server::{
+        AdminDatabaseConfiguration, AdminDatabaseSetupUserConfig, Server, ServerConfig,
+        ServerConfigData, ServerId,
+    },
+    utils::encryption::decrypt,
 };
 
 /// Active server connections
@@ -70,6 +73,9 @@ pub enum LoadServerError {
 
     #[error("failed to create search index factory: {0}")]
     CreateSearchFactory(#[from] SearchIndexFactoryError),
+
+    #[error("failed to deserialize config")]
+    Deserialize(serde_json::Error),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -96,13 +102,19 @@ pub async fn load_server(
         ServerConfig::Config { data } => data,
 
         // Secret must be decrypted
-        ServerConfig::Encrypted { encrypted: _ } => {
-            let _password = match load_config.password {
+        ServerConfig::Encrypted { salt, nonce, data } => {
+            let password = match load_config.password {
                 Some(value) => value,
                 None => return Err(LoadServerError::MissingPassword),
             };
 
-            todo!("")
+            // Decrypt the content
+            let decrypted = match decrypt(password.as_bytes(), &salt, &nonce, &data) {
+                Ok(value) => value,
+                Err(_) => return Err(LoadServerError::IncorrectPassword),
+            };
+
+            serde_json::from_slice(&decrypted).map_err(LoadServerError::Deserialize)?
         }
     };
 

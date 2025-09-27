@@ -56,8 +56,12 @@ export const s3StorageLayerFactoryConfig = z.object({
 
 export const storageLayerFactoryConfigSchema = z.discriminatedUnion(
   "provider",
-  [s3StorageLayerFactoryConfig],
+  [s3StorageLayerFactoryConfig]
 );
+
+export type StorageLayerConfig = z.infer<
+  typeof storageLayerFactoryConfigSchema
+>;
 
 export const typesenseSearchConfigSchema = z.object({
   provider: z.literal(SearchIndexFactoryConfigType.Typesense),
@@ -81,6 +85,8 @@ export const searchConfigSchema = z.discriminatedUnion("provider", [
   databaseSearchConfigSchema,
 ]);
 
+export type SearchConfig = z.infer<typeof searchConfigSchema>;
+
 export const memorySecretManagerConfigSchema = z.object({
   provider: z.literal(SecretsManagerConfigType.Memory),
   secrets: z.record(z.string(), z.string()).optional().nullable(),
@@ -103,10 +109,16 @@ export const secretManagerConfigSchema = z.discriminatedUnion("provider", [
   awsSecretManagerConfigSchema,
 ]);
 
+export type SecretManagerConfig = z.infer<typeof secretManagerConfigSchema>;
+
 export const adminDatabaseSetupUserConfigSchema = z.object({
   username: z.string(),
   password: z.string(),
 });
+
+export type AdminDatabaseSetupUserConfig = z.infer<
+  typeof adminDatabaseSetupUserConfigSchema
+>;
 
 export const adminDatabaseConfigSchema = z.object({
   host: z.string(),
@@ -116,9 +128,17 @@ export const adminDatabaseConfigSchema = z.object({
   root_secret_name: z.string(),
 });
 
-export const serverConfigDataSchema = z.object({
-  api_url: z.string(),
+export type AdminDatabaseConfig = z.infer<typeof adminDatabaseConfigSchema>;
+
+export const apiConfigSchema = z.object({
+  url: z.string(),
   api_key: z.string().optional(),
+});
+
+export type ApiConfig = z.infer<typeof apiConfigSchema>;
+
+export const serverConfigDataSchema = z.object({
+  api: apiConfigSchema,
   database: adminDatabaseConfigSchema,
   secrets: secretManagerConfigSchema,
   search: searchConfigSchema,

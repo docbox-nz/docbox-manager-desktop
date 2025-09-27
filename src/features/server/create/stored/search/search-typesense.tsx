@@ -3,6 +3,7 @@ import { useStore } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import Alert from "@mui/material/Alert";
 import SolarInfoCircleBold from "~icons/solar/info-circle-bold";
+import { SearchConfig, SearchIndexFactoryConfigType } from "@/api/server";
 
 // Base schema, sets the structure
 const typesenseApiKeyBaseSchema = z.object({
@@ -41,6 +42,26 @@ export const typesenseDefaultValues: z.input<typeof typesenseBaseSchema> = {
   },
 };
 
+export function createTypesenseSearchConfig(
+  values: z.output<typeof typesenseSchema>
+): SearchConfig {
+  let api_key: string | undefined;
+  let api_key_secret_name: string | undefined;
+
+  if (values.api_key.use_secret) {
+    api_key_secret_name = values.api_key.api_key_secret_name;
+  } else {
+    api_key = values.api_key.api_key;
+  }
+
+  return {
+    provider: SearchIndexFactoryConfigType.Typesense,
+    url: values.url,
+    api_key,
+    api_key_secret_name,
+  };
+}
+
 export const SearchTypesense = withFieldGroup({
   defaultValues: typesenseDefaultValues,
   render: function Render({ group }) {
@@ -65,6 +86,13 @@ export const SearchTypesense = withFieldGroup({
 
         <group.AppField
           name="api_key.use_secret"
+          listeners={{
+            onChange: () => {
+              // Changing the variant requires a revalidating the group to remove errors
+              // from hidden variants
+              group.validateAllFields("change");
+            },
+          }}
           children={(field) => (
             <field.Switch
               label="Use secrets manager"

@@ -14,6 +14,7 @@ pub mod database;
 pub mod gateway;
 pub mod logging;
 pub mod server;
+pub mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -27,6 +28,7 @@ pub fn run() {
             server_load, server_unload,
         },
         tenant::{tenant_create, tenant_delete, tenant_get, tenant_get_all, tenant_migrate},
+        utils::utils_encrypt,
     };
 
     tauri::Builder::default()
@@ -58,7 +60,8 @@ pub fn run() {
             tenant_delete,
             tenant_get,
             tenant_get_all,
-            tenant_migrate
+            tenant_migrate,
+            utils_encrypt
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

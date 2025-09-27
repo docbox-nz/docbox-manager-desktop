@@ -6,7 +6,12 @@ import {
   customEndpointSchema,
   StorageCustomEndpoint,
 } from "./storage-custom-endpoint";
-import { S3EndpointType } from "@/api/server";
+import {
+  S3Endpoint,
+  S3EndpointType,
+  StorageLayerConfig,
+  StorageLayerFactoryConfigType,
+} from "@/api/server";
 import ToggleButton from "@mui/material/ToggleButton";
 import { useStore } from "@tanstack/react-form";
 
@@ -38,6 +43,36 @@ export const s3DefaultValues: z.input<typeof s3BaseSchema> = {
   },
 };
 
+export function createS3StorageConfig(
+  values: z.output<typeof s3Schema>
+): StorageLayerConfig {
+  let endpoint: S3Endpoint;
+  switch (values.endpoint.type) {
+    case S3EndpointType.Aws: {
+      endpoint = {
+        type: S3EndpointType.Aws,
+      };
+      break;
+    }
+    case S3EndpointType.Custom: {
+      endpoint = {
+        type: S3EndpointType.Custom,
+        endpoint: values.endpoint.custom.endpoint,
+        access_key_id: values.endpoint.custom.access_key_id,
+        access_key_secret: values.endpoint.custom.access_key_secret,
+      };
+      break;
+    }
+    default:
+      throw new Error("unhandled s3 endpoint type");
+  }
+
+  return {
+    provider: StorageLayerFactoryConfigType.S3,
+    endpoint,
+  };
+}
+
 export const StorageS3 = withFieldGroup({
   defaultValues: s3DefaultValues,
   render: function Render({ group }) {
@@ -50,6 +85,13 @@ export const StorageS3 = withFieldGroup({
       <>
         <group.AppField
           name="endpoint.type"
+          listeners={{
+            onChange: () => {
+              // Changing the variant requires a revalidating the group to remove errors
+              // from hidden variants
+              group.validateAllFields("change");
+            },
+          }}
           children={(field) => (
             <field.ToggleButtonGroup
               disableClearable
