@@ -27,7 +27,7 @@ const CardButton = styled(ButtonBase)(({ theme }) => ({
   justifyContent: "flex-start",
   gap: theme.spacing(1),
   border: "none",
-}));
+})) as typeof Box;
 
 function RouteComponent() {
   return (
