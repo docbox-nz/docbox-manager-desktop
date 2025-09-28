@@ -13,7 +13,7 @@ import Typography from "@mui/material/Typography";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/servers/$serverId/")({
+export const Route = createFileRoute("/servers/$serverId/_loaded/")({
   component: RouteComponent,
 });
 

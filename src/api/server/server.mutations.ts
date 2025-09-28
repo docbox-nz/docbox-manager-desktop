@@ -24,12 +24,17 @@ export function useLoadServer() {
       serverId: string;
       loadConfig: LoadServerConfig;
     }) => loadServer(serverId, loadConfig),
+    onSuccess(_data, { serverId }) {
+      queryClient.invalidateQueries({
+        queryKey: serverKeys.server.root(serverId),
+      });
+    },
   });
 }
 
 export function useDeleteServer(serverId: string) {
   return useMutation({
-    mutationKey: serverKeys.removeServer(serverId),
+    mutationKey: serverKeys.server.remove(serverId),
     mutationFn: () => deleteServer(serverId),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: serverKeys.servers });

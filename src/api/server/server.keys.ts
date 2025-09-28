@@ -1,7 +1,11 @@
 export const serverKeys = {
   servers: ["servers"],
   createServer: ["servers", "create"],
-  server: (serverId: string) => ["server", serverId],
-  closeServer: (serverId: string) => ["server", serverId, "close"],
-  removeServer: (serverId: string) => ["server", serverId, "remove"],
+
+  server: {
+    root: (serverId: string) => ["server", serverId],
+    active: (serverId: string) => ["server", serverId, "active"],
+    close: (serverId: string) => ["server", serverId, "close"],
+    remove: (serverId: string) => ["server", serverId, "remove"],
+  },
 };

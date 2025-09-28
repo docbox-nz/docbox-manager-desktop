@@ -30,7 +30,7 @@ import IconButton from "@mui/material/IconButton";
 import RouterLink from "@/components/RouterLink";
 import FormValidIndicator from "@/components/form/FormValidIndicator";
 
-export const Route = createFileRoute("/servers/$serverId/tenant/create")({
+export const Route = createFileRoute("/servers/$serverId/_loaded/tenant/create")({
   component: TenantCreate,
 });
 
