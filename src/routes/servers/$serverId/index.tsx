@@ -1,21 +1,24 @@
 import { getAPIErrorMessage } from "@/api/axios";
 import { getServers } from "@/api/server/server.requests";
 import { useTenants } from "@/api/tenant/tenant.queries";
-import { Tenant } from "@/api/tenant/tenant.types";
 import LoadingPage from "@/components/LoadingPage";
 import PendingMigrationsLoader from "@/components/PendingMigrationsLoader";
 import RouterLink from "@/components/RouterLink";
+import { useTenantFiltersStore } from "@/features/tenants/tenants-table-filter-state";
+import TenantsTable from "@/features/tenants/TenantsTable";
 import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import MdiChevronLeft from "~icons/mdi/chevron-left";
+import { useShallow } from "zustand/react/shallow";
+import TenantTableFilters from "@/features/tenants/TenantsTableFilters";
+import { useMemo } from "react";
+import TenantsTableActiveFilters from "@/features/tenants/TenantsTableActiveFilters";
 
 export const Route = createFileRoute("/servers/$serverId/")({
   component: RouteComponent,
@@ -31,60 +34,62 @@ export const Route = createFileRoute("/servers/$serverId/")({
   pendingComponent: () => <LoadingPage message="Loading server..." />,
 });
 
-const columns: GridColDef<Tenant>[] = [
-  {
-    field: "id",
-    width: 300,
-    headerName: "ID",
-  },
-  {
-    field: "name",
-    flex: 1,
-    headerName: "Name",
-  },
-  {
-    field: "env",
-    headerName: "Environment",
-  },
-  {
-    field: "db_name",
-    width: 300,
-    headerName: "Database Name",
-  },
-  {
-    field: "s3_name",
-    width: 300,
-    headerName: "Storage Bucket Name",
-  },
-  {
-    field: "actions",
-    headerName: "Actions",
-    renderCell: ({ row }) => (
-      <Button
-        component={RouterLink}
-        to="/servers/$serverId/tenant/$env/$id"
-        params={{
-          env: row.env,
-          id: row.id,
-        }}
-        variant="contained"
-        size="small"
-        style={{ marginLeft: 16 }}
-      >
-        View
-      </Button>
-    ),
-  },
-];
-
 function RouteComponent() {
   const { serverId } = Route.useParams();
   const { server } = Route.useLoaderData();
   const {
-    data: tenants,
+    data: tenantsData,
     isLoading: tenantsLoading,
     error: tenantsError,
   } = useTenants(serverId);
+
+  const tenants = useMemo(() => tenantsData ?? [], [tenantsData]);
+
+  const { query, environments, setQuery, setEnvironments } =
+    useTenantFiltersStore(
+      useShallow((state) => ({
+        query: state.query,
+        environments: state.environments,
+
+        setQuery: state.setQuery,
+        setEnvironments: state.setEnvironments,
+      }))
+    );
+
+  const availableEnvironments = useMemo(() => {
+    return Array.from(
+      tenants.reduce((environments, tenant) => {
+        environments.add(tenant.env);
+        return environments;
+      }, new Set<string>())
+    );
+  }, [tenants]);
+
+  const normalizedQuery = useMemo(() => query.toLowerCase().trim(), [query]);
+  const filtersApplied = normalizedQuery.length > 0 || environments.length > 0;
+
+  const filteredTenants = useMemo(() => {
+    // No filters applied
+    if (!filtersApplied) {
+      return tenants;
+    }
+
+    const queryApplied = normalizedQuery.length > 0;
+    const envApplied = environments.length > 0;
+
+    return tenants.filter((tenant) => {
+      if (queryApplied) {
+        const name = tenant.name.toLowerCase().trim();
+        if (!name.includes(normalizedQuery)) return false;
+      }
+
+      if (envApplied && !environments.includes(tenant.env)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [filtersApplied, tenants, query, environments]);
 
   return (
     <>
@@ -127,24 +132,25 @@ function RouteComponent() {
               </Alert>
             )}
 
-            <Box sx={{ mt: 3, height: 1, width: "100%" }}>
-              <DataGrid
-                loading={tenantsLoading}
-                rows={tenants ?? []}
-                columns={columns}
-                initialState={{
-                  pagination: {
-                    paginationModel: {
-                      pageSize: 50,
-                    },
-                  },
-                }}
-                pageSizeOptions={[5, 10, 50, 100]}
-                checkboxSelection
-                disableRowSelectionOnClick
-                getRowId={(row) => `${row.id}-${row.env}`}
+            <TenantTableFilters
+              query={query}
+              environments={environments}
+              availableEnvironments={availableEnvironments}
+              setQuery={setQuery}
+              setEnvironments={setEnvironments}
+            />
+
+            {filtersApplied && (
+              <TenantsTableActiveFilters
+                query={query}
+                environments={environments}
+                filteredResults={filteredTenants.length}
+                setQuery={setQuery}
+                setEnvironments={setEnvironments}
               />
-            </Box>
+            )}
+
+            <TenantsTable tenants={filteredTenants} loading={tenantsLoading} />
           </Stack>
         </CardContent>
       </Card>
