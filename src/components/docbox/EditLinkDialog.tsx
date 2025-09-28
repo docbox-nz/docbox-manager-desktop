@@ -88,7 +88,7 @@ export default function EditLinkDialog({ open, onClose, link, scope }: Props) {
             />
 
             {updateLink.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to save: {getAPIErrorMessage(updateLink.error)}
               </Alert>
             )}

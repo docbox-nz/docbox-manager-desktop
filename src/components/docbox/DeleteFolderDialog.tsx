@@ -58,7 +58,7 @@ export default function DeleteFolderDialog({
             </Typography>
 
             {deleteFolder.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to delete: {getAPIErrorMessage(deleteFolder.error)}
               </Alert>
             )}

@@ -78,7 +78,7 @@ export default function CreateFolderDialog({
             />
 
             {createFolderMutation.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to create:{" "}
                 {getAPIErrorMessage(createFolderMutation.error)}
               </Alert>

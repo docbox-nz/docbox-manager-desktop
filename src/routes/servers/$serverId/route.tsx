@@ -2,6 +2,7 @@ import { getAPIErrorMessage, getAPIErrorMessageCode } from "@/api/axios";
 import { serverKeys } from "@/api/server/server.keys";
 import { useLoadServer } from "@/api/server/server.mutations";
 import {
+  getServers,
   isServerActive,
   loadServer,
   unloadServer,
@@ -9,16 +10,27 @@ import {
 import ErrorPage from "@/components/ErrorPage";
 import { InitializeGuard } from "@/components/InitializeGuard";
 import LoadingPage from "@/components/LoadingPage";
-import EncryptedLogin from "@/features/server/load/encrypted-login";
+import EncryptedServerLoad from "@/features/server/load/encrypted-server-load";
 import { queryClient } from "@/integrations/tanstack-query/root-provider";
 import Button from "@mui/material/Button";
-import { createFileRoute, Outlet, useRouter } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  notFound,
+  Outlet,
+  useRouter,
+} from "@tanstack/react-router";
 
-export const Route = createFileRoute("/servers/$serverId/_loaded")({
+export const Route = createFileRoute("/servers/$serverId")({
   component: RouteComponent,
   loader: async ({ params }) => {
     if (await isServerActive(params.serverId)) {
-      return true;
+      return;
+    }
+
+    const servers = await getServers();
+    const server = servers.find((server) => server.id === params.serverId);
+    if (server == undefined) {
+      throw notFound();
     }
 
     // Attempt to load the server
@@ -26,7 +38,6 @@ export const Route = createFileRoute("/servers/$serverId/_loaded")({
     queryClient.invalidateQueries({
       queryKey: serverKeys.server.root(params.serverId),
     });
-    return false;
   },
 
   onLeave: ({ params }) => {
@@ -46,40 +57,15 @@ export const Route = createFileRoute("/servers/$serverId/_loaded")({
       // User is missing the password
       case "MISSING_PASSWORD": {
         return (
-          <EncryptedLogin
-            onSubmit={(password) => {
-              loadServerMutation.mutate(
-                {
-                  serverId,
-                  loadConfig: {
-                    password,
-                  },
-                },
-                {
-                  onSuccess: () => {
-                    // We've loaded the server and the router can retry now
-                    router.invalidate();
-                  },
-                }
-              );
+          <EncryptedServerLoad
+            serverId={serverId}
+            onSuccess={() => {
+              // We've loaded the server and the router can retry now
+              router.invalidate();
             }}
           />
         );
       }
-
-      // Incorrect password
-      case "INCORRECT_PASSWORD":
-        return (
-          <ErrorPage error="Incorrect password">
-            <Button
-              onClick={() => {
-                loadServerMutation.reset();
-              }}
-            >
-              Back
-            </Button>
-          </ErrorPage>
-        );
 
       // Other error
       default:

@@ -89,7 +89,7 @@ export default function UploadFileDialog({
         >
           <Stack spacing={3} sx={{ pt: 2 }}>
             {uploadFileMutation.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to upload: {getAPIErrorMessage(uploadFileMutation.error)}
               </Alert>
             )}

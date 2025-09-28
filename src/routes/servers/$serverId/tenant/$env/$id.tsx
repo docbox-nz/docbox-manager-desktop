@@ -25,7 +25,7 @@ const docboxSchema = z.object({
   delete: z.string().optional(),
 });
 
-export const Route = createFileRoute("/servers/$serverId/_loaded/tenant/$env/$id")({
+export const Route = createFileRoute("/servers/$serverId/tenant/$env/$id")({
   component: RouteComponent,
   validateSearch: docboxSchema,
 });

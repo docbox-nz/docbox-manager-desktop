@@ -60,7 +60,7 @@ export default function CreateDocumentBoxDialog({ open, onClose }: Props) {
             />
 
             {createDocumentBoxMutation.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to create:{" "}
                 {getAPIErrorMessage(createDocumentBoxMutation.error)}
               </Alert>

@@ -341,13 +341,13 @@ export default function TenantFileBrowser({
       </Stack>
 
       {documentBoxError && (
-        <Alert color="error">
+        <Alert severity="error">
           Failed to load: {getAPIErrorMessage(documentBoxError)}
         </Alert>
       )}
 
       {folderError && (
-        <Alert color="error">
+        <Alert severity="error">
           Failed to load: {getAPIErrorMessage(folderError)}
         </Alert>
       )}

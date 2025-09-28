@@ -93,7 +93,7 @@ export default function EditFileDialog({ open, onClose, file, scope }: Props) {
             />
 
             {updateFile.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to save: {getAPIErrorMessage(updateFile.error)}
               </Alert>
             )}

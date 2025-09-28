@@ -103,7 +103,7 @@ function RouteComponent() {
               />
 
               {createServerMutation.isError && (
-                <Alert color="error">
+                <Alert severity="error">
                   Failed to create:{" "}
                   {getAPIErrorMessage(createServerMutation.error)}
                 </Alert>

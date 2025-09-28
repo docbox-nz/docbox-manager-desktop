@@ -58,7 +58,7 @@ if (rootElement && !rootElement.innerHTML) {
 
         <Toaster />
       </ThemeProvider>
-    </StrictMode>,
+    </StrictMode>
   );
 }
 

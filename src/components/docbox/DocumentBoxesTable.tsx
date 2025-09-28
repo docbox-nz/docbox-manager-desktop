@@ -52,7 +52,7 @@ export default function DocumentBoxesTable() {
   return (
     <Stack spacing={1}>
       {documentBoxesError && (
-        <Alert color="error">
+        <Alert severity="error">
           Failed to load tenants: {getAPIErrorMessage(documentBoxesError)}
         </Alert>
       )}

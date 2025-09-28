@@ -30,7 +30,7 @@ import IconButton from "@mui/material/IconButton";
 import RouterLink from "@/components/RouterLink";
 import FormValidIndicator from "@/components/form/FormValidIndicator";
 
-export const Route = createFileRoute("/servers/$serverId/_loaded/tenant/create")({
+export const Route = createFileRoute("/servers/$serverId/tenant/create")({
   component: TenantCreate,
 });
 
@@ -624,7 +624,7 @@ function TenantCreate() {
               </Stack>
 
               {createTenantMutation.isError && (
-                <Alert color="error">
+                <Alert severity="error">
                   Failed to create:{" "}
                   {getAPIErrorMessage(createTenantMutation.error)}
                 </Alert>

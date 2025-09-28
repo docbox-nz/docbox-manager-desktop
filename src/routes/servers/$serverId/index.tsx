@@ -13,7 +13,7 @@ import Typography from "@mui/material/Typography";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/servers/$serverId/_loaded/")({
+export const Route = createFileRoute("/servers/$serverId/")({
   component: RouteComponent,
 });
 
@@ -94,7 +94,7 @@ function RouteComponent() {
             </Stack>
 
             {tenantsError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to load tenants: {getAPIErrorMessage(tenantsError)}
               </Alert>
             )}

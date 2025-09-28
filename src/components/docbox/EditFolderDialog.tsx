@@ -79,7 +79,7 @@ export default function EditFolderDialog({
             />
 
             {updateFolder.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to save: {getAPIErrorMessage(updateFolder.error)}
               </Alert>
             )}

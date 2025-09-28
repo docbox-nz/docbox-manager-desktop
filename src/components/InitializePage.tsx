@@ -52,7 +52,7 @@ export default function InitializePage({ serverId }: Props) {
         <CardContent sx={{ py: 0 }}>
           <Stack spacing={3}>
             {initializeMutation.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to initialize:{" "}
                 {getAPIErrorMessage(initializeMutation.error)}
               </Alert>

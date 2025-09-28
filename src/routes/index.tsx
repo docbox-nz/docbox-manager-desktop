@@ -1,6 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import LoadingPage from "@/components/LoadingPage";
-import { useServers } from "@/api/server/server.queries";
 import { Container } from "@mui/system";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -11,18 +10,29 @@ import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
 import RouterLink from "@/components/RouterLink";
 import ListItem from "@mui/material/ListItem";
+import ErrorPage from "@/components/ErrorPage";
+import { getAPIErrorMessage } from "@/api/axios";
+import { getServers } from "@/api/server/server.requests";
 
 export const Route = createFileRoute("/")({
   component: App,
+  loader: async () => {
+    const servers = await getServers();
+    return { servers };
+  },
+  pendingComponent: () => (
+    <LoadingPage message="Loading available servers..." />
+  ),
+  errorComponent: ({ error }) => (
+    <ErrorPage
+      title="Failed to load available servers"
+      error={getAPIErrorMessage(error)}
+    />
+  ),
 });
 
 function App() {
-  const navigate = useNavigate();
-
-  const serversQuery = useServers();
-  if (serversQuery.isLoading) {
-    return <LoadingPage message="Loading available servers..." />;
-  }
+  const { servers } = Route.useLoaderData();
 
   return (
     <Container sx={{ py: 2 }}>
@@ -33,38 +43,32 @@ function App() {
           action={
             <Button
               component={RouterLink}
+              variant="contained"
               to="/servers/create"
               sx={{ my: 1, mr: 1 }}
             >
               Add New Server
             </Button>
           }
+          sx={{ pb: 0, px: 4, pt: 3 }}
         />
 
-        <CardContent>
-          {serversQuery.data && (
-            <List>
-              {serversQuery.data.length > 0 ? (
-                serversQuery.data.map((server) => (
-                  <ServerItem
-                    key={server.id}
-                    serverId={server.id}
-                    name={server.name}
-                    onLoad={() => {
-                      navigate({
-                        to: "/servers/$serverId",
-                        params: { serverId: server.id },
-                      });
-                    }}
-                  />
-                ))
-              ) : (
-                <ListItem>
-                  <Typography>No servers available</Typography>
-                </ListItem>
-              )}
-            </List>
-          )}
+        <CardContent sx={{ pt: 0 }}>
+          <List>
+            {servers.length > 0 ? (
+              servers.map((server) => (
+                <ServerItem
+                  key={server.id}
+                  serverId={server.id}
+                  name={server.name}
+                />
+              ))
+            ) : (
+              <ListItem>
+                <Typography>No servers available</Typography>
+              </ListItem>
+            )}
+          </List>
         </CardContent>
       </Card>
     </Container>

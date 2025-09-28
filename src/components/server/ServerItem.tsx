@@ -10,15 +10,15 @@ import SolarServer2BoldDuotone from "~icons/solar/server-2-bold-duotone";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import { useState } from "react";
 import { ConfirmDeleteServerItem } from "./ConfirmDeleteServerItem";
+import {} from "@tanstack/react-router";
+import RouterLink from "../RouterLink";
 
 type Props = {
   serverId: string;
   name: string;
-
-  onLoad: VoidFunction;
 };
 
-export default function ServerSelectItem({ serverId, name, onLoad }: Props) {
+export default function ServerItem({ serverId, name }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
@@ -32,11 +32,12 @@ export default function ServerSelectItem({ serverId, name, onLoad }: Props) {
 
       <ListItemText primary={name} secondary={serverId} />
 
-      <Stack direction="row" alignItems="center">
+      <Stack direction="row" alignItems="center" spacing={1}>
         <Button
-          onClick={() => {
-            onLoad();
-          }}
+          component={RouterLink}
+          to="/servers/$serverId"
+          params={{ serverId }}
+          variant="outlined"
         >
           Connect
         </Button>

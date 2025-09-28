@@ -179,7 +179,7 @@ function RouteComponent() {
               <EncryptionSection form={form} fields="encryption" />
 
               {createServerMutation.isError && (
-                <Alert color="error">
+                <Alert severity="error">
                   Failed to create:{" "}
                   {getAPIErrorMessage(createServerMutation.error)}
                 </Alert>

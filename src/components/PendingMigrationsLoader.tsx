@@ -41,7 +41,7 @@ export default function PendingMigrationsLoader({ serverId }: Props) {
       <Card sx={{ m: 3 }}>
         <CardContent>
           <Stack spacing={1}>
-            <Alert color="error">
+            <Alert severity="error">
               Failed to load pending migrations: {getAPIErrorMessage(error)}
             </Alert>
           </Stack>

@@ -92,7 +92,7 @@ export default function CreateLinkDialog({
             />
 
             {createLinkMutation.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to create: {getAPIErrorMessage(createLinkMutation.error)}
               </Alert>
             )}

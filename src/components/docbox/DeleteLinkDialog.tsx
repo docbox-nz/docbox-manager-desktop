@@ -57,7 +57,7 @@ export default function DeleteLinkDialog({
             </Typography>
 
             {deleteLink.isError && (
-              <Alert color="error">
+              <Alert severity="error">
                 Failed to delete: {getAPIErrorMessage(deleteLink.error)}
               </Alert>
             )}
