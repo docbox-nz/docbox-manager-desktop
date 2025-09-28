@@ -2,8 +2,10 @@ use std::{error::Error, sync::Arc};
 
 use docbox_core::aws::aws_config;
 use eyre::Context;
+use reqwest::StatusCode;
 use tauri::{
     async_runtime::{block_on, spawn},
+    http::Response,
     App, Manager,
 };
 
@@ -39,8 +41,13 @@ pub fn run() {
             let server_store = app.state::<Arc<ServerStore>>().inner().clone();
 
             spawn(async move {
-                let response = handle_gateway_request(server_store, request).await;
-                responder.respond(response);
+                responder.respond(match handle_gateway_request(server_store, request).await {
+                    Ok(response) => response,
+                    Err(error) => Response::builder()
+                        .status(StatusCode::INTERNAL_SERVER_ERROR)
+                        .body(error.to_string().into())
+                        .expect("failed to create response"),
+                })
             });
         })
         .setup(setup)

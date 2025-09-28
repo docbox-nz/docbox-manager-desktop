@@ -5,7 +5,6 @@ use docbox_database::{DatabasePoolCache, DatabasePoolCacheConfig};
 use docbox_search::{SearchIndexFactory, SearchIndexFactoryError};
 use docbox_secrets::{SecretManager, SecretManagerError, SecretsManagerConfig};
 use docbox_storage::StorageLayerFactory;
-use moka::future::Cache;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tokio::sync::Mutex;

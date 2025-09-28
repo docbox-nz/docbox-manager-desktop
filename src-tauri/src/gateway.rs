@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use eyre::{Context, ContextCompat};
 use itertools::Itertools;
 use reqwest::Method;
 use tauri::http::{self, HeaderValue, Response};
@@ -9,13 +10,13 @@ use crate::server::ServerStore;
 
 /// Handle requests to the docbox protocol
 ///
-/// docbox://xxxxxxxxxxx/box/xxxxxxxx/search
-///         |- Server -|--- Docbox Path ---|
+/// docbox://xxxxxxxxxxxxx/xxxxxxxxxxxxx/xxxxxxxxxxxxxxx/box/xxxxxxxx/search
+///         |- Server ID -|- Tenant ID -|-- Tenant Env -|--- Docbox Path ---|
 ///
 pub async fn handle_gateway_request(
     server_store: Arc<ServerStore>,
     request: http::Request<Vec<u8>>,
-) -> http::Response<Vec<u8>> {
+) -> eyre::Result<http::Response<Vec<u8>>> {
     let (parts, body) = request.into_parts();
 
     // Handle CORS options requests
@@ -34,29 +35,25 @@ pub async fn handle_gateway_request(
                 HeaderValue::from_str("*").unwrap(),
             )
             .body(vec![])
-            .unwrap();
+            .context("failed to build response");
     }
-
-    dbg!(&parts);
 
     let path = parts
         .uri
         .path()
         .strip_prefix('/')
         .unwrap_or(parts.uri.path());
-    dbg!(&path);
     let mut path_parts = path.split('/');
 
     // Get the server ID
-    let server_id = path_parts.next().expect("request missing server ID");
-    dbg!(&server_id);
-    let server_id: Uuid = server_id.parse().expect("invalid server id");
+    let server_id = path_parts.next().context("request missing server ID")?;
+    let server_id: Uuid = server_id.parse().context("invalid server id")?;
 
     // Get the tenant ID
-    let tenant_id = path_parts.next().expect("request missing server ID");
+    let tenant_id = path_parts.next().context("request missing server ID")?;
 
-    // Get the server ID
-    let env: &str = path_parts.next().expect("request missing server ID");
+    // Get the tenant env
+    let env: &str = path_parts.next().context("request missing tenant env")?;
 
     // Collect all remaining parts into the new path
     let path = path_parts.join("/");
@@ -64,7 +61,7 @@ pub async fn handle_gateway_request(
     let server = server_store
         .get_server(server_id)
         .await
-        .expect("server not found");
+        .context("server not found")?;
 
     // Rebuild the URI without the stripped prefix
     let query = parts
@@ -73,7 +70,6 @@ pub async fn handle_gateway_request(
         .map(|q| format!("?{q}"))
         .unwrap_or_default();
     let new_uri = format!("{}/{}{}", &server.config.api.url, path, query);
-    dbg!(&new_uri);
 
     let client = reqwest::Client::new();
 
@@ -95,50 +91,48 @@ pub async fn handle_gateway_request(
     if let Some(api_key) = server.config.api.api_key.as_ref() {
         req_builder = req_builder.header(
             reqwest::header::HeaderName::from_static("x-docbox-api-key"),
-            HeaderValue::from_str(&api_key).unwrap(),
+            HeaderValue::from_str(&api_key).context("failed to make header value")?,
         );
     }
 
     let resp = req_builder
         .header(
             reqwest::header::HeaderName::from_static("x-tenant-id"),
-            HeaderValue::from_str(tenant_id).unwrap(),
+            HeaderValue::from_str(tenant_id).context("failed to make header value")?,
         )
         .header(
             reqwest::header::HeaderName::from_static("x-tenant-env"),
-            HeaderValue::from_str(env).unwrap(),
+            HeaderValue::from_str(env).context("failed to make header value")?,
         )
         .send()
         .await
         .inspect_err(|error| tracing::error!(?error, "failed to request docbox"))
-        .expect("failed to request docbox");
+        .context("failed to request docbox")?;
 
     // Build axum response
     let mut response_builder = Response::builder()
         .status(resp.status())
         .header(
             reqwest::header::ACCESS_CONTROL_ALLOW_ORIGIN,
-            HeaderValue::from_str("*").unwrap(),
+            HeaderValue::from_static("*"),
         )
         .header(
             reqwest::header::ACCESS_CONTROL_ALLOW_METHODS,
-            HeaderValue::from_str("GET, POST, PUT, PATCH, DELETE, OPTIONS").unwrap(),
+            HeaderValue::from_static("GET, POST, PUT, PATCH, DELETE, OPTIONS"),
         )
         .header(
             reqwest::header::ACCESS_CONTROL_ALLOW_HEADERS,
-            HeaderValue::from_str("*").unwrap(),
+            HeaderValue::from_static("*"),
         );
 
     for (key, value) in resp.headers().iter() {
         response_builder = response_builder.header(key, value);
     }
 
-    let body = resp.bytes().await.expect("failed to ready body").to_vec();
+    let body = resp.bytes().await.context("failed to ready body")?.to_vec();
 
-    let response = response_builder
+    response_builder
         .body(body)
         .inspect_err(|error| tracing::error!(?error, "failed to create response"))
-        .expect("failed to create response");
-
-    response
+        .context("failed to create response")
 }
