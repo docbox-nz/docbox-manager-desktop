@@ -1,6 +1,8 @@
 import { getAPIErrorMessage } from "@/api/axios";
+import { getServers } from "@/api/server/server.requests";
 import { useTenants } from "@/api/tenant/tenant.queries";
 import { Tenant } from "@/api/tenant/tenant.types";
+import LoadingPage from "@/components/LoadingPage";
 import PendingMigrationsLoader from "@/components/PendingMigrationsLoader";
 import RouterLink from "@/components/RouterLink";
 import Alert from "@mui/material/Alert";
@@ -8,13 +10,25 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import MdiChevronLeft from "~icons/mdi/chevron-left";
 
 export const Route = createFileRoute("/servers/$serverId/")({
   component: RouteComponent,
+  loader: async ({ params }) => {
+    const servers = await getServers();
+    const server = servers.find((server) => server.id === params.serverId);
+    if (server == undefined) {
+      throw notFound();
+    }
+
+    return { server };
+  },
+  pendingComponent: () => <LoadingPage message="Loading server..." />,
 });
 
 const columns: GridColDef<Tenant>[] = [
@@ -65,6 +79,7 @@ const columns: GridColDef<Tenant>[] = [
 
 function RouteComponent() {
   const { serverId } = Route.useParams();
+  const { server } = Route.useLoaderData();
   const {
     data: tenants,
     isLoading: tenantsLoading,
@@ -73,10 +88,23 @@ function RouteComponent() {
 
   return (
     <>
-      <PendingMigrationsLoader serverId={serverId} />
       <Card sx={{ m: 3 }}>
         <CardContent>
-          <Stack spacing={1}>
+          <Stack spacing={2}>
+            <Stack direction="row" alignItems="center">
+              <IconButton
+                size="small"
+                sx={{ mr: 1 }}
+                component={RouterLink}
+                to="/"
+              >
+                <MdiChevronLeft width={32} height={32} />
+              </IconButton>
+              <Typography variant="h4">{server.name}</Typography>
+            </Stack>
+
+            <PendingMigrationsLoader serverId={serverId} />
+
             <Stack
               direction="row"
               alignItems="center"

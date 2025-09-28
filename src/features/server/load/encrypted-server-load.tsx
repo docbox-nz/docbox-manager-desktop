@@ -61,17 +61,13 @@ export default function EncryptedServerLoad({ serverId, onSuccess }: Props) {
     : null;
 
   return (
-    <Container sx={{ py: 2 }}>
+    <Container sx={{ py: 4 }} maxWidth="sm">
       <Card>
         <CardHeader
           title="Encrypted Server"
           subheader="This server config is encrypted with a password, please enter the password below"
           action={
-            <Button
-              component={RouterLink}
-              to="/servers/create"
-              sx={{ my: 1, mr: 1 }}
-            >
+            <Button component={RouterLink} to="/" sx={{ my: 1, mr: 1 }}>
               Back
             </Button>
           }

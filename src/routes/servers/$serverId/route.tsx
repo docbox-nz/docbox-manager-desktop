@@ -38,6 +38,8 @@ export const Route = createFileRoute("/servers/$serverId")({
     queryClient.invalidateQueries({
       queryKey: serverKeys.server.root(params.serverId),
     });
+
+    return { server };
   },
 
   onLeave: ({ params }) => {

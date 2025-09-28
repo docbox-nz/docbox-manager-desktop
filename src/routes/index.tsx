@@ -35,7 +35,7 @@ function App() {
   const { servers } = Route.useLoaderData();
 
   return (
-    <Container sx={{ py: 2 }}>
+    <Container sx={{ py: 4 }} maxWidth="md">
       <Card>
         <CardHeader
           title="Connect"
