@@ -40,12 +40,18 @@ export default function ServerItem({ serverId, name }: Props) {
           variant="outlined"
         >
           Connect
+        </Button>{" "}
+        <Button
+          component={RouterLink}
+          to="/servers/$serverId/verify"
+          params={{ serverId }}
+          variant="outlined"
+        >
+          Verify
         </Button>
-
         <IconButton onClick={() => setConfirmDelete(true)}>
           <Box component={SolarTrashBin2Bold} />
         </IconButton>
-
         <ConfirmDeleteServerItem
           open={confirmDelete}
           onClose={() => setConfirmDelete(false)}

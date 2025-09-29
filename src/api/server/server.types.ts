@@ -41,3 +41,21 @@ export interface ServerConfigEncrypted {
 export interface LoadServerConfig {
   password?: string | null;
 }
+
+export interface StorageVerifyOutcome {
+  create_bucket: VerifyOutcome;
+  upload_file: VerifyOutcome;
+  get_file: VerifyOutcome;
+  delete_file: VerifyOutcome;
+  create_presigned: VerifyOutcome;
+  create_presigned_download: VerifyOutcome;
+  delete_bucket: VerifyOutcome;
+}
+
+export type VerifyOutcome =
+  | {
+      type: "Pending";
+    }
+  | { type: "Success" }
+  | { type: "Skipped" }
+  | { type: "Failure"; message: string };

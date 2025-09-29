@@ -27,7 +27,7 @@ pub fn run() {
         },
         server::{
             server_create, server_delete, server_get_active, server_get_all, server_is_active,
-            server_load, server_unload,
+            server_load, server_unload, server_verify_storage,
         },
         tenant::{tenant_create, tenant_delete, tenant_get, tenant_get_all, tenant_migrate},
         utils::utils_encrypt,
@@ -59,6 +59,7 @@ pub fn run() {
             server_is_active,
             server_get_active,
             server_delete,
+            server_verify_storage,
             root_is_initialized,
             root_initialize,
             root_get_pending_migrations,

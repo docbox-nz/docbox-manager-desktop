@@ -1,5 +1,10 @@
-import { invoke } from "@tauri-apps/api/core";
-import { CreateServer, LoadServerConfig, Server } from "./server.types";
+import { Channel, invoke } from "@tauri-apps/api/core";
+import {
+  CreateServer,
+  LoadServerConfig,
+  Server,
+  StorageVerifyOutcome,
+} from "./server.types";
 
 export function getServers() {
   return invoke<Server[]>("server_get_all");
@@ -23,4 +28,14 @@ export function deleteServer(serverId: string) {
 
 export function isServerActive(serverId: string) {
   return invoke<boolean>("server_is_active", { serverId });
+}
+
+export function verifyServerStorage(
+  serverId: string,
+  onEvent: Channel<StorageVerifyOutcome>
+) {
+  return invoke<StorageVerifyOutcome>("server_verify_storage", {
+    serverId,
+    onEvent,
+  });
 }
