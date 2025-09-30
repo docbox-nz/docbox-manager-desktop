@@ -7,6 +7,5 @@ export const serverKeys = {
     active: (serverId: string) => ["server", serverId, "active"],
     close: (serverId: string) => ["server", serverId, "close"],
     remove: (serverId: string) => ["server", serverId, "remove"],
-    verifyStorage: (serverId: string) => ["server", serverId, "verifyStorage"],
   },
 };

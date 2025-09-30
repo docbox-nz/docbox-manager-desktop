@@ -1,10 +1,8 @@
 use std::{ops::Deref, sync::Arc};
 
 use aws_config::SdkConfig;
-use docbox_management::verify::verify_storage::StorageVerifyOutcome;
 use eyre::{Context, ContextCompat};
 use tauri::State;
-use tokio::sync::mpsc;
 use uuid::Uuid;
 
 use crate::{
@@ -108,31 +106,4 @@ pub async fn server_delete(
     Server::delete_by_id(db.deref(), server_id).await?;
 
     Ok(())
-}
-
-/// Verify the storage backend for a server
-#[tauri::command]
-pub async fn server_verify_storage(
-    server_store: State<'_, Arc<ServerStore>>,
-    server_id: Uuid,
-    on_event: tauri::ipc::Channel<StorageVerifyOutcome>,
-) -> CmdResult<StorageVerifyOutcome> {
-    let server = server_store
-        .get_server(server_id)
-        .await
-        .context("server not found")?;
-
-    let (tx, mut rx) = mpsc::unbounded_channel();
-
-    // Push progress through the channel
-    tokio::spawn(async move {
-        while let Some(event) = rx.recv().await {
-            _ = on_event.send(event);
-        }
-    });
-
-    let outcome =
-        docbox_management::verify::verify_storage::verify_storage(&server.storage, tx).await;
-
-    Ok(outcome)
 }

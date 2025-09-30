@@ -15,7 +15,6 @@ import { Route as ServersCreateIndexRouteImport } from './routes/servers/create/
 import { Route as ServersServerIdIndexRouteImport } from './routes/servers/$serverId/index'
 import { Route as ServersCreateStoredRouteImport } from './routes/servers/create/stored'
 import { Route as ServersCreateAwsSecretRouteImport } from './routes/servers/create/aws-secret'
-import { Route as ServersServerIdVerifyRouteImport } from './routes/servers/$serverId/verify'
 import { Route as ServersServerIdInitializeRouteImport } from './routes/servers/$serverId/initialize'
 import { Route as ServersServerIdTenantCreateRouteImport } from './routes/servers/$serverId/tenant/create'
 import { Route as ServersServerIdTenantEnvIdRouteImport } from './routes/servers/$serverId/tenant/$env/$id'
@@ -50,11 +49,6 @@ const ServersCreateAwsSecretRoute = ServersCreateAwsSecretRouteImport.update({
   path: '/servers/create/aws-secret',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ServersServerIdVerifyRoute = ServersServerIdVerifyRouteImport.update({
-  id: '/verify',
-  path: '/verify',
-  getParentRoute: () => ServersServerIdRouteRoute,
-} as any)
 const ServersServerIdInitializeRoute =
   ServersServerIdInitializeRouteImport.update({
     id: '/initialize',
@@ -78,7 +72,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/servers/$serverId': typeof ServersServerIdRouteRouteWithChildren
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
-  '/servers/$serverId/verify': typeof ServersServerIdVerifyRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
   '/servers/create/stored': typeof ServersCreateStoredRoute
   '/servers/$serverId/': typeof ServersServerIdIndexRoute
@@ -89,7 +82,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
-  '/servers/$serverId/verify': typeof ServersServerIdVerifyRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
   '/servers/create/stored': typeof ServersCreateStoredRoute
   '/servers/$serverId': typeof ServersServerIdIndexRoute
@@ -102,7 +94,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/servers/$serverId': typeof ServersServerIdRouteRouteWithChildren
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
-  '/servers/$serverId/verify': typeof ServersServerIdVerifyRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
   '/servers/create/stored': typeof ServersCreateStoredRoute
   '/servers/$serverId/': typeof ServersServerIdIndexRoute
@@ -116,7 +107,6 @@ export interface FileRouteTypes {
     | '/'
     | '/servers/$serverId'
     | '/servers/$serverId/initialize'
-    | '/servers/$serverId/verify'
     | '/servers/create/aws-secret'
     | '/servers/create/stored'
     | '/servers/$serverId/'
@@ -127,7 +117,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/servers/$serverId/initialize'
-    | '/servers/$serverId/verify'
     | '/servers/create/aws-secret'
     | '/servers/create/stored'
     | '/servers/$serverId'
@@ -139,7 +128,6 @@ export interface FileRouteTypes {
     | '/'
     | '/servers/$serverId'
     | '/servers/$serverId/initialize'
-    | '/servers/$serverId/verify'
     | '/servers/create/aws-secret'
     | '/servers/create/stored'
     | '/servers/$serverId/'
@@ -200,13 +188,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServersCreateAwsSecretRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/servers/$serverId/verify': {
-      id: '/servers/$serverId/verify'
-      path: '/verify'
-      fullPath: '/servers/$serverId/verify'
-      preLoaderRoute: typeof ServersServerIdVerifyRouteImport
-      parentRoute: typeof ServersServerIdRouteRoute
-    }
     '/servers/$serverId/initialize': {
       id: '/servers/$serverId/initialize'
       path: '/initialize'
@@ -233,7 +214,6 @@ declare module '@tanstack/react-router' {
 
 interface ServersServerIdRouteRouteChildren {
   ServersServerIdInitializeRoute: typeof ServersServerIdInitializeRoute
-  ServersServerIdVerifyRoute: typeof ServersServerIdVerifyRoute
   ServersServerIdIndexRoute: typeof ServersServerIdIndexRoute
   ServersServerIdTenantCreateRoute: typeof ServersServerIdTenantCreateRoute
   ServersServerIdTenantEnvIdRoute: typeof ServersServerIdTenantEnvIdRoute
@@ -241,7 +221,6 @@ interface ServersServerIdRouteRouteChildren {
 
 const ServersServerIdRouteRouteChildren: ServersServerIdRouteRouteChildren = {
   ServersServerIdInitializeRoute: ServersServerIdInitializeRoute,
-  ServersServerIdVerifyRoute: ServersServerIdVerifyRoute,
   ServersServerIdIndexRoute: ServersServerIdIndexRoute,
   ServersServerIdTenantCreateRoute: ServersServerIdTenantCreateRoute,
   ServersServerIdTenantEnvIdRoute: ServersServerIdTenantEnvIdRoute,
