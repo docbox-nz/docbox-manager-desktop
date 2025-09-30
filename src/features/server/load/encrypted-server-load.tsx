@@ -2,6 +2,7 @@ import { getAPIErrorMessageCode } from "@/api/axios";
 import { useLoadServer } from "@/api/server/server.mutations";
 import RouterLink from "@/components/RouterLink";
 import { useAppForm } from "@/hooks/use-app-form";
+import { useAwsProfileStore } from "@/stores/aws-profile-store";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Button from "@mui/material/Button";
@@ -40,8 +41,10 @@ export default function EncryptedServerLoad({ serverId, onSuccess }: Props) {
   const form = useAppForm({
     ...formOpts,
     onSubmit: async ({ value }) => {
+      const { profile } = useAwsProfileStore.getState();
       loadServerMutation.mutate(
         {
+          profile,
           serverId,
           loadConfig: {
             password: value.password,
@@ -51,7 +54,7 @@ export default function EncryptedServerLoad({ serverId, onSuccess }: Props) {
           onSuccess: () => {
             onSuccess();
           },
-        }
+        },
       );
     },
   });

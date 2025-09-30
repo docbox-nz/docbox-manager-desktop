@@ -10,8 +10,10 @@ import {
 import ErrorPage from "@/components/ErrorPage";
 import { InitializeGuard } from "@/components/InitializeGuard";
 import LoadingPage from "@/components/LoadingPage";
+import RouterLink from "@/components/RouterLink";
 import EncryptedServerLoad from "@/features/server/load/encrypted-server-load";
 import { queryClient } from "@/integrations/tanstack-query/root-provider";
+import { useAwsProfileStore } from "@/stores/aws-profile-store";
 import Button from "@mui/material/Button";
 import {
   createFileRoute,
@@ -33,8 +35,10 @@ export const Route = createFileRoute("/servers/$serverId")({
       throw notFound();
     }
 
+    const { profile } = useAwsProfileStore.getState();
+
     // Attempt to load the server
-    await loadServer(params.serverId, {});
+    await loadServer(profile, params.serverId, {});
     queryClient.invalidateQueries({
       queryKey: serverKeys.server.root(params.serverId),
     });
@@ -46,6 +50,7 @@ export const Route = createFileRoute("/servers/$serverId")({
     // Unload the server when leaving the server routes
     unloadServer(params.serverId).catch(console.error);
   },
+  pendingMinMs: 0,
   pendingComponent: () => <LoadingPage message="Loading server..." />,
   errorComponent: function Render({ error }) {
     const { serverId } = Route.useParams();
@@ -73,11 +78,7 @@ export const Route = createFileRoute("/servers/$serverId")({
       default:
         return (
           <ErrorPage error={getAPIErrorMessage(currentError)}>
-            <Button
-              onClick={() => {
-                router.invalidate();
-              }}
-            >
+            <Button component={RouterLink} to="/">
               Back
             </Button>
           </ErrorPage>

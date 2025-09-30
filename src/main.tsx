@@ -28,6 +28,7 @@ const router = createRouter({
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
+  defaultPendingMinMs: 0,
 });
 
 const darkTheme = createTheme({
@@ -58,7 +59,7 @@ if (rootElement && !rootElement.innerHTML) {
 
         <Toaster />
       </ThemeProvider>
-    </StrictMode>
+    </StrictMode>,
   );
 }
 

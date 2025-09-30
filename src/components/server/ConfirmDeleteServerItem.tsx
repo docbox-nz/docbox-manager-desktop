@@ -5,6 +5,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import { useRouter } from "@tanstack/react-router";
 
 type Props = {
   open: boolean;
@@ -23,6 +24,8 @@ export function ConfirmDeleteServerItem({
   const { mutate: deleteServer, isPending: isDeleting } =
     useDeleteServer(serverId);
 
+  const router = useRouter();
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Confirm Deletion</DialogTitle>
@@ -38,7 +41,13 @@ export function ConfirmDeleteServerItem({
           variant="contained"
           color="error"
           loading={isDeleting}
-          onClick={() => deleteServer()}
+          onClick={() =>
+            deleteServer(undefined, {
+              onSuccess: () => {
+                router.invalidate();
+              },
+            })
+          }
         >
           Confirm
         </Button>

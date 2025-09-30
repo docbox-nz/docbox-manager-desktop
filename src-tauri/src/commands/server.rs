@@ -1,7 +1,5 @@
+use eyre::ContextCompat;
 use std::{ops::Deref, sync::Arc};
-
-use aws_config::SdkConfig;
-use eyre::{Context, ContextCompat};
 use tauri::State;
 use uuid::Uuid;
 
@@ -35,7 +33,7 @@ pub async fn server_get_all(db: State<'_, crate::database::DbPool>) -> CmdResult
 pub async fn server_load(
     db: State<'_, crate::database::DbPool>,
     server_store: State<'_, Arc<ServerStore>>,
-    sdk_config: State<'_, SdkConfig>,
+    profile: Option<String>,
     server_id: Uuid,
     load_config: crate::server::LoadServerConfig,
 ) -> CmdResult<()> {
@@ -44,7 +42,7 @@ pub async fn server_load(
         .context("server not found")?;
 
     let _server = match server_store
-        .try_load_server(&sdk_config, server, load_config)
+        .try_load_server(profile, server, load_config)
         .await
     {
         Ok(value) => value,

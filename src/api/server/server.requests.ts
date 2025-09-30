@@ -9,8 +9,12 @@ export function createServer(create: CreateServer) {
   return invoke<Server>("server_create", { create });
 }
 
-export function loadServer(serverId: string, loadConfig: LoadServerConfig) {
-  return invoke("server_load", { serverId, loadConfig });
+export function loadServer(
+  profile: string,
+  serverId: string,
+  loadConfig: LoadServerConfig,
+) {
+  return invoke("server_load", { profile, serverId, loadConfig });
 }
 
 export function unloadServer(serverId: string) {

@@ -30,7 +30,7 @@ pub fn run() {
             server_load, server_unload,
         },
         tenant::{tenant_create, tenant_delete, tenant_get, tenant_get_all, tenant_migrate},
-        utils::utils_encrypt,
+        utils::{utils_encrypt, utils_get_aws_profiles},
     };
 
     tauri::Builder::default()
@@ -68,7 +68,8 @@ pub fn run() {
             tenant_get,
             tenant_get_all,
             tenant_migrate,
-            utils_encrypt
+            utils_encrypt,
+            utils_get_aws_profiles
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

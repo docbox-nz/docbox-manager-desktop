@@ -18,12 +18,14 @@ export function useLoadServer() {
   return useMutation({
     mutationKey: serverKeys.createServer,
     mutationFn: ({
+      profile,
       serverId,
       loadConfig,
     }: {
+      profile: string;
       serverId: string;
       loadConfig: LoadServerConfig;
-    }) => loadServer(serverId, loadConfig),
+    }) => loadServer(profile, serverId, loadConfig),
     onSuccess(_data, { serverId }) {
       queryClient.invalidateQueries({
         queryKey: serverKeys.server.root(serverId),
