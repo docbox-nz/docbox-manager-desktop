@@ -24,7 +24,7 @@ const router = createRouter({
   context: {
     ...TanStackQueryProvider.getContext(),
   },
-  defaultPreload: "intent",
+  defaultPreload: false,
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
