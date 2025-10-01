@@ -133,7 +133,7 @@ function TenantCreate() {
           : null;
 
       const storage_cors_origins = value.storage.storage_cors_origins.filter(
-        (value) => value.trim().length > 0
+        (value) => value.trim().length > 0,
       );
 
       await createTenantMutation.mutateAsync({
@@ -151,7 +151,7 @@ function TenantCreate() {
       });
       toast.success("Created tenant");
 
-      navigate({ to: "/" });
+      navigate({ to: "/servers/$serverId", params: { serverId } });
     },
   });
 
