@@ -1,6 +1,10 @@
 use std::{collections::HashMap, future::Future, sync::Arc};
 
 use aws_config::SdkConfig;
+use docbox_core::{
+    aws::SqsClient,
+    events::{sqs::SqsEventPublisherFactory, EventPublisherFactory},
+};
 use docbox_database::{DatabasePoolCache, DatabasePoolCacheConfig};
 use docbox_search::{SearchIndexFactory, SearchIndexFactoryError};
 use docbox_secrets::{SecretManager, SecretManagerError, SecretsManagerConfig};
@@ -171,6 +175,14 @@ pub async fn load_server(
         }
     };
 
+    // Create the SQS client
+    // Warning: Will panic if the configuration provided is invalid
+    let sqs_client = SqsClient::new(&aws_config);
+
+    // Setup event publisher factories
+    let sqs_publisher_factory = SqsEventPublisherFactory::new(sqs_client.clone());
+    let events = EventPublisherFactory::new(sqs_publisher_factory);
+
     Ok(ActiveServer {
         id: server.id,
         name: server.name,
@@ -180,6 +192,7 @@ pub async fn load_server(
         secrets,
         search,
         storage,
+        events,
     })
 }
 
@@ -194,6 +207,7 @@ pub struct ActiveServer {
     pub secrets: Arc<SecretManager>,
     pub search: SearchIndexFactory,
     pub storage: StorageLayerFactory,
+    pub events: EventPublisherFactory,
 }
 
 pub struct DatabaseProvider {

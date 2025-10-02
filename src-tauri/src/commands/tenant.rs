@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use docbox_database::models::tenant::Tenant;
-use docbox_management::tenant::create_tenant::CreateTenantConfig;
+use docbox_management::tenant::{
+    create_tenant::CreateTenantConfig,
+    delete_tenant::{DeleteTenant, DeleteTenantOptions},
+};
 use eyre::ContextCompat;
 use tauri::State;
 use uuid::Uuid;
@@ -75,14 +78,26 @@ pub async fn tenant_delete(
     server_id: Uuid,
     env: String,
     tenant_id: Uuid,
+    options: Option<DeleteTenantOptions>,
 ) -> CmdResult<()> {
     let server = server_store
         .get_server(server_id)
         .await
         .context("server not found")?;
 
-    docbox_management::tenant::delete_tenant::delete_tenant(&server.db_provider, &env, tenant_id)
-        .await?;
+    docbox_management::tenant::delete_tenant::delete_tenant(
+        &server.db_provider,
+        &server.search,
+        &server.storage,
+        &server.events,
+        &server.secrets,
+        DeleteTenant {
+            env,
+            tenant_id,
+            options: options.unwrap_or_default(),
+        },
+    )
+    .await?;
 
     Ok(())
 }
