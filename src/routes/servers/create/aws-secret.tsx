@@ -1,14 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import Alert from "@mui/material/Alert";
 import { getAPIErrorMessage } from "@/api/axios";
-import { FormTextField } from "@/components/form/FormTextField";
 import { useCreateServer } from "@/api/server/server.mutations";
 
 import { v4 } from "uuid";
@@ -16,6 +14,8 @@ import { ServerConfigType } from "@/api/server";
 import RouterLink from "@/components/RouterLink";
 import Container from "@mui/material/Container";
 import { toast } from "sonner";
+import { useAppForm } from "@/hooks/use-app-form";
+import MenuItem from "@mui/material/MenuItem";
 
 export const Route = createFileRoute("/servers/create/aws-secret")({
   component: RouteComponent,
@@ -25,7 +25,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const createServerMutation = useCreateServer();
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       name: "",
       secret_name: "",
@@ -76,11 +76,10 @@ function RouteComponent() {
             }}
           >
             <Stack spacing={3}>
-              <form.Field
+              <form.AppField
                 name="name"
                 children={(field) => (
-                  <FormTextField
-                    field={field}
+                  <field.TextField
                     variant="outlined"
                     size="medium"
                     label="Server Name"
@@ -89,11 +88,10 @@ function RouteComponent() {
                 )}
               />
 
-              <form.Field
+              <form.AppField
                 name="secret_name"
                 children={(field) => (
-                  <FormTextField
-                    field={field}
+                  <field.TextField
                     variant="outlined"
                     size="medium"
                     label="Secret Name"

@@ -5,6 +5,10 @@
     "lucide",
     "nowrap",
     "frameBorder",
-    "pdfjs"
+    "pdfjs",
+    "tanstack",
+    "fontsource",
+    "roboto",
+    "sonner"
   ]
 }

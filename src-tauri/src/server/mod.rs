@@ -1,8 +1,12 @@
-use std::{collections::HashMap, future::Future, sync::Arc};
-
-use aws_config::SdkConfig;
+use crate::{
+    database::entity::server::{
+        AdminDatabaseConfiguration, AdminDatabaseSetupUserConfig, Server, ServerConfig,
+        ServerConfigData, ServerId,
+    },
+    utils::{aws::get_aws_profiles, encryption::decrypt},
+};
 use docbox_core::{
-    aws::SqsClient,
+    aws::{aws_config, aws_config_with_profile, SqsClient},
     events::{sqs::SqsEventPublisherFactory, EventPublisherFactory},
 };
 use docbox_database::{DatabasePoolCache, DatabasePoolCacheConfig};
@@ -10,16 +14,9 @@ use docbox_search::{SearchIndexFactory, SearchIndexFactoryError};
 use docbox_secrets::{SecretManager, SecretManagerError, SecretsManagerConfig};
 use docbox_storage::StorageLayerFactory;
 use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, future::Future, sync::Arc};
 use thiserror::Error;
 use tokio::sync::Mutex;
-
-use crate::{
-    database::entity::server::{
-        AdminDatabaseConfiguration, AdminDatabaseSetupUserConfig, Server, ServerConfig,
-        ServerConfigData, ServerId,
-    },
-    utils::encryption::decrypt,
-};
 
 /// Active server connections
 #[derive(Default)]
@@ -30,12 +27,12 @@ pub struct ServerStore {
 impl ServerStore {
     pub async fn try_load_server(
         &self,
-        aws_config: &SdkConfig,
+        profile: Option<String>,
         server: Server,
         load_config: LoadServerConfig,
     ) -> Result<Arc<ActiveServer>, LoadServerError> {
         let servers = &mut *self.servers.lock().await;
-        let server = load_server(aws_config, server, load_config).await?;
+        let server = load_server(profile, server, load_config).await?;
         let server = Arc::new(server);
         servers.insert(server.id, server.clone());
         Ok(server)
@@ -79,6 +76,12 @@ pub enum LoadServerError {
 
     #[error("failed to deserialize config")]
     Deserialize(serde_json::Error),
+
+    #[error("failed to get available aws profiles")]
+    GetAwsProfiles,
+
+    #[error("unable to locate requested AWS profile")]
+    AwsProfileNotFound,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -87,14 +90,32 @@ pub struct LoadServerConfig {
 }
 
 pub async fn load_server(
-    aws_config: &SdkConfig,
+    profile: Option<String>,
     server: Server,
     load_config: LoadServerConfig,
 ) -> Result<ActiveServer, LoadServerError> {
+    let aws_config = match profile.as_deref() {
+        // Default profile
+        Some("default") | None => aws_config().await,
+
+        // Custom user profile
+        Some(profile) => {
+            let profiles = get_aws_profiles()
+                .await
+                .map_err(|_| LoadServerError::GetAwsProfiles)?;
+
+            if !profiles.contains(&profile.to_string()) {
+                return Err(LoadServerError::AwsProfileNotFound);
+            }
+
+            aws_config_with_profile(profile).await
+        }
+    };
+
     let config: ServerConfigData = match server.config {
         // Load secret from AWS
         ServerConfig::AwsSecret { secret_name } => {
-            let secrets = SecretManager::from_config(aws_config, SecretsManagerConfig::Aws);
+            let secrets = SecretManager::from_config(&aws_config, SecretsManagerConfig::Aws);
             secrets
                 .parsed_secret(&secret_name)
                 .await?
@@ -122,7 +143,7 @@ pub async fn load_server(
     };
 
     // Setup server secret manager
-    let secrets = SecretManager::from_config(aws_config, config.secrets.clone());
+    let secrets = SecretManager::from_config(&aws_config, config.secrets.clone());
     let secrets = Arc::new(secrets);
 
     // Setup database cache / connector
@@ -138,14 +159,14 @@ pub async fn load_server(
 
     // Setup search factory
     let search = SearchIndexFactory::from_config(
-        aws_config,
+        &aws_config,
         secrets.clone(),
         db_cache.clone(),
         config.search.clone(),
     )?;
 
     // Setup storage factory
-    let storage = StorageLayerFactory::from_config(aws_config, config.storage.clone());
+    let storage = StorageLayerFactory::from_config(&aws_config, config.storage.clone());
 
     let db_provider = match (
         config.database.setup_user.as_ref(),

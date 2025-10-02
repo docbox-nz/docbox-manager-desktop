@@ -49,16 +49,14 @@ export default function ToggleButtonGroup({
         {children}
       </MuiToggleButtonGroup>
 
-      {helperText ||
-        (field.state.meta.errors && field.state.meta.errors.length > 0 && (
-          <FormHelperText error={!field.state.meta.isValid}>
-            {field.state.meta.isValid
-              ? helperText
-              : field.state.meta.errors
-                  .map((error) => error?.message)
-                  .join(", ")}
-          </FormHelperText>
-        ))}
+      {(helperText ||
+        (field.state.meta.errors && field.state.meta.errors.length > 0)) && (
+        <FormHelperText error={!field.state.meta.isValid}>
+          {field.state.meta.isValid
+            ? helperText
+            : field.state.meta.errors.map((error) => error?.message).join(", ")}
+        </FormHelperText>
+      )}
     </FormControl>
   );
 }

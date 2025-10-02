@@ -3,7 +3,11 @@ import { EncryptedContent } from "./utils.types";
 
 export function encrypt(
   password: string,
-  input: string
+  input: string,
 ): Promise<EncryptedContent> {
   return invoke("utils_encrypt", { password, input });
+}
+
+export function getAWSProfiles(): Promise<string[]> {
+  return invoke("utils_get_aws_profiles");
 }
