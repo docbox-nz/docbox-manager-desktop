@@ -73,6 +73,7 @@ export const TenantSection = withFieldGroup({
                     onClick={() => {
                       field.setValue(v4());
                     }}
+                    sx={{ px: 3 }}
                   >
                     Randomize
                   </Button>
