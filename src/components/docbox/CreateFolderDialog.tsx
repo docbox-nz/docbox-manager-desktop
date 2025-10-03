@@ -4,14 +4,13 @@ import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { FormTextField } from "../form/FormTextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
 import type { DocumentBoxScope, FolderId } from "@docbox-nz/docbox-sdk";
 import { toast } from "sonner";
+import { useAppForm } from "@/hooks/use-app-form";
 
 type Props = {
   open: boolean;
@@ -29,7 +28,7 @@ export default function CreateFolderDialog({
 }: Props) {
   const createFolderMutation = useCreateFolder();
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       name: "",
     },
@@ -65,11 +64,10 @@ export default function CreateFolderDialog({
           }}
         >
           <Stack spacing={3} sx={{ pt: 2 }}>
-            <form.Field
+            <form.AppField
               name="name"
               children={(field) => (
-                <FormTextField
-                  field={field}
+                <field.TextField
                   variant="outlined"
                   size="medium"
                   label="Name"

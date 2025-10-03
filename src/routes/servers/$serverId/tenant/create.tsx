@@ -1,27 +1,21 @@
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import { useForm, useStore } from "@tanstack/react-form";
+import { useStore } from "@tanstack/react-form";
 import * as z from "zod/v4";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { v4 as uuidv4 } from "uuid";
-import { FormTextField } from "@/components/form/FormTextField";
 import Typography from "@mui/material/Typography";
-import { FormAutocomplete } from "@/components/form/FormAutocomplete";
 import InputAdornment from "@mui/material/InputAdornment";
 import { useCallback } from "react";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Alert from "@mui/material/Alert";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import MdiArrowDownDrop from "~icons/mdi/arrow-down-drop";
-import MdiError from "~icons/mdi/error";
-import MdiCheckCircle from "~icons/mdi/check-circle";
 import { useCreateTenant } from "@/api/tenant/tenant.mutations";
 import { getAPIErrorMessage } from "@/api/axios";
 import { toast } from "sonner";
@@ -29,6 +23,7 @@ import MdiChevronLeft from "~icons/mdi/chevron-left";
 import IconButton from "@mui/material/IconButton";
 import RouterLink from "@/components/RouterLink";
 import FormValidIndicator from "@/components/form/FormValidIndicator";
+import { useAppForm } from "@/hooks/use-app-form";
 
 export const Route = createFileRoute("/servers/$serverId/tenant/create")({
   component: TenantCreate,
@@ -41,7 +36,7 @@ const ENV_TAG: Partial<Record<string, string>> = {
   Production: "prod",
 };
 
-const tagValidation = z
+const tagSchema = z
   .string()
   .nonempty("Tag must not be empty")
   .regex(/^[a-zA-Z0-9_-]+$/, {
@@ -49,73 +44,77 @@ const tagValidation = z
       "Only alphanumeric characters, underscores, and dashes are allowed",
   });
 
+const createTenantSchema = z
+  .object({
+    id: z.uuidv4(),
+    name: z.string().nonempty(),
+    env: z.string().nonempty(),
+    database: z.object({
+      db_name: z.string().nonempty(),
+      db_secret_name: z.string().nonempty(),
+      db_role_name: z.string().nonempty(),
+    }),
+    storage: z.object({
+      storage_bucket_name: z.string().nonempty(),
+      s3_queue_arn: z.string(),
+      storage_cors_origins: z.array(z.string()),
+    }),
+    search: z.object({
+      search_index_name: z.string().nonempty(),
+    }),
+    event_queue_url: z.string(),
+
+    simplified: z.boolean(),
+    tag: z.any(),
+  })
+  .check((ctx) => {
+    // When simplified mode is enabled the tag must be validated
+    if (ctx.value.simplified) {
+      const result = tagSchema.safeParse(ctx.value.tag);
+      if (!result.success) {
+        // Add all error messages from tagValidation
+        for (const issue of result.error.issues) {
+          ctx.issues.push({
+            ...issue,
+            path: ["tag"],
+          });
+        }
+      }
+    }
+  });
+
+const defaultValues: z.input<typeof createTenantSchema> = {
+  id: uuidv4(),
+  name: DEFAULT_NAME,
+  env: "Production",
+  database: {
+    db_name: DEFAULT_TAG,
+    db_secret_name: DEFAULT_TAG,
+    db_role_name: DEFAULT_TAG,
+  },
+  storage: {
+    storage_bucket_name: DEFAULT_TAG,
+    s3_queue_arn: "",
+    storage_cors_origins: [""],
+  },
+  search: {
+    search_index_name: DEFAULT_TAG,
+  },
+
+  event_queue_url: "",
+  simplified: true,
+  tag: DEFAULT_TAG,
+};
+
 function TenantCreate() {
   const { serverId } = Route.useParams();
   const createTenantMutation = useCreateTenant(serverId);
   const navigate = useNavigate();
 
-  const form = useForm({
-    defaultValues: {
-      id: uuidv4(),
-      name: DEFAULT_NAME,
-      env: "Production",
-      database: {
-        db_name: DEFAULT_TAG,
-        db_secret_name: DEFAULT_TAG,
-        db_role_name: DEFAULT_TAG,
-      },
-      storage: {
-        storage_bucket_name: DEFAULT_TAG,
-        s3_queue_arn: "",
-        storage_cors_origins: [""],
-      },
-      search: {
-        search_index_name: DEFAULT_TAG,
-      },
-
-      event_queue_url: "",
-      simplified: true,
-      tag: DEFAULT_TAG,
-    },
+  const form = useAppForm({
+    defaultValues,
     validators: {
-      onChange: z
-        .object({
-          id: z.uuidv4(),
-          name: z.string().nonempty(),
-          env: z.string().nonempty(),
-          database: z.object({
-            db_name: z.string().nonempty(),
-            db_secret_name: z.string().nonempty(),
-            db_role_name: z.string().nonempty(),
-          }),
-          storage: z.object({
-            storage_bucket_name: z.string().nonempty(),
-            s3_queue_arn: z.string(),
-            storage_cors_origins: z.array(z.string()),
-          }),
-          search: z.object({
-            search_index_name: z.string().nonempty(),
-          }),
-          event_queue_url: z.string(),
-
-          simplified: z.boolean(),
-          tag: z.any(),
-        })
-        .check((ctx) => {
-          // When simplified mode is enabled the tag must be validated
-          if (ctx.value.simplified) {
-            const result = tagValidation.safeParse(ctx.value.tag);
-            if (!result.success) {
-              // Add all error messages from tagValidation
-              for (const issue of result.error.issues) {
-                ctx.issues.push({
-                  ...issue,
-                  path: ["tag"],
-                });
-              }
-            }
-          }
-        }),
+      onChange: createTenantSchema,
     },
     onSubmit: async ({ value }) => {
       const envTag = ENV_TAG[value.env] ?? value.env.toLowerCase();
@@ -133,7 +132,7 @@ function TenantCreate() {
           : null;
 
       const storage_cors_origins = value.storage.storage_cors_origins.filter(
-        (value) => value.trim().length > 0,
+        (value) => value.trim().length > 0
       );
 
       await createTenantMutation.mutateAsync({
@@ -176,11 +175,10 @@ function TenantCreate() {
     <Card elevation={2}>
       <CardContent>
         <Stack spacing={3} sx={{ pt: 2 }}>
-          <form.Field
+          <form.AppField
             name="id"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 variant="outlined"
                 size="medium"
                 label="ID"
@@ -189,11 +187,10 @@ function TenantCreate() {
             )}
           />
 
-          <form.Field
+          <form.AppField
             name="name"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 variant="outlined"
                 size="medium"
                 label="Name"
@@ -202,11 +199,10 @@ function TenantCreate() {
             )}
           />
 
-          <form.Field
+          <form.AppField
             name="env"
             children={(field) => (
-              <FormAutocomplete
-                field={field}
+              <field.Autocomplete
                 options={["Development", "Production"]}
                 inputProps={{
                   variant: "outlined",
@@ -219,20 +215,10 @@ function TenantCreate() {
           />
 
           <Stack spacing={1}>
-            <form.Field
+            <form.AppField
               name="simplified"
               children={(field) => (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={field.state.value}
-                      onChange={(_event, checked) =>
-                        field.handleChange(checked)
-                      }
-                    />
-                  }
-                  label="Simplified setup using tags"
-                />
+                <field.Checkbox label="Simplified setup using tags" />
               )}
               listeners={{
                 onChange: onChangeTag,
@@ -246,11 +232,10 @@ function TenantCreate() {
           </Stack>
 
           {simplified && (
-            <form.Field
+            <form.AppField
               name="tag"
               children={(field) => (
-                <FormTextField
-                  field={field}
+                <field.TextField
                   variant="outlined"
                   size="medium"
                   label="Tag"
@@ -292,11 +277,10 @@ function TenantCreate() {
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
-          <form.Field
+          <form.AppField
             name="database.db_name"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 variant="outlined"
                 size="medium"
                 label="Database Name"
@@ -317,11 +301,10 @@ function TenantCreate() {
             )}
           />
 
-          <form.Field
+          <form.AppField
             name="database.db_role_name"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 variant="outlined"
                 size="medium"
                 label="Database Role Name"
@@ -342,11 +325,10 @@ function TenantCreate() {
             )}
           />
 
-          <form.Field
+          <form.AppField
             name="database.db_secret_name"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 variant="outlined"
                 size="medium"
                 label="Database Secret Name"
@@ -392,11 +374,10 @@ function TenantCreate() {
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={3}>
-          <form.Field
+          <form.AppField
             name="storage.storage_bucket_name"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 variant="outlined"
                 size="medium"
                 label="S3 Bucket Name"
@@ -416,11 +397,10 @@ function TenantCreate() {
             )}
           />
 
-          <form.Field
+          <form.AppField
             name="storage.s3_queue_arn"
             children={(field) => (
-              <FormTextField
-                field={field}
+              <field.TextField
                 variant="outlined"
                 size="medium"
                 label="Notification Queue ARN"
@@ -441,21 +421,20 @@ function TenantCreate() {
             </Typography>
           </Stack>
 
-          <form.Field name="storage.storage_cors_origins" mode="array">
+          <form.AppField name="storage.storage_cors_origins" mode="array">
             {(field) => {
               return (
                 <Stack spacing={3}>
                   {field.state.value.map((_, i) => {
                     return (
-                      <form.Field
+                      <form.AppField
                         key={i}
                         name={`storage.storage_cors_origins[${i}]`}
                       >
                         {(subField) => {
                           return (
                             <Stack direction="row" spacing={2}>
-                              <FormTextField
-                                field={subField}
+                              <subField.TextField
                                 variant="outlined"
                                 size="medium"
                                 label={`Origin ${i + 1}`}
@@ -472,9 +451,10 @@ function TenantCreate() {
                             </Stack>
                           );
                         }}
-                      </form.Field>
+                      </form.AppField>
                     );
                   })}
+
                   <Button
                     variant="contained"
                     onClick={() =>
@@ -487,7 +467,7 @@ function TenantCreate() {
                 </Stack>
               );
             }}
-          </form.Field>
+          </form.AppField>
         </Stack>
       </AccordionDetails>
     </Accordion>
@@ -512,11 +492,10 @@ function TenantCreate() {
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <form.Field
+        <form.AppField
           name="search.search_index_name"
           children={(field) => (
-            <FormTextField
-              field={field}
+            <field.TextField
               variant="outlined"
               size="medium"
               label="Search Index Name"
@@ -558,11 +537,10 @@ function TenantCreate() {
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <form.Field
+        <form.AppField
           name="event_queue_url"
           children={(field) => (
-            <FormTextField
-              field={field}
+            <field.TextField
               variant="outlined"
               size="medium"
               label="Event Queue URL"

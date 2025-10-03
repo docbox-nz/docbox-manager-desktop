@@ -1,43 +1,54 @@
-import { type AnyFieldApi } from "@tanstack/react-form";
-import Autocomplete, {
-  type AutocompleteProps,
+import {
+  AutocompleteValue,
+  default as MuiAutocomplete,
+  type AutocompleteProps as MuiAutocompleteProps,
 } from "@mui/material/Autocomplete";
-import TextField, { type TextFieldProps } from "@mui/material/TextField";
-import type { ChipTypeMap } from "@mui/material/Chip";
+import { useFieldContext } from "@/context/form-context";
+import TextField, { TextFieldProps } from "@mui/material/TextField";
+import { ChipTypeMap } from "@mui/material/Chip";
 
-type FormTextFieldProps<
+type AutocompleteProps<
   Value,
   Multiple extends boolean | undefined,
   DisableClearable extends boolean | undefined,
   FreeSolo extends boolean | undefined,
   ChipComponent extends React.ElementType = ChipTypeMap["defaultComponent"],
 > = Omit<
-  AutocompleteProps<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>,
+  MuiAutocompleteProps<
+    Value,
+    Multiple,
+    DisableClearable,
+    FreeSolo,
+    ChipComponent
+  >,
   "name" | "value" | "onChange" | "error" | "renderInput"
 > & {
-  field: AnyFieldApi;
   inputProps?: Partial<TextFieldProps>;
 };
 
-export function FormAutocomplete<
+export default function Autocomplete<
   Value,
   Multiple extends boolean | undefined = false,
   DisableClearable extends boolean | undefined = false,
   FreeSolo extends boolean | undefined = false,
   ChipComponent extends React.ElementType = ChipTypeMap["defaultComponent"],
 >({
-  field,
   inputProps,
   ...rest
-}: FormTextFieldProps<
+}: AutocompleteProps<
   Value,
   Multiple,
   DisableClearable,
   FreeSolo,
   ChipComponent
 >) {
+  const field =
+    useFieldContext<
+      AutocompleteValue<Value, Multiple, DisableClearable, FreeSolo>
+    >();
+
   return (
-    <Autocomplete
+    <MuiAutocomplete<Value, Multiple, DisableClearable, FreeSolo, ChipComponent>
       {...rest}
       fullWidth
       value={field.state.value}

@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import type { AnyFieldApi } from "@tanstack/react-form";
 import { useDropzone } from "react-dropzone";
 import FileTypeIcon from "@/components/docbox/FileTypeIcon";
 import { getFileTypeFromMime } from "@/utils/file-type";
@@ -11,9 +10,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import MdiDelete from "~icons/mdi/delete";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
-type FormUploadFileProps = {
-  field: AnyFieldApi;
-};
+import { useFieldContext } from "@/context/form-context";
 
 type FileMaybeProgress = File & {
   progress?: {
@@ -22,7 +19,8 @@ type FileMaybeProgress = File & {
   };
 };
 
-export default function FormUploadFile({ field }: FormUploadFileProps) {
+export default function UploadFiles() {
+  const field = useFieldContext<FileMaybeProgress[]>();
   const { getRootProps, getInputProps } = useDropzone({
     onDrop(acceptedFiles, _fileRejections, _event) {
       field.setValue((currentValue: File[]) => [

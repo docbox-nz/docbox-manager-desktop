@@ -4,12 +4,11 @@ import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { FormTextField } from "../form/FormTextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
+import { useAppForm } from "@/hooks/use-app-form";
 
 type Props = {
   open: boolean;
@@ -19,7 +18,7 @@ type Props = {
 export default function CreateDocumentBoxDialog({ open, onClose }: Props) {
   const createDocumentBoxMutation = useCreateDocumentBox();
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       scope: "",
     },
@@ -47,11 +46,10 @@ export default function CreateDocumentBoxDialog({ open, onClose }: Props) {
           }}
         >
           <Stack spacing={3} sx={{ pt: 2 }}>
-            <form.Field
+            <form.AppField
               name="scope"
               children={(field) => (
-                <FormTextField
-                  field={field}
+                <field.TextField
                   variant="outlined"
                   size="medium"
                   label="Scope"

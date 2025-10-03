@@ -4,9 +4,7 @@ import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { FormTextField } from "@/components/form/FormTextField";
 import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
@@ -15,6 +13,7 @@ import { toast } from "sonner";
 import { getFileExtension } from "@/utils/file-type";
 import InputAdornment from "@mui/material/InputAdornment";
 import Typography from "@mui/material/Typography";
+import { useAppForm } from "@/hooks/use-app-form";
 
 type Props = {
   open: boolean;
@@ -32,7 +31,7 @@ export default function EditFileDialog({ open, onClose, file, scope }: Props) {
     ? file.name.substring(0, file.name.length - (extension.length + 1))
     : file.name;
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
       name: nameWithoutExtension,
     },
@@ -69,11 +68,10 @@ export default function EditFileDialog({ open, onClose, file, scope }: Props) {
           }}
         >
           <Stack spacing={3} sx={{ pt: 2 }}>
-            <form.Field
+            <form.AppField
               name="name"
               children={(field) => (
-                <FormTextField
-                  field={field}
+                <field.TextField
                   variant="outlined"
                   size="medium"
                   label="Name"
