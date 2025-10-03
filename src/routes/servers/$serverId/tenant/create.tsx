@@ -7,10 +7,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { v4 as uuidv4 } from "uuid";
 import Typography from "@mui/material/Typography";
-import InputAdornment from "@mui/material/InputAdornment";
-import { useCallback } from "react";
 import Alert from "@mui/material/Alert";
 import { useCreateTenant } from "@/api/tenant/tenant.mutations";
 import { getAPIErrorMessage } from "@/api/axios";
@@ -19,97 +16,55 @@ import MdiChevronLeft from "~icons/mdi/chevron-left";
 import IconButton from "@mui/material/IconButton";
 import RouterLink from "@/components/RouterLink";
 import { useAppForm } from "@/hooks/use-app-form";
-import FormSectionAccordion from "@/components/form/FormSectionAccordion";
+import {
+  TenantSection,
+  tenantSectionDefaultValues,
+  tenantSectionSchema,
+} from "@/features/tenants/create/tenant-section";
+import {
+  DatabaseSection,
+  databaseSectionDefaultValues,
+  databaseSectionSchema,
+} from "@/features/tenants/create/database-section";
+import {
+  StorageSection,
+  storageSectionDefaultValues,
+  storageSectionSchema,
+} from "@/features/tenants/create/storage-section";
+import {
+  SearchSection,
+  searchSectionDefaultValues,
+  searchSectionSchema,
+} from "@/features/tenants/create/search-section";
+import {
+  EventsSection,
+  eventsSectionDefaultValues,
+  eventsSectionSchema,
+} from "@/features/tenants/create/events-section";
 
 export const Route = createFileRoute("/servers/$serverId/tenant/create")({
   component: TenantCreate,
 });
 
-const DEFAULT_NAME = "Test";
-const DEFAULT_TAG = "test";
-const ENV_TAG: Partial<Record<string, string>> = {
+export const ENV_TAG: Partial<Record<string, string>> = {
   Development: "dev",
   Production: "prod",
 };
 
-const tagSchema = z
-  .string()
-  .nonempty("Tag must not be empty")
-  .regex(/^[a-zA-Z0-9_-]+$/, {
-    message:
-      "Only alphanumeric characters, underscores, and dashes are allowed",
-  });
-
-const databaseSchema = z.object({
-  db_name: z.string().nonempty(),
-  db_secret_name: z.string().nonempty(),
-  db_role_name: z.string().nonempty(),
-});
-
-const storageSchema = z.object({
-  storage_bucket_name: z.string().nonempty(),
-  s3_queue_arn: z.string(),
-  storage_cors_origins: z.array(z.string()),
-});
-
-const searchSchema = z.object({
-  search_index_name: z.string().nonempty(),
-});
-
-const eventsSchema = z.object({
-  event_queue_url: z.string(),
-});
-
-const tenantSchemaBase = z.object({
-  id: z.uuidv4(),
-  name: z.string().nonempty(),
-  env: z.string().nonempty(),
-  simplified: z.boolean(),
-  tag: z.string(),
-});
-
-const tenantSchema = z.discriminatedUnion("simplified", [
-  tenantSchemaBase.extend({
-    simplified: z.literal(true),
-    tag: tagSchema,
-  }),
-  tenantSchemaBase.extend({
-    simplified: z.literal(false),
-  }),
-]);
-
 const createTenantSchema = z.object({
-  tenant: tenantSchema,
-  database: databaseSchema,
-  storage: storageSchema,
-  search: searchSchema,
-  events: eventsSchema,
+  tenant: tenantSectionSchema,
+  database: databaseSectionSchema,
+  storage: storageSectionSchema,
+  search: searchSectionSchema,
+  events: eventsSectionSchema,
 });
 
 const defaultValues: z.input<typeof createTenantSchema> = {
-  tenant: {
-    id: uuidv4(),
-    name: DEFAULT_NAME,
-    env: "Production",
-    simplified: true,
-    tag: DEFAULT_TAG,
-  },
-  database: {
-    db_name: DEFAULT_TAG,
-    db_secret_name: DEFAULT_TAG,
-    db_role_name: DEFAULT_TAG,
-  },
-  storage: {
-    storage_bucket_name: DEFAULT_TAG,
-    s3_queue_arn: "",
-    storage_cors_origins: [""],
-  },
-  search: {
-    search_index_name: DEFAULT_TAG,
-  },
-  events: {
-    event_queue_url: "",
-  },
+  tenant: tenantSectionDefaultValues,
+  database: databaseSectionDefaultValues,
+  storage: storageSectionDefaultValues,
+  search: searchSectionDefaultValues,
+  events: eventsSectionDefaultValues,
 };
 
 function TenantCreate() {
@@ -161,346 +116,34 @@ function TenantCreate() {
 
       navigate({ to: "/servers/$serverId", params: { serverId } });
     },
+    listeners: {
+      onChange({ formApi, fieldApi }) {
+        console.log(formApi, fieldApi);
+        // React to only changes on the simplified, env, and tag fields
+        if (
+          !["tenant.simplified", "tenant.env", "tenant.tag"].includes(
+            fieldApi.name
+          )
+        ) {
+          return;
+        }
+
+        const simplified = formApi.getFieldValue("tenant.simplified");
+        if (!simplified) return;
+
+        // Update all linked fields that are determined by the tag
+        const tag = formApi.getFieldValue("tenant.tag");
+        formApi.setFieldValue("database.db_name", tag);
+        formApi.setFieldValue("database.db_secret_name", tag);
+        formApi.setFieldValue("database.db_role_name", tag.replace("-", "_"));
+        formApi.setFieldValue("storage.storage_bucket_name", tag);
+        formApi.setFieldValue("search.search_index_name", tag);
+      },
+    },
   });
 
-  const simplified = useStore(
-    form.store,
-    (state) => state.values.tenant.simplified
-  );
   const environment = useStore(form.store, (state) => state.values.tenant.env);
   const environmentTag = ENV_TAG[environment] ?? "unknown";
-
-  const onChangeTag = useCallback(() => {
-    const simplified = form.getFieldValue("tenant.simplified");
-    if (!simplified) return;
-
-    // Update all linked fields that are determined by the tag
-    const tag = form.getFieldValue("tenant.tag");
-    form.setFieldValue("database.db_name", tag);
-    form.setFieldValue("database.db_secret_name", tag);
-    form.setFieldValue("database.db_role_name", tag.replace("-", "_"));
-    form.setFieldValue("storage.storage_bucket_name", tag);
-    form.setFieldValue("search.search_index_name", tag);
-  }, [form]);
-
-  const renderTenant = (
-    <Card elevation={2}>
-      <CardContent>
-        <Stack spacing={3} sx={{ pt: 2 }}>
-          <form.AppField
-            name="tenant.id"
-            children={(field) => (
-              <field.TextField
-                variant="outlined"
-                size="medium"
-                label="ID"
-                required
-              />
-            )}
-          />
-
-          <form.AppField
-            name="tenant.name"
-            children={(field) => (
-              <field.TextField
-                variant="outlined"
-                size="medium"
-                label="Name"
-                required
-              />
-            )}
-          />
-
-          <form.AppField
-            name="tenant.env"
-            children={(field) => (
-              <field.Autocomplete
-                options={["Development", "Production"]}
-                inputProps={{
-                  variant: "outlined",
-                  size: "medium",
-                  label: "Environment",
-                  required: true,
-                }}
-              />
-            )}
-          />
-
-          <Stack spacing={1}>
-            <form.AppField
-              name="tenant.simplified"
-              children={(field) => (
-                <field.Checkbox label="Simplified setup using tags" />
-              )}
-              listeners={{
-                onChange: onChangeTag,
-              }}
-            />
-
-            <Alert color="info">
-              The simplified setup automatically chooses most of the credentials
-              below using a predefined pattern based on a "tag" you provide
-            </Alert>
-          </Stack>
-
-          {simplified && (
-            <form.AppField
-              name="tenant.tag"
-              children={(field) => (
-                <field.TextField
-                  variant="outlined"
-                  size="medium"
-                  label="Tag"
-                  helperText="Tag must be unique within the environment"
-                  required
-                />
-              )}
-              listeners={{
-                onChange: onChangeTag,
-              }}
-            />
-          )}
-        </Stack>
-      </CardContent>
-    </Card>
-  );
-
-  const databaseValid = useStore(
-    form.store,
-    (state) => databaseSchema.safeParse(state.values.database).success
-  );
-
-  const storageValid = useStore(
-    form.store,
-    (state) => storageSchema.safeParse(state.values.storage).success
-  );
-
-  const searchValid = useStore(
-    form.store,
-    (state) => searchSchema.safeParse(state.values.search).success
-  );
-
-  const eventsValid = useStore(
-    form.store,
-    (state) => eventsSchema.safeParse(state.values.events).success
-  );
-
-  const renderDatabase = (
-    <FormSectionAccordion title="Database" valid={databaseValid}>
-      <Stack spacing={3}>
-        <form.AppField
-          name="database.db_name"
-          children={(field) => (
-            <field.TextField
-              variant="outlined"
-              size="medium"
-              label="Database Name"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">docbox-</InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      -{environmentTag}
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              helperText="Name of the postgres database"
-            />
-          )}
-        />
-
-        <form.AppField
-          name="database.db_role_name"
-          children={(field) => (
-            <field.TextField
-              variant="outlined"
-              size="medium"
-              label="Database Role Name"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">docbox_</InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      _{environmentTag}_api
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              helperText="Name of the role used to access"
-            />
-          )}
-        />
-
-        <form.AppField
-          name="database.db_secret_name"
-          children={(field) => (
-            <field.TextField
-              variant="outlined"
-              size="medium"
-              label="Database Secret Name"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      postgres/docbox/{environmentTag}/
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              helperText="Name of the secret to store the database credentials within"
-            />
-          )}
-        />
-      </Stack>
-    </FormSectionAccordion>
-  );
-
-  const renderStorage = (
-    <FormSectionAccordion title="Storage" valid={storageValid}>
-      <Stack spacing={3}>
-        <form.AppField
-          name="storage.storage_bucket_name"
-          children={(field) => (
-            <field.TextField
-              variant="outlined"
-              size="medium"
-              label="S3 Bucket Name"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">docbox-</InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      -{environmentTag}
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-          )}
-        />
-
-        <form.AppField
-          name="storage.s3_queue_arn"
-          children={(field) => (
-            <field.TextField
-              variant="outlined"
-              size="medium"
-              label="Notification Queue ARN"
-              helperText="ARN for the notification queue for presigned upload file creation events. Required for presigned uploads to work"
-            />
-          )}
-        />
-      </Stack>
-
-      <Stack spacing={2} sx={{ mt: 3 }}>
-        <Stack spacing={1}>
-          <Typography variant="h6" sx={{ fontSize: 16 }}>
-            CORS Origins
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Specify allowed origins for CORS access to the S3 bucket, this is
-            required for presigned uploads from web applications
-          </Typography>
-        </Stack>
-
-        <form.AppField name="storage.storage_cors_origins" mode="array">
-          {(field) => {
-            return (
-              <Stack spacing={3}>
-                {field.state.value.map((_, i) => {
-                  return (
-                    <form.AppField
-                      key={i}
-                      name={`storage.storage_cors_origins[${i}]`}
-                    >
-                      {(subField) => {
-                        return (
-                          <Stack direction="row" spacing={2}>
-                            <subField.TextField
-                              variant="outlined"
-                              size="medium"
-                              label={`Origin ${i + 1}`}
-                              placeholder="https://example.com"
-                            />
-
-                            <Button
-                              variant="contained"
-                              color="secondary"
-                              onClick={() => field.removeValue(i)}
-                            >
-                              Remove
-                            </Button>
-                          </Stack>
-                        );
-                      }}
-                    </form.AppField>
-                  );
-                })}
-
-                <Button
-                  variant="contained"
-                  onClick={() => field.pushValue("", { dontUpdateMeta: true })}
-                  type="button"
-                >
-                  Add Origin
-                </Button>
-              </Stack>
-            );
-          }}
-        </form.AppField>
-      </Stack>
-    </FormSectionAccordion>
-  );
-
-  const renderSearch = (
-    <FormSectionAccordion title="Search" valid={searchValid}>
-      <form.AppField
-        name="search.search_index_name"
-        children={(field) => (
-          <field.TextField
-            variant="outlined"
-            size="medium"
-            label="Search Index Name"
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">docbox-</InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    -{environmentTag}
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        )}
-      />
-    </FormSectionAccordion>
-  );
-
-  const renderEvents = (
-    <FormSectionAccordion title="Event Notifications" valid={eventsValid}>
-      <form.AppField
-        name="events.event_queue_url"
-        children={(field) => (
-          <field.TextField
-            variant="outlined"
-            size="medium"
-            label="Event Queue URL"
-            helperText="Optional: SQS Queue URL to send notifications to when certain events occur such as file uploads"
-          />
-        )}
-      />
-    </FormSectionAccordion>
-  );
 
   return (
     <Box
@@ -542,13 +185,28 @@ function TenantCreate() {
             }}
           >
             <Stack spacing={3}>
-              {renderTenant}
+              <TenantSection form={form} fields="tenant" />
 
               <Stack>
-                {renderDatabase}
-                {renderStorage}
-                {renderSearch}
-                {renderEvents}
+                <DatabaseSection
+                  form={form}
+                  fields="database"
+                  environmentTag={environmentTag}
+                />
+
+                <StorageSection
+                  form={form}
+                  fields="storage"
+                  environmentTag={environmentTag}
+                />
+
+                <SearchSection
+                  form={form}
+                  fields="search"
+                  environmentTag={environmentTag}
+                />
+
+                <EventsSection form={form} fields="events" />
               </Stack>
 
               {createTenantMutation.isError && (
