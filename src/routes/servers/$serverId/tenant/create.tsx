@@ -41,6 +41,7 @@ import {
   eventsSectionDefaultValues,
   eventsSectionSchema,
 } from "@/features/tenants/create/events-section";
+import { getTenants } from "@/api/tenant/tenant.requests";
 
 export const Route = createFileRoute("/servers/$serverId/tenant/create")({
   component: TenantCreate,
@@ -67,6 +68,39 @@ const defaultValues: z.input<typeof createTenantSchema> = {
   events: eventsSectionDefaultValues,
 };
 
+function createTenantFields(value: z.output<typeof createTenantSchema>) {
+  const envTag = ENV_TAG[value.tenant.env] ?? value.tenant.env.toLowerCase();
+
+  const db_name = `docbox-${value.database.db_name}-${envTag}`;
+  const db_secret_name = `postgres/docbox/${envTag}/${value.database.db_secret_name}`;
+  const db_role_name = `docbox_${value.database.db_role_name}_${envTag}_api`;
+  const storage_bucket_name = `docbox-${value.storage.storage_bucket_name}-${envTag}`;
+  const search_index_name = `docbox-${value.search.search_index_name}-${envTag}`;
+  const event_queue_url =
+    value.events.event_queue_url.trim().length > 0
+      ? value.events.event_queue_url
+      : null;
+  const storage_s3_queue_arn =
+    value.storage.s3_queue_arn.trim().length > 0
+      ? value.storage.s3_queue_arn
+      : null;
+
+  const storage_cors_origins = value.storage.storage_cors_origins.filter(
+    (value) => value.trim().length > 0
+  );
+
+  return {
+    db_name,
+    db_secret_name,
+    db_role_name,
+    storage_bucket_name,
+    search_index_name,
+    event_queue_url,
+    storage_s3_queue_arn,
+    storage_cors_origins,
+  };
+}
+
 function TenantCreate() {
   const { serverId } = Route.useParams();
   const createTenantMutation = useCreateTenant(serverId);
@@ -76,28 +110,73 @@ function TenantCreate() {
     defaultValues,
     validators: {
       onChange: createTenantSchema,
+
+      // Ensure other tenants don't have the easily identifiable parts
+      onSubmitAsync: async ({ value }) => {
+        const tenants = await getTenants(serverId);
+        const {
+          db_name,
+          db_secret_name,
+          storage_bucket_name,
+          search_index_name,
+        } = createTenantFields(value);
+
+        // Ensure that none of the resources are in use by another tenant
+        for (const tenant of tenants) {
+          if (tenant.db_name === db_name) {
+            return {
+              form: "database name is already in use",
+              fields: {
+                "database.db_name": "database name is already in use",
+              },
+            };
+          }
+
+          if (tenant.db_secret_name === db_secret_name) {
+            return {
+              form: "database secret name is already in use",
+              fields: {
+                "database.db_secret_name":
+                  "database secret name is already in use",
+              },
+            };
+          }
+
+          if (tenant.s3_name === storage_bucket_name) {
+            return {
+              form: "storage bucket name is already in use",
+              fields: {
+                "storage.storage_bucket_name":
+                  "storage bucket name is already in use",
+              },
+            };
+          }
+
+          if (tenant.os_index_name === search_index_name) {
+            return {
+              form: "search index name is already in use",
+              fields: {
+                "search.search_index_name":
+                  "search index name is already in use",
+              },
+            };
+          }
+        }
+
+        return null;
+      },
     },
     onSubmit: async ({ value }) => {
-      const envTag =
-        ENV_TAG[value.tenant.env] ?? value.tenant.env.toLowerCase();
-
-      const db_name = `docbox-${value.database.db_name}-${envTag}`;
-      const db_secret_name = `postgres/docbox/${envTag}/${value.database.db_secret_name}`;
-      const db_role_name = `docbox_${value.database.db_role_name}_${envTag}_api`;
-      const storage_bucket_name = `docbox-${value.storage.storage_bucket_name}-${envTag}`;
-      const search_index_name = `docbox-${value.search.search_index_name}-${envTag}`;
-      const event_queue_url =
-        value.events.event_queue_url.trim().length > 0
-          ? value.events.event_queue_url
-          : null;
-      const storage_s3_queue_arn =
-        value.storage.s3_queue_arn.trim().length > 0
-          ? value.storage.s3_queue_arn
-          : null;
-
-      const storage_cors_origins = value.storage.storage_cors_origins.filter(
-        (value) => value.trim().length > 0
-      );
+      const {
+        db_name,
+        db_secret_name,
+        db_role_name,
+        storage_bucket_name,
+        search_index_name,
+        event_queue_url,
+        storage_s3_queue_arn,
+        storage_cors_origins,
+      } = createTenantFields(value);
 
       await createTenantMutation.mutateAsync({
         id: value.tenant.id,
@@ -113,12 +192,10 @@ function TenantCreate() {
         event_queue_url,
       });
       toast.success("Created tenant");
-
       navigate({ to: "/servers/$serverId", params: { serverId } });
     },
     listeners: {
       onChange({ formApi, fieldApi }) {
-        console.log(formApi, fieldApi);
         // React to only changes on the simplified, env, and tag fields
         if (
           !["tenant.simplified", "tenant.env", "tenant.tag"].includes(
@@ -215,6 +292,17 @@ function TenantCreate() {
                   {getAPIErrorMessage(createTenantMutation.error)}
                 </Alert>
               )}
+
+              <form.Subscribe
+                selector={(state) => [state.errorMap]}
+                children={([errorMap]) =>
+                  errorMap.onSubmit ? (
+                    <Alert severity="error">
+                      {errorMap.onSubmit.toString()}
+                    </Alert>
+                  ) : null
+                }
+              />
 
               <Button
                 type="submit"
