@@ -1,5 +1,6 @@
 import { withFieldGroup } from "@/hooks/use-app-form";
 import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Stack from "@mui/material/Stack";
@@ -59,12 +60,23 @@ export const TenantSection = withFieldGroup({
             <group.AppField
               name="id"
               children={(field) => (
-                <field.TextField
-                  variant="outlined"
-                  size="medium"
-                  label="ID"
-                  required
-                />
+                <Stack direction="row" spacing={3}>
+                  <field.TextField
+                    variant="outlined"
+                    size="medium"
+                    label="ID"
+                    required
+                  />
+
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      field.setValue(v4());
+                    }}
+                  >
+                    Randomize
+                  </Button>
+                </Stack>
               )}
             />
 
