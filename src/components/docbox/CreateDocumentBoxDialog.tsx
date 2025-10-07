@@ -9,6 +9,7 @@ import Stack from "@mui/material/Stack";
 import Alert from "@mui/material/Alert";
 import DialogActions from "@mui/material/DialogActions";
 import { useAppForm } from "@/hooks/use-app-form";
+import { toast } from "sonner";
 
 type Props = {
   open: boolean;
@@ -31,12 +32,23 @@ export default function CreateDocumentBoxDialog({ open, onClose }: Props) {
       }),
     },
     onSubmit: async ({ value }) => {
-      await createDocumentBoxMutation.mutateAsync({ scope: value.scope });
+      const promise = createDocumentBoxMutation.mutateAsync({
+        scope: value.scope,
+      });
+
+      toast.promise(promise, {
+        loading: "Creating document box",
+        success: "Created document box",
+        error: "Failed to create document box",
+      });
+
+      await promise;
+      onClose();
     },
   });
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Create Document box</DialogTitle>
       <DialogContent>
         <form
