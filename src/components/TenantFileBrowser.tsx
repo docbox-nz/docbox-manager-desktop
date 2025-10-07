@@ -36,10 +36,12 @@ type Props = {
   preview_id?: string;
   edit_id?: string;
   delete_id?: string;
+  deleteScope?: string;
 
   onClosePreview: VoidFunction;
   onCloseEdit: VoidFunction;
   onCloseDelete: VoidFunction;
+  onCloseDeleteScope: VoidFunction;
 };
 
 type ActiveFolder = { folder: DocFolder; children: ResolvedFolder };
@@ -50,10 +52,12 @@ export default function TenantFileBrowser({
   preview_id,
   edit_id,
   delete_id,
+  deleteScope,
 
   onClosePreview,
   onCloseEdit,
   onCloseDelete,
+  onCloseDeleteScope,
 }: Props) {
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [createLinkOpen, setCreateLinkOpen] = useState(false);
@@ -121,7 +125,12 @@ export default function TenantFileBrowser({
 
   // Document box selection
   if (scope === undefined) {
-    return <DocumentBoxesView />;
+    return (
+      <DocumentBoxesView
+        deleteScope={deleteScope}
+        onCloseDeleteScope={onCloseDeleteScope}
+      />
+    );
   }
 
   return (

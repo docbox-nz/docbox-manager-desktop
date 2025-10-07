@@ -23,6 +23,7 @@ const docboxSchema = z.object({
   preview: z.string().optional(),
   edit: z.string().optional(),
   delete: z.string().optional(),
+  deleteScope: z.string().optional(),
 });
 
 export const Route = createFileRoute("/servers/$serverId/tenant/$env/$id")({
@@ -32,7 +33,14 @@ export const Route = createFileRoute("/servers/$serverId/tenant/$env/$id")({
 
 function RouteComponent() {
   const { serverId, env, id } = Route.useParams();
-  const { scope, folder, preview, edit, delete: deleteId } = Route.useSearch();
+  const {
+    scope,
+    folder,
+    preview,
+    edit,
+    delete: deleteId,
+    deleteScope,
+  } = Route.useSearch();
   const navigate = Route.useNavigate();
 
   const {
@@ -57,6 +65,12 @@ function RouteComponent() {
     navigate({
       to: ".",
       search: (search) => ({ ...search, delete: undefined }),
+    });
+
+  const onCloseDeleteScope = () =>
+    navigate({
+      to: ".",
+      search: (search) => ({ ...search, deleteScope: undefined }),
     });
 
   if (tenantLoading) {
@@ -103,9 +117,11 @@ function RouteComponent() {
             preview_id={preview}
             edit_id={edit}
             delete_id={deleteId}
+            deleteScope={deleteScope}
             onClosePreview={onClosePreview}
             onCloseEdit={onCloseEdit}
             onCloseDelete={onCloseDelete}
+            onCloseDeleteScope={onCloseDeleteScope}
           />
         </CardContent>
       </Card>

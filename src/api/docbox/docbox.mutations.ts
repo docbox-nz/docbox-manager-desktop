@@ -95,6 +95,7 @@ export function useDeleteFile() {
       mutateDeleteFile(queryClient, client, scope, file_id),
   });
 }
+
 export function useCreateLink() {
   const queryClient = useQueryClient();
   const client = useDocboxClient();
@@ -193,5 +194,24 @@ export function useDeleteFolder() {
     }) => client.folder.delete(scope, folder_id),
     onSuccess: (_data, { scope, folder_id }) =>
       mutateDeleteFolder(queryClient, client, scope, folder_id),
+  });
+}
+
+export function useDeleteDocumentBox() {
+  const queryClient = useQueryClient();
+  const client = useDocboxClient();
+
+  return useMutation({
+    mutationFn: ({ scope }: { scope: DocumentBoxScope }) =>
+      client.documentBox.delete(scope),
+    onSuccess: (_data, { scope }) => {
+      queryClient.removeQueries({
+        queryKey: docboxKeys.instance(client).boxes.specific(scope).root,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: docboxKeys.instance(client).boxes.root,
+      });
+    },
   });
 }

@@ -15,8 +15,17 @@ import DocumentBoxesTableActiveFilters from "./DocumentBoxesTableActiveFilters";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CreateDocumentBoxDialog from "@/components/docbox/CreateDocumentBoxDialog";
+import DeleteDocumentBoxDialog from "@/components/docbox/DeleteDocumentBoxDialog";
 
-export default function DocumentBoxesView() {
+type Props = {
+  deleteScope?: string;
+  onCloseDeleteScope: VoidFunction;
+};
+
+export default function DocumentBoxesView({
+  deleteScope,
+  onCloseDeleteScope,
+}: Props) {
   const [createOpen, setCreateOpen] = useState(false);
 
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
@@ -101,6 +110,14 @@ export default function DocumentBoxesView() {
         setPaginationModel={setPaginationModel}
         total={total}
       />
+
+      {deleteScope && (
+        <DeleteDocumentBoxDialog
+          open
+          onClose={onCloseDeleteScope}
+          scope={deleteScope}
+        />
+      )}
     </Stack>
   );
 }

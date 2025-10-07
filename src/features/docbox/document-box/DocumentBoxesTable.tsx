@@ -1,12 +1,15 @@
-import Button from "@mui/material/Button";
 import type { DocumentBox } from "@docbox-nz/docbox-sdk";
 import {
   DataGrid,
+  GridActionsCellItem,
   GridPaginationModel,
+  GridRowParams,
   type GridColDef,
 } from "@mui/x-data-grid";
 import Box from "@mui/material/Box";
 import RouterLink from "@/components/RouterLink";
+import Link from "@mui/material/Link";
+import { LinkProps } from "@tanstack/react-router";
 
 type Props = {
   documentBoxes: DocumentBox[];
@@ -22,6 +25,20 @@ const columns: GridColDef<DocumentBox>[] = [
     field: "scope",
     flex: 1,
     headerName: "Scope",
+    renderCell({ row }) {
+      return (
+        <Link
+          component={RouterLink}
+          underline="hover"
+          to="."
+          search={(search: object) => ({ ...search, scope: row.scope })}
+          color="inherit"
+          variant="subtitle2"
+        >
+          {row.scope}
+        </Link>
+      );
+    },
   },
   {
     field: "created_at",
@@ -31,19 +48,32 @@ const columns: GridColDef<DocumentBox>[] = [
 
   {
     field: "actions",
+    type: "actions",
     headerName: "Actions",
-    renderCell: ({ row }) => (
-      <Button
+    getActions: ({ row }: GridRowParams) => [
+      <GridActionsCellItem
+        showInMenu
         component={RouterLink}
-        to="."
-        search={(search: object) => ({ ...search, scope: row.scope })}
-        variant="contained"
-        size="small"
-        style={{ marginLeft: 16 }}
-      >
-        View
-      </Button>
-    ),
+        {...({
+          // GridActionsCellItem doesn't forward props so this has to be done
+          // to prevent type errors
+          to: ".",
+          search: (search) => ({ ...search, scope: row.scope }),
+        } satisfies LinkProps)}
+        label="View"
+      />,
+      <GridActionsCellItem
+        showInMenu
+        component={RouterLink}
+        {...({
+          // GridActionsCellItem doesn't forward props so this has to be done
+          // to prevent type errors
+          to: ".",
+          search: (search) => ({ ...search, deleteScope: row.scope }),
+        } satisfies LinkProps)}
+        label="Delete"
+      />,
+    ],
   },
 ];
 

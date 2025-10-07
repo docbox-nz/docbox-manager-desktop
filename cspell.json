@@ -9,6 +9,8 @@
     "tanstack",
     "fontsource",
     "roboto",
-    "sonner"
+    "sonner",
+    "docbox",
+    "axios"
   ]
 }

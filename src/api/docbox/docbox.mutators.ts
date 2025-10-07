@@ -22,7 +22,7 @@ import { docboxKeys } from "./docbox.keys";
 export function invalidateSearch(
   queryClient: QueryClient,
   client: DocboxClient,
-  scope: string
+  scope: string,
 ) {
   queryClient.invalidateQueries({
     queryKey: docboxKeys.instance(client).boxes.specific(scope).search.root,
@@ -35,7 +35,7 @@ export function mutateResolvedFolder(
   client: DocboxClient,
   scope: DocumentBoxScope,
   folder_id: FolderId,
-  action: (folder: ResolvedFolder) => ResolvedFolder
+  action: (folder: ResolvedFolder) => ResolvedFolder,
 ) {
   // Update the resolved children from a folder response
   queryClient.setQueryData<FolderResponse>(
@@ -47,7 +47,7 @@ export function mutateResolvedFolder(
         ...folder,
         children: action(folder.children),
       };
-    }
+    },
   );
 
   // Updates the resolved children from document box root folders
@@ -66,7 +66,7 @@ export function mutateResolvedFolder(
         ...document_box,
         children,
       };
-    }
+    },
   );
 }
 
@@ -74,7 +74,7 @@ export function mutateResolvedFolders(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  action: (folder: ResolvedFolder, folder_id: FolderId) => ResolvedFolder
+  action: (folder: ResolvedFolder, folder_id: FolderId) => ResolvedFolder,
 ) {
   // Mutate all the folder responses
   queryClient.setQueriesData<FolderResponse>(
@@ -89,7 +89,7 @@ export function mutateResolvedFolders(
         ...folder,
         children: action(folder.children, folder.folder.id),
       };
-    }
+    },
   );
 
   // Mutate the document box resolved children
@@ -102,7 +102,7 @@ export function mutateResolvedFolders(
         ...document_box,
         children: action(document_box.children, document_box.root.id),
       };
-    }
+    },
   );
 }
 
@@ -110,7 +110,7 @@ export function invalidateFile(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  fileId: FileId
+  fileId: FileId,
 ) {
   queryClient.invalidateQueries({
     queryKey: docboxKeys
@@ -125,7 +125,7 @@ export function invalidateFolder(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  folderId: FolderId
+  folderId: FolderId,
 ) {
   queryClient.invalidateQueries({
     queryKey: docboxKeys
@@ -140,7 +140,7 @@ export function invalidateLink(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  linkId: LinkId
+  linkId: LinkId,
 ) {
   queryClient.invalidateQueries({
     queryKey: docboxKeys
@@ -155,7 +155,7 @@ export function mutateFileUploadComplete(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  response: FileResponse
+  response: FileResponse,
 ) {
   // Store the updated file data
   queryClient.setQueryData(
@@ -163,7 +163,7 @@ export function mutateFileUploadComplete(
       .instance(client)
       .boxes.specific(scope)
       .file.specific(response.file.id).root,
-    () => response
+    () => response,
   );
 
   // Add the file to its folder
@@ -175,7 +175,7 @@ export function mutateFileUploadComplete(
     (folder) => ({
       ...folder,
       files: [...folder.files, response.file],
-    })
+    }),
   );
 
   // Update the files counter
@@ -187,7 +187,7 @@ export function mutateFileUploadComplete(
         ...stats,
         total_files: stats.total_files + 1,
       };
-    }
+    },
   );
 
   // Mutate search results
@@ -201,7 +201,7 @@ export function mutateUpdateFile(
   client: DocboxClient,
   scope: DocumentBoxScope,
   file_id: FileId,
-  data: UpdateFile
+  data: UpdateFile,
 ) {
   const updateFile = (file: DocFile): DocFile => ({
     ...file,
@@ -220,7 +220,7 @@ export function mutateUpdateFile(
         ...file,
         file: updateFile(file.file),
       };
-    }
+    },
   );
 
   // Invalidate all associated file queries
@@ -267,7 +267,7 @@ export function mutateUpdateFile(
       (folder) => ({
         ...folder,
         files: existing ? [...folder.files, existing] : [],
-      })
+      }),
     );
 
     if (existing === undefined) {
@@ -283,7 +283,7 @@ export function mutateDeleteFile(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  file_id: FileId
+  file_id: FileId,
 ) {
   // Remove the stored file data
   queryClient.removeQueries({
@@ -309,7 +309,7 @@ export function mutateDeleteFile(
         ...stats,
         total_files: stats.total_files - 1,
       };
-    }
+    },
   );
 
   // Mutate search results
@@ -320,7 +320,7 @@ export function mutateCreateFolder(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  response: FolderResponse
+  response: FolderResponse,
 ) {
   // Add the local folder data
   queryClient.setQueryData<FolderResponse>(
@@ -328,7 +328,7 @@ export function mutateCreateFolder(
       .instance(client)
       .boxes.specific(scope)
       .folder.specific(response.folder.id).root,
-    response
+    response,
   );
 
   // Add the folder to its parent folder
@@ -341,7 +341,7 @@ export function mutateCreateFolder(
       (folder) => ({
         ...folder,
         folders: [...folder.folders, response.folder],
-      })
+      }),
     );
   }
 
@@ -354,7 +354,7 @@ export function mutateCreateFolder(
         ...stats,
         total_folders: stats.total_folders + 1,
       };
-    }
+    },
   );
 
   // Mutate search results
@@ -366,7 +366,7 @@ export function mutateUpdateFolder(
   client: DocboxClient,
   scope: DocumentBoxScope,
   folder_id: FolderId,
-  data: UpdateFolder
+  data: UpdateFolder,
 ) {
   const updateFolder = (folder: DocFolder): DocFolder => ({
     ...folder,
@@ -385,7 +385,7 @@ export function mutateUpdateFolder(
         ...folder,
         folder: updateFolder(folder.folder),
       };
-    }
+    },
   );
 
   // Request latest folder data
@@ -450,7 +450,7 @@ export function mutateUpdateFolder(
       (folder) => ({
         ...folder,
         folders: existing ? [...folder.folders, existing] : [],
-      })
+      }),
     );
 
     if (existing === undefined) {
@@ -466,7 +466,7 @@ export function mutateDeleteFolder(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  folder_id: FolderId
+  folder_id: FolderId,
 ) {
   // Clear the stored folder data
 
@@ -508,7 +508,7 @@ export function mutateDeleteFolder(
         ...stats,
         total_folders: stats.total_folders - 1,
       };
-    }
+    },
   );
 
   // Mutate search results
@@ -519,13 +519,13 @@ export function mutateCreateLink(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  response: DocLink
+  response: DocLink,
 ) {
   // Store the create link data
   queryClient.setQueryData<DocLink>(
     docboxKeys.instance(client).boxes.specific(scope).link.specific(response.id)
       .root,
-    () => response
+    () => response,
   );
 
   // Add the link to its folder
@@ -537,7 +537,7 @@ export function mutateCreateLink(
     (folder) => ({
       ...folder,
       links: [...folder.links, response],
-    })
+    }),
   );
 
   // Update the links counter
@@ -549,7 +549,7 @@ export function mutateCreateLink(
         ...stats,
         total_links: stats.total_links + 1,
       };
-    }
+    },
   );
 
   // Mutate search results
@@ -561,7 +561,7 @@ export function mutateUpdateLink(
   client: DocboxClient,
   scope: DocumentBoxScope,
   link_id: LinkId,
-  data: UpdateLink
+  data: UpdateLink,
 ) {
   const updateLink = (link: DocLink): DocLink => ({
     ...link,
@@ -578,7 +578,7 @@ export function mutateUpdateLink(
     (link) => {
       if (link === undefined) return undefined;
       return updateLink(link);
-    }
+    },
   );
 
   // Invalidate link and all its data
@@ -628,7 +628,7 @@ export function mutateUpdateLink(
       (folder) => ({
         ...folder,
         links: existing ? [...folder.links, existing] : [],
-      })
+      }),
     );
 
     if (existing === undefined) {
@@ -644,7 +644,7 @@ export function mutateDeleteLink(
   queryClient: QueryClient,
   client: DocboxClient,
   scope: DocumentBoxScope,
-  link_id: LinkId
+  link_id: LinkId,
 ) {
   // Remove stored link data
   queryClient.removeQueries({
@@ -670,7 +670,43 @@ export function mutateDeleteLink(
         ...stats,
         total_links: stats.total_links - 1,
       };
-    }
+    },
+  );
+
+  // Mutate search results
+  invalidateSearch(queryClient, client, scope);
+}
+
+export function mutateDeleteDocumentBox(
+  queryClient: QueryClient,
+  client: DocboxClient,
+  scope: DocumentBoxScope,
+) {
+  // Remove the stored file data
+  queryClient.removeQueries({
+    queryKey: docboxKeys
+      .instance(client)
+      .boxes.specific(scope)
+      .file.specific(file_id).root,
+    exact: false,
+  });
+
+  // Remove from all folders
+  mutateResolvedFolders(queryClient, client, scope, (folder) => ({
+    ...folder,
+    files: folder.files.filter((value) => value.id !== file_id),
+  }));
+
+  // Update the files counter
+  queryClient.setQueryData<DocumentBoxStats>(
+    docboxKeys.instance(client).boxes.specific(scope).stats,
+    (stats) => {
+      if (stats === undefined) return undefined;
+      return {
+        ...stats,
+        total_files: stats.total_files - 1,
+      };
+    },
   );
 
   // Mutate search results
