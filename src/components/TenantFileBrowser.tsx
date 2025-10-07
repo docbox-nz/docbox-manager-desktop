@@ -7,10 +7,7 @@ import {
 } from "@docbox-nz/docbox-sdk";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { useMemo, useState } from "react";
-import CreateDocumentBoxDialog from "./docbox/CreateDocumentBoxDialog";
-import DocumentBoxesTable from "./docbox/DocumentBoxesTable";
 import UploadFileDialog from "./docbox/UploadFileDialog";
 import LinearProgress from "@mui/material/LinearProgress";
 import DocboxItemsTable from "./docbox/DocboxItemsTable";
@@ -31,6 +28,7 @@ import DeleteFolderDialog from "./docbox/DeleteFolderDialog";
 import DeleteLinkDialog from "./docbox/DeleteLinkDialog";
 import DeleteFileDialog from "./docbox/DeleteFileDialog";
 import FilePreviewDialog from "./docbox/FilePreviewDialog";
+import DocumentBoxesView from "@/features/docbox/document-box/DocumentBoxesView";
 
 type Props = {
   scope?: string;
@@ -57,7 +55,6 @@ export default function TenantFileBrowser({
   onCloseEdit,
   onCloseDelete,
 }: Props) {
-  const [createOpen, setCreateOpen] = useState(false);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [createLinkOpen, setCreateLinkOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -99,13 +96,13 @@ export default function TenantFileBrowser({
           ({
             type: DocboxItemType.Folder,
             ...folder,
-          }) satisfies DocboxItem
+          }) satisfies DocboxItem,
       ),
       ...folder.files.map(
-        (file) => ({ type: DocboxItemType.File, ...file }) satisfies DocboxItem
+        (file) => ({ type: DocboxItemType.File, ...file }) satisfies DocboxItem,
       ),
       ...folder.links.map(
-        (link) => ({ type: DocboxItemType.Link, ...link }) satisfies DocboxItem
+        (link) => ({ type: DocboxItemType.Link, ...link }) satisfies DocboxItem,
       ),
     ];
   }, [activeFolder]);
@@ -124,25 +121,7 @@ export default function TenantFileBrowser({
 
   // Document box selection
   if (scope === undefined) {
-    return (
-      <>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ px: 1, py: 2 }}
-        >
-          <Typography variant="h6">Document Boxes</Typography>
-          <Button onClick={() => setCreateOpen(true)}>Create Box</Button>
-
-          <CreateDocumentBoxDialog
-            open={createOpen}
-            onClose={() => setCreateOpen(false)}
-          />
-        </Stack>
-        <DocumentBoxesTable />
-      </>
-    );
+    return <DocumentBoxesView />;
   }
 
   return (
@@ -188,7 +167,7 @@ export default function TenantFileBrowser({
                 underline="hover"
                 component={RouterLink}
                 to="."
-                search={(search) => ({ ...search, folder: undefined })}
+                search={(search: object) => ({ ...search, folder: undefined })}
                 color="inherit"
               >
                 {scope}
@@ -206,7 +185,10 @@ export default function TenantFileBrowser({
                       underline="hover"
                       component={RouterLink}
                       to="."
-                      search={(search) => ({ ...search, folder: path.id })}
+                      search={(search: object) => ({
+                        ...search,
+                        folder: path.id,
+                      })}
                       color="inherit"
                     >
                       {path.name}
@@ -218,7 +200,7 @@ export default function TenantFileBrowser({
                   underline="hover"
                   component={RouterLink}
                   to="."
-                  search={(search) => search}
+                  search={(search: object) => search}
                   color="text.primary"
                 >
                   {activeFolder.folder.name}
