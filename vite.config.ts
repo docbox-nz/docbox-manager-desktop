@@ -3,12 +3,19 @@ import react from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import { resolve } from "node:path";
 import Icons from "unplugin-icons/vite";
+import pdfjsEmbeddableViewer from "vite-plugin-pdfjs-embeddable-viewer";
 
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
   plugins: [
+    pdfjsEmbeddableViewer({
+      allowCrossOrigin: true,
+      options: {
+        enableScripting: false,
+      },
+    }),
     tanstackRouter({ autoCodeSplitting: true }),
     react(),
     Icons({ compiler: "jsx", jsx: "react" }),
