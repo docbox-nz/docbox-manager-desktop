@@ -23,10 +23,19 @@ export function useDocumentBox(scope: string | null | undefined) {
     queryFn: () => client.documentBox.get(scope!),
   });
 }
+export function useDocumentBoxStats(scope: string | null | undefined) {
+  const client = useDocboxClient();
+
+  return useQuery({
+    enabled: !isNil(scope),
+    queryKey: docboxKeys.instance(client).boxes.specific(scope).stats,
+    queryFn: () => client.documentBox.stats(scope!),
+  });
+}
 
 export function useFolder(
   scope: string | null | undefined,
-  folderId: string | null | undefined
+  folderId: string | null | undefined,
 ) {
   const client = useDocboxClient();
 
@@ -42,7 +51,7 @@ export function useFolder(
 
 export function useFile(
   scope: string | null | undefined,
-  fileId: string | null | undefined
+  fileId: string | null | undefined,
 ) {
   const client = useDocboxClient();
 

@@ -18,8 +18,6 @@ import Alert from "@mui/material/Alert";
 import { getAPIErrorMessage } from "@/api/axios";
 import RouterLink from "./RouterLink";
 import { isNil } from "@/utils/nullable";
-import Breadcrumbs from "@mui/material/Breadcrumbs";
-import Link from "@mui/material/Link";
 import CreateLinkDialog from "./docbox/CreateLinkDialog";
 import EditFolderDialog from "./docbox/EditFolderDialog";
 import EditLinkDialog from "./docbox/EditLinkDialog";
@@ -29,6 +27,9 @@ import DeleteLinkDialog from "./docbox/DeleteLinkDialog";
 import DeleteFileDialog from "./docbox/DeleteFileDialog";
 import FilePreviewDialog from "./docbox/FilePreviewDialog";
 import DocumentBoxesView from "@/features/docbox/document-box/DocumentBoxesView";
+import DocboxFolderBreadcrumbs from "@/features/docbox/items/DocboxFolderBreadcrumbs";
+import DocumentBoxStats from "@/features/docbox/document-box/DocumentBoxStats";
+import Box from "@mui/material/Box";
 
 type Props = {
   scope?: string;
@@ -135,11 +136,15 @@ export default function TenantFileBrowser({
 
   return (
     <>
+      <Box sx={{ pt: 2 }}>
+        <DocumentBoxStats scope={scope} />
+      </Box>
+
       <Stack
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        sx={{ px: 1, py: 2 }}
+        sx={{ px: 1, pb: 2, pt: 1 }}
       >
         <Stack direction="row" alignItems="center" spacing={1}>
           <IconButton
@@ -170,53 +175,11 @@ export default function TenantFileBrowser({
             <MdiChevronLeft />
           </IconButton>
 
-          <Stack sx={{ pl: 2 }}>
-            <Breadcrumbs aria-label="breadcrumb">
-              <Link
-                underline="hover"
-                component={RouterLink}
-                to="."
-                search={(search: object) => ({ ...search, folder: undefined })}
-                color="inherit"
-              >
-                {scope}
-              </Link>
-
-              {activeFolder &&
-                activeFolder.children.path.map((path, index) => {
-                  if (index === 0) {
-                    return null;
-                  }
-
-                  return (
-                    <Link
-                      key={path.id}
-                      underline="hover"
-                      component={RouterLink}
-                      to="."
-                      search={(search: object) => ({
-                        ...search,
-                        folder: path.id,
-                      })}
-                      color="inherit"
-                    >
-                      {path.name}
-                    </Link>
-                  );
-                })}
-              {activeFolder && activeFolder.folder.folder_id !== null && (
-                <Link
-                  underline="hover"
-                  component={RouterLink}
-                  to="."
-                  search={(search: object) => search}
-                  color="text.primary"
-                >
-                  {activeFolder.folder.name}
-                </Link>
-              )}
-            </Breadcrumbs>
-          </Stack>
+          <DocboxFolderBreadcrumbs
+            scope={scope}
+            activeFolder={activeFolder?.folder}
+            path={activeFolder?.children?.path}
+          />
         </Stack>
 
         {activeFolder && (
