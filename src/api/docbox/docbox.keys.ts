@@ -1,16 +1,26 @@
 import { DocboxClient, GeneratedFileType } from "@docbox-nz/docbox-sdk";
-import type { DocumentBoxesQuery } from "./docbox.types";
+import { AdminDocumentBoxesRequest } from "node_modules/@docbox-nz/docbox-sdk/dist/types/admin";
 
 export const docboxKeys = {
   root: ["docbox"],
   instance: (client: DocboxClient) => ({
     root: ["docbox", client],
 
+    admin: {
+      root: ["docbox", client, "admin"],
+      stats: ["docbox", client, "admin", "stats"],
+    },
+
     // Document boxes
     boxes: {
       root: ["docbox", client, "boxes"],
 
-      query: (query: DocumentBoxesQuery) => ["docbox", client, "boxes", query],
+      query: (query: AdminDocumentBoxesRequest) => [
+        "docbox",
+        client,
+        "boxes",
+        query,
+      ],
 
       // Document box
       specific: (scope: string | null | undefined) => ({

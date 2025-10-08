@@ -5,10 +5,6 @@ import Stack from "@mui/material/Stack";
 import { useMemo, useState } from "react";
 import DocumentBoxesTable from "./DocumentBoxesTable";
 import { GridPaginationModel } from "@mui/x-data-grid";
-import {
-  DocumentBoxesQuery,
-  DocumentBoxesResponse,
-} from "@/api/docbox/docbox.types";
 import { useDebounced } from "@/hooks/use-debounce";
 import DocumentBoxesTableFilters from "./DocumentBoxesTableFilters";
 import DocumentBoxesTableActiveFilters from "./DocumentBoxesTableActiveFilters";
@@ -16,6 +12,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import CreateDocumentBoxDialog from "@/components/docbox/CreateDocumentBoxDialog";
 import DeleteDocumentBoxDialog from "@/components/docbox/DeleteDocumentBoxDialog";
+import { AdminDocumentBoxesRequest } from "node_modules/@docbox-nz/docbox-sdk/dist/types/admin";
 
 type Props = {
   deleteScope?: string;
@@ -37,10 +34,9 @@ export default function DocumentBoxesView({
   const searchQueryDebounced = useDebounced(searchQuery, 300);
 
   const query = useMemo(() => {
-    // TODO: Remove when type lands in the library
-    const query: DocumentBoxesQuery & { query?: string } = {
+    const query: AdminDocumentBoxesRequest = {
       offset: paginationModel.page * paginationModel.pageSize,
-      limit: paginationModel.pageSize,
+      size: paginationModel.pageSize,
     };
 
     const searchQuery = searchQueryDebounced.trim();
@@ -64,8 +60,7 @@ export default function DocumentBoxesView({
 
     return {
       results: documentBoxes.results,
-      // TODO: Remove when type lands in the library
-      total: (documentBoxes as DocumentBoxesResponse & { total: number }).total,
+      total: documentBoxes.total ?? -1,
     };
   }, [documentBoxes, documentBoxesLoading]);
 

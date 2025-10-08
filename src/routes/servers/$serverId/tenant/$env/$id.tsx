@@ -15,6 +15,7 @@ import TenantFileBrowser from "@/components/TenantFileBrowser";
 import IconButton from "@mui/material/IconButton";
 import MdiChevronLeft from "~icons/mdi/chevron-left";
 import RouterLink from "@/components/RouterLink";
+import TenantStats from "@/features/tenant/TenantStats";
 
 const docboxSchema = z.object({
   scope: z.string().optional(),
@@ -99,9 +100,9 @@ function RouteComponent() {
               >
                 <MdiChevronLeft width={32} height={32} />
               </IconButton>
-              <Typography variant="h4">
-                {tenant.name} <Chip label={tenant.env} sx={{ ml: 1 }} />
-              </Typography>
+              <Typography variant="h4">{tenant.name}</Typography>
+              <Chip label={tenant.env} sx={{ ml: 1 }} />
+              <TenantStats />
             </Stack>
 
             <Typography variant="body1" color="text.secondary">

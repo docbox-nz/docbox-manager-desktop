@@ -1,16 +1,24 @@
 import { useDocboxClient } from "@/components/docbox/DocboxProvider";
 import { useQuery } from "@tanstack/react-query";
 import { docboxKeys } from "./docbox.keys";
-import type { DocumentBoxesQuery } from "./docbox.types";
-import { getDocumentBoxes } from "./docbox.requests";
 import { isNil } from "@/utils/nullable";
+import { AdminDocumentBoxesRequest } from "node_modules/@docbox-nz/docbox-sdk/dist/types/admin";
 
-export function useDocumentBoxes(query: DocumentBoxesQuery) {
+export function useDocumentBoxes(query: AdminDocumentBoxesRequest) {
   const client = useDocboxClient();
 
   return useQuery({
     queryKey: docboxKeys.instance(client).boxes.query(query),
-    queryFn: () => getDocumentBoxes(client, query),
+    queryFn: () => client.admin.documentBoxes(query),
+  });
+}
+
+export function useTenantStats() {
+  const client = useDocboxClient();
+
+  return useQuery({
+    queryKey: docboxKeys.instance(client).admin.stats,
+    queryFn: () => client.admin.tenantStats(),
   });
 }
 

@@ -1,17 +1,12 @@
 import { getAPIErrorMessage } from "@/api/axios";
-import { useDocumentBoxStats } from "@/api/docbox/docbox.queries";
+import { useTenantStats } from "@/api/docbox/docbox.queries";
 import { fData } from "@/utils/format-number";
 import Chip from "@mui/material/Chip";
 import LinearProgress from "@mui/material/LinearProgress";
 import Stack from "@mui/material/Stack";
 
-type Props = {
-  scope: string;
-};
-
-export default function DocumentBoxStats({ scope }: Props) {
-  const { data, isLoading, isError, isSuccess, error } =
-    useDocumentBoxStats(scope);
+export default function TenantStats() {
+  const { data, isLoading, isError, isSuccess, error } = useTenantStats();
 
   if (isLoading) {
     return <LinearProgress />;
@@ -28,7 +23,7 @@ export default function DocumentBoxStats({ scope }: Props) {
   const stats = data;
 
   return (
-    <Stack direction="row" spacing={1}>
+    <Stack direction="row" spacing={1} display="inline-flex" sx={{ ml: 1 }}>
       <Chip label={`Files: ${stats.total_files}`} />
       <Chip label={`Folders: ${stats.total_folders}`} />
       <Chip label={`Links: ${stats.total_links}`} />
