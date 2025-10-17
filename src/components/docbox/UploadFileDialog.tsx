@@ -40,30 +40,55 @@ export default function UploadFileDialog({
     onSubmit: async ({ value, formApi }) => {
       await Promise.all(
         value.files.map(async (file) => {
-          await uploadFileMutation.mutateAsync({
-            file,
-            folder_id,
-            scope,
-            options: {
-              onProgress(name, progress) {
+          await uploadFileMutation.mutateAsync(
+            {
+              file,
+              folder_id,
+              scope,
+              options: {
+                onProgress(name, progress) {
+                  formApi.setFieldValue("files", (files) => {
+                    return files.map((otherFile) => {
+                      if (otherFile === file) {
+                        return Object.assign(file, {
+                          progress: {
+                            name,
+                            progress,
+                          },
+                        });
+                      }
+                      return otherFile;
+                    });
+                  });
+                },
+              },
+            },
+            {
+              onSuccess: () => {
+                formApi.setFieldValue("files", (files) => {
+                  return files.filter((otherFile) => {
+                    return otherFile === file;
+                  });
+                });
+              },
+              onError: (_error) => {
                 formApi.setFieldValue("files", (files) => {
                   return files.map((otherFile) => {
                     if (otherFile === file) {
                       return Object.assign(file, {
                         progress: {
-                          name,
-                          progress,
+                          name: "Failed to upload",
+                          progress: 1,
                         },
                       });
                     }
-
                     return otherFile;
                   });
                 });
               },
             },
-          });
-        })
+          );
+        }),
       );
 
       onCloseReset();
