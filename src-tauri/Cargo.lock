@@ -1808,34 +1808,25 @@ version = "0.4.0"
 dependencies = [
  "aws-config",
  "aws-sdk-sqs",
- "aws-smithy-types",
- "base64 0.22.1",
  "bytes",
  "chrono",
  "docbox-database",
+ "docbox-processing",
  "docbox-search",
  "docbox-secrets",
  "docbox-storage",
  "futures",
- "html-escape",
- "image",
  "itertools 0.14.0",
- "mail-parser",
  "mime",
  "mime2ext",
  "mime_guess",
  "moka",
- "office-convert-client",
- "pdf_process",
- "reqwest",
  "serde",
  "serde_json",
  "sha256",
  "thiserror 2.0.12",
- "tl",
  "tokio",
  "tracing",
- "urlencoding",
  "utoipa",
  "uuid",
 ]
@@ -1873,6 +1864,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.12",
+ "tokio",
  "tracing",
 ]
 
@@ -1911,6 +1903,31 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "uuid",
+]
+
+[[package]]
+name = "docbox-processing"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "bytes",
+ "docbox-database",
+ "docbox-search",
+ "futures",
+ "html-escape",
+ "image",
+ "mail-parser",
+ "mime",
+ "office-convert-client",
+ "pdf_process",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tl",
+ "tokio",
+ "tracing",
+ "utoipa",
 ]
 
 [[package]]
@@ -1956,6 +1973,7 @@ version = "0.1.0"
 dependencies = [
  "aws-config",
  "aws-sdk-s3",
+ "aws-smithy-types",
  "bytes",
  "bytes-utils",
  "chrono",
