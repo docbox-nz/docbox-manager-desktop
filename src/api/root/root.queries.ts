@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { rootKeys } from "./root.keys";
-import { getMigrations, isInitialized } from "./root.requests";
+import {
+  getRootMigrations,
+  getTenantsMigrations,
+  isInitialized,
+} from "./root.requests";
 
 export function useInitialized(serverId: string) {
   return useQuery({
@@ -9,9 +13,16 @@ export function useInitialized(serverId: string) {
   });
 }
 
-export function useMigrations(serverId: string) {
+export function useTenantsMigrations(serverId: string) {
   return useQuery({
-    queryKey: rootKeys.migrations(serverId),
-    queryFn: () => getMigrations(serverId),
+    queryKey: rootKeys.tenantMigrations(serverId),
+    queryFn: () => getTenantsMigrations(serverId),
+  });
+}
+
+export function useRootMigrations(serverId: string) {
+  return useQuery({
+    queryKey: rootKeys.rootMigrations(serverId),
+    queryFn: () => getRootMigrations(serverId),
   });
 }

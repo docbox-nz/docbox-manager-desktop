@@ -1,5 +1,5 @@
 import { getAPIErrorMessage } from "@/api/axios";
-import { useMigrations } from "@/api/root/root.queries";
+import { useTenantsMigrations } from "@/api/root/root.queries";
 import Alert from "@mui/material/Alert";
 import { Stack } from "@mui/system";
 import { PendingMigrations } from "./PendingMigrations";
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function PendingMigrationsLoader({ serverId }: Props) {
-  const { data, isLoading, error } = useMigrations(serverId);
+  const { data, isLoading, error } = useTenantsMigrations(serverId);
 
   if (isLoading) {
     return (

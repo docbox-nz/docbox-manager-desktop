@@ -22,8 +22,8 @@ pub mod utils;
 pub fn run() {
     use commands::{
         root::{
-            root_apply_migrations, root_get_pending_migrations, root_initialize,
-            root_is_initialized,
+            root_apply_migrations, root_apply_tenant_migrations, root_get_pending_migrations,
+            root_get_pending_tenants_migrations, root_initialize, root_is_initialized,
         },
         server::{
             server_create, server_delete, server_get_active, server_get_all, server_is_active,
@@ -62,7 +62,9 @@ pub fn run() {
             root_is_initialized,
             root_initialize,
             root_get_pending_migrations,
+            root_get_pending_tenants_migrations,
             root_apply_migrations,
+            root_apply_tenant_migrations,
             tenant_create,
             tenant_delete,
             tenant_get,

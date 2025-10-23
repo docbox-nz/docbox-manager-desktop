@@ -1,5 +1,3 @@
-use eyre::Context;
-
 use crate::{
     commands::CmdResult,
     utils::{

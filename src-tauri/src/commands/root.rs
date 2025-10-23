@@ -46,15 +46,34 @@ pub async fn root_initialize(
     todo!()
 }
 
+/// Get all pending migrations for the root database
+#[tauri::command]
+pub async fn root_get_pending_migrations(
+    server_store: State<'_, Arc<ServerStore>>,
+    server_id: Uuid,
+) -> CmdResult<Vec<String>> {
+    let server = server_store
+        .get_server(server_id)
+        .await
+        .context("server not found")?;
+
+    let pending =
+        docbox_management::root::get_pending_root_migrations::get_pending_root_migrations(
+            &server.db_provider,
+        )
+        .await?;
+    Ok(pending)
+}
+
 #[derive(Serialize)]
 pub struct TenantWithMigrations {
     pub tenant: Tenant,
     pub migrations: Vec<String>,
 }
 
-/// Initialize the provided server
+/// Get all pending migrations for tenants
 #[tauri::command]
-pub async fn root_get_pending_migrations(
+pub async fn root_get_pending_tenants_migrations(
     server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
 ) -> CmdResult<Vec<TenantWithMigrations>> {
@@ -84,9 +103,9 @@ pub async fn root_get_pending_migrations(
     Ok(tenant_with_migrations)
 }
 
-/// Apply migrations on the server
+/// Apply migrations on the server for tenants
 #[tauri::command]
-pub async fn root_apply_migrations(
+pub async fn root_apply_tenant_migrations(
     server_store: State<'_, Arc<ServerStore>>,
     server_id: Uuid,
     config: MigrateTenantsConfig,
@@ -101,4 +120,20 @@ pub async fn root_apply_migrations(
             .await?;
 
     Ok(outcome)
+}
+
+/// Apply migrations on the server
+#[tauri::command]
+pub async fn root_apply_migrations(
+    server_store: State<'_, Arc<ServerStore>>,
+    server_id: Uuid,
+) -> CmdResult<()> {
+    let server = server_store
+        .get_server(server_id)
+        .await
+        .context("server not found")?;
+
+    docbox_management::root::migrate_root::migrate_root(&server.db_provider, None).await?;
+
+    Ok(())
 }

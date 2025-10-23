@@ -1,6 +1,23 @@
 export const rootKeys = {
   isInitialized: (serverId: string) => [serverId, "root", "initialized"],
   initialize: (serverId: string) => [serverId, "root", "initialize"],
-  migrate: (serverId: string) => [serverId, "root", "migrate"],
-  migrations: (serverId: string) => [serverId, "root", "migrations"],
+  migrateTenants: (serverId: string) => [
+    serverId,
+    "root",
+    "tenants",
+    "migrate",
+  ],
+  migrateRoot: (serverId: string) => [serverId, "root", "root", "migrate"],
+  tenantMigrations: (serverId: string) => [
+    serverId,
+    "root",
+    "tenants",
+    "migrations",
+  ],
+  rootMigrations: (serverId: string) => [
+    serverId,
+    "root",
+    "root",
+    "migrations",
+  ],
 };

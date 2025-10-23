@@ -38,7 +38,7 @@ export default function UploadFileDialog({
       }),
     },
     onSubmit: async ({ value, formApi }) => {
-      await Promise.all(
+      await Promise.allSettled(
         value.files.map(async (file) => {
           await uploadFileMutation.mutateAsync(
             {

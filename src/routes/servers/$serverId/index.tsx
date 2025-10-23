@@ -19,6 +19,7 @@ import { useShallow } from "zustand/react/shallow";
 import TenantTableFilters from "@/features/tenants/TenantsTableFilters";
 import { useMemo } from "react";
 import TenantsTableActiveFilters from "@/features/tenants/TenantsTableActiveFilters";
+import PendingRootMigrationsLoader from "@/components/PendingRootMigrationsLoader";
 
 export const Route = createFileRoute("/servers/$serverId/")({
   component: RouteComponent,
@@ -53,7 +54,7 @@ function RouteComponent() {
 
         setQuery: state.setQuery,
         setEnvironments: state.setEnvironments,
-      }))
+      })),
     );
 
   const availableEnvironments = useMemo(() => {
@@ -61,7 +62,7 @@ function RouteComponent() {
       tenants.reduce((environments, tenant) => {
         environments.add(tenant.env);
         return environments;
-      }, new Set<string>())
+      }, new Set<string>()),
     );
   }, [tenants]);
 
@@ -108,6 +109,7 @@ function RouteComponent() {
               <Typography variant="h4">{server.name}</Typography>
             </Stack>
 
+            <PendingRootMigrationsLoader serverId={serverId} />
             <PendingMigrationsLoader serverId={serverId} />
 
             <Stack

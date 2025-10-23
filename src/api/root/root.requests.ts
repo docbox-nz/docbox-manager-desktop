@@ -6,8 +6,13 @@ export function isInitialized(serverId: string) {
   return invoke<boolean>("root_is_initialized", { serverId });
 }
 
-export function getMigrations(serverId: string) {
-  return invoke<MigrationsResponse>("root_get_pending_migrations", {
+export function getTenantsMigrations(serverId: string) {
+  return invoke<MigrationsResponse>("root_get_pending_tenants_migrations", {
+    serverId,
+  });
+}
+export function getRootMigrations(serverId: string) {
+  return invoke<string[]>("root_get_pending_migrations", {
     serverId,
   });
 }
@@ -17,8 +22,14 @@ export function initializeRoot(serverId: string) {
 }
 
 export function migrateTenants(serverId: string) {
-  return invoke("root_apply_migrations", {
+  return invoke("root_apply_tenant_migrations", {
     serverId,
     config: { skip_failed: true },
+  });
+}
+
+export function migrateRoot(serverId: string) {
+  return invoke("root_apply_migrations", {
+    serverId,
   });
 }

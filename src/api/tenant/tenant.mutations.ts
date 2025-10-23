@@ -22,7 +22,7 @@ export function useMigrateTenant(serverId: string) {
       migrateTenant(serverId, env, tenant_id),
     onSuccess() {
       queryClient.invalidateQueries({
-        queryKey: rootKeys.migrations(serverId),
+        queryKey: rootKeys.tenantMigrations(serverId),
       });
     },
   });
