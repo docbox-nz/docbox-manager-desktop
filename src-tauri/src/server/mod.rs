@@ -152,7 +152,7 @@ pub async fn load_server(
             host: config.database.host.clone(),
             port: config.database.port,
             root_secret_name: config.database.root_secret_name.clone(),
-            max_connections: None,
+            ..Default::default()
         },
         secrets.clone(),
     ));
