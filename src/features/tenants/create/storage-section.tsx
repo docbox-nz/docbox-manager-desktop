@@ -9,8 +9,22 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 
 export const storageSectionSchema = z.object({
-  storage_bucket_name: z.string().nonempty(),
-  s3_queue_arn: z.string(),
+  storage_bucket_name: z
+    .stringFormat("storage-bucket-name", /^[a-z0-9_-]+$/, {
+      message:
+        "Storage bucket name must only container lowercase letters, numbers, and '-' or '_'",
+    })
+    .nonempty(),
+  s3_queue_arn: z
+    .string()
+    .refine(
+      (val) =>
+        val === "" ||
+        /^arn:([^:]+):([a-z0-9-]+):([a-z0-9-]*):([^:]*):([A-Za-z0-9_.:/=\-+@]*)$/.test(
+          val,
+        ),
+      { message: "ARN must be properly formatted and valid" },
+    ),
   storage_cors_origins: z.array(z.string()),
 });
 
@@ -29,7 +43,7 @@ export const StorageSection = withFieldGroup({
   render: function Render({ group, environmentTag }) {
     const valid = useStore(
       group.store,
-      (state) => storageSectionSchema.safeParse(state.values).success
+      (state) => storageSectionSchema.safeParse(state.values).success,
     );
 
     return (

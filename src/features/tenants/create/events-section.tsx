@@ -16,7 +16,7 @@ export const EventsSection = withFieldGroup({
   render: function Render({ group }) {
     const valid = useStore(
       group.store,
-      (state) => eventsSectionSchema.safeParse(state.values).success
+      (state) => eventsSectionSchema.safeParse(state.values).success,
     );
 
     return (

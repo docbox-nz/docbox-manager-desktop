@@ -6,7 +6,12 @@ import FormSectionAccordion from "@/components/form/FormSectionAccordion";
 import InputAdornment from "@mui/material/InputAdornment";
 
 export const searchSectionSchema = z.object({
-  search_index_name: z.string().nonempty(),
+  search_index_name: z
+    .stringFormat("search-index-name", /^[a-z0-9_-]+$/, {
+      message:
+        "Search index name must only container lowercase letters, numbers, dashes and underscores",
+    })
+    .nonempty(),
 });
 
 export const searchSectionDefaultValues: z.input<typeof searchSectionSchema> = {
@@ -21,7 +26,7 @@ export const SearchSection = withFieldGroup({
   render: function Render({ group, environmentTag }) {
     const valid = useStore(
       group.store,
-      (state) => searchSectionSchema.safeParse(state.values).success
+      (state) => searchSectionSchema.safeParse(state.values).success,
     );
 
     return (

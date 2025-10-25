@@ -7,9 +7,24 @@ import FormSectionAccordion from "@/components/form/FormSectionAccordion";
 import InputAdornment from "@mui/material/InputAdornment";
 
 export const databaseSectionSchema = z.object({
-  db_name: z.string().nonempty(),
-  db_secret_name: z.string().nonempty(),
-  db_role_name: z.string().nonempty(),
+  db_name: z
+    .stringFormat("db-name", /^[a-z0-9_-]+$/, {
+      message:
+        "Database name only container lowercase letters, numbers, dashes, and underscores",
+    })
+    .nonempty(),
+  db_secret_name: z
+    .stringFormat("secret-name", /^[a-z0-9_-]+$/, {
+      message:
+        "Secret name must only container lowercase letters, numbers, dashes, and underscores",
+    })
+    .nonempty(),
+  db_role_name: z
+    .stringFormat("db-role-name", /^[a-z0-9_]+$/, {
+      message:
+        "Role name must only container lowercase letters, numbers, and underscores",
+    })
+    .nonempty(),
 });
 
 export const databaseSectionDefaultValues: z.input<
@@ -28,7 +43,7 @@ export const DatabaseSection = withFieldGroup({
   render: function Render({ group, environmentTag }) {
     const valid = useStore(
       group.store,
-      (state) => databaseSectionSchema.safeParse(state.values).success
+      (state) => databaseSectionSchema.safeParse(state.values).success,
     );
 
     return (

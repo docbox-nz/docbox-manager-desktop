@@ -14,15 +14,21 @@ export const DEFAULT_TAG = "test";
 const tagSchema = z
   .string()
   .nonempty("Tag must not be empty")
-  .regex(/^[a-zA-Z0-9_-]+$/, {
+  .regex(/^[a-z][a-z0-9_-]+$/, {
     message:
-      "Only alphanumeric characters, underscores, and dashes are allowed",
+      "Only lowercase letters, numbers, underscores, and dashes are allowed. Must start with a lowercase letter.",
   });
 
 const tenantSchemaBase = z.object({
   id: z.uuidv4(),
   name: z.string().nonempty(),
-  env: z.string().nonempty(),
+  env: z
+    .string()
+    .regex(/^[a-zA-Z][a-zA-Z0-9_-]+$/, {
+      message:
+        "Only letters, numbers, underscores, and dashes are allowed. Must start with a letter.",
+    })
+    .nonempty(),
   simplified: z.boolean(),
   tag: z.string(),
 });
@@ -50,7 +56,7 @@ export const TenantSection = withFieldGroup({
   render: function Render({ group }) {
     const simplified = useStore(
       group.store,
-      (state) => state.values.simplified
+      (state) => state.values.simplified,
     );
 
     return (

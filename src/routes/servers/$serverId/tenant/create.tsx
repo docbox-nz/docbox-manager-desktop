@@ -86,7 +86,7 @@ function createTenantFields(value: z.output<typeof createTenantSchema>) {
       : null;
 
   const storage_cors_origins = value.storage.storage_cors_origins.filter(
-    (value) => value.trim().length > 0
+    (value) => value.trim().length > 0,
   );
 
   return {
@@ -199,7 +199,7 @@ function TenantCreate() {
         // React to only changes on the simplified, env, and tag fields
         if (
           !["tenant.simplified", "tenant.env", "tenant.tag"].includes(
-            fieldApi.name
+            fieldApi.name,
           )
         ) {
           return;
@@ -212,7 +212,7 @@ function TenantCreate() {
         const tag = formApi.getFieldValue("tenant.tag");
         formApi.setFieldValue("database.db_name", tag);
         formApi.setFieldValue("database.db_secret_name", tag);
-        formApi.setFieldValue("database.db_role_name", tag.replace("-", "_"));
+        formApi.setFieldValue("database.db_role_name", tag.replace(/-/g, "_"));
         formApi.setFieldValue("storage.storage_bucket_name", tag);
         formApi.setFieldValue("search.search_index_name", tag);
       },
