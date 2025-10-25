@@ -144,7 +144,6 @@ pub async fn load_server(
 
     // Setup server secret manager
     let secrets = SecretManager::from_config(&aws_config, config.secrets.clone());
-    let secrets = Arc::new(secrets);
 
     // Setup database cache / connector
     let db_cache = Arc::new(DatabasePoolCache::from_config(
@@ -225,7 +224,7 @@ pub struct ActiveServer {
     pub db_provider: DatabaseProvider,
     //
     pub db_cache: Arc<DatabasePoolCache>,
-    pub secrets: Arc<SecretManager>,
+    pub secrets: SecretManager,
     pub search: SearchIndexFactory,
     pub storage: StorageLayerFactory,
     pub events: EventPublisherFactory,
