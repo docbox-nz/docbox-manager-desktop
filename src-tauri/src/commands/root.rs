@@ -43,7 +43,7 @@ pub async fn root_initialize(
     )
     .await?;
 
-    todo!()
+    Ok(())
 }
 
 /// Get all pending migrations for the root database

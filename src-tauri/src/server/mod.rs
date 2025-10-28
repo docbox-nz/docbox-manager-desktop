@@ -11,7 +11,9 @@ use docbox_core::{
 };
 use docbox_database::{DatabasePoolCache, DatabasePoolCacheConfig};
 use docbox_search::{SearchIndexFactory, SearchIndexFactoryError};
-use docbox_secrets::{SecretManager, SecretManagerError, SecretsManagerConfig};
+use docbox_secrets::{
+    aws::AwsSecretManagerConfig, SecretManager, SecretManagerError, SecretsManagerConfig,
+};
 use docbox_storage::StorageLayerFactory;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, future::Future, sync::Arc};
@@ -115,7 +117,10 @@ pub async fn load_server(
     let config: ServerConfigData = match server.config {
         // Load secret from AWS
         ServerConfig::AwsSecret { secret_name } => {
-            let secrets = SecretManager::from_config(&aws_config, SecretsManagerConfig::Aws);
+            let secrets = SecretManager::from_config(
+                &aws_config,
+                SecretsManagerConfig::Aws(AwsSecretManagerConfig::default()),
+            );
             secrets
                 .parsed_secret(&secret_name)
                 .await?

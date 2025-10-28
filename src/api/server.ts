@@ -8,7 +8,6 @@ export enum ServerConfigType {
 
 export enum SecretsManagerConfigType {
   Memory = "memory",
-  Json = "json",
   Aws = "aws",
 }
 
@@ -23,6 +22,11 @@ export enum StorageLayerFactoryConfigType {
 }
 
 export enum S3EndpointType {
+  Aws = "aws",
+  Custom = "custom",
+}
+
+export enum SecretsEndpointType {
   Aws = "aws",
   Custom = "custom",
 }
@@ -47,7 +51,29 @@ export const s3Endpoint = z.discriminatedUnion("type", [
   customS3EndpointSchema,
 ]);
 
+export const awsSecretsEndpointSchema = z.object({
+  type: z.literal(SecretsEndpointType.Aws),
+});
+
+export type AwsSecretsEndpoint = z.infer<typeof awsSecretsEndpointSchema>;
+
+export const customSecretsEndpointSchema = z.object({
+  type: z.literal(SecretsEndpointType.Custom),
+  endpoint: z.string(),
+  access_key_id: z.string(),
+  access_key_secret: z.string(),
+});
+
+export type CustomSecretsEndpoint = z.infer<typeof customSecretsEndpointSchema>;
+
+export const secretsEndpoint = z.discriminatedUnion("type", [
+  awsSecretsEndpointSchema,
+  customSecretsEndpointSchema,
+]);
+
 export type S3Endpoint = z.infer<typeof s3Endpoint>;
+
+export type SecretsEndpoint = z.infer<typeof secretsEndpoint>;
 
 export const s3StorageLayerFactoryConfig = z.object({
   provider: z.literal(StorageLayerFactoryConfigType.S3),
@@ -56,7 +82,7 @@ export const s3StorageLayerFactoryConfig = z.object({
 
 export const storageLayerFactoryConfigSchema = z.discriminatedUnion(
   "provider",
-  [s3StorageLayerFactoryConfig]
+  [s3StorageLayerFactoryConfig],
 );
 
 export type StorageLayerConfig = z.infer<
@@ -93,19 +119,13 @@ export const memorySecretManagerConfigSchema = z.object({
   default: z.string().optional().nullable(),
 });
 
-export const jsonSecretManagerConfigSchema = z.object({
-  provider: z.literal(SecretsManagerConfigType.Json),
-  key: z.string(),
-  path: z.string(),
-});
-
 export const awsSecretManagerConfigSchema = z.object({
   provider: z.literal(SecretsManagerConfigType.Aws),
+  endpoint: secretsEndpoint.optional(),
 });
 
 export const secretManagerConfigSchema = z.discriminatedUnion("provider", [
   memorySecretManagerConfigSchema,
-  jsonSecretManagerConfigSchema,
   awsSecretManagerConfigSchema,
 ]);
 

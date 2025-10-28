@@ -5,35 +5,32 @@ import { useStore } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import ToggleButton from "@mui/material/ToggleButton";
 import {
-  createJsonSecretsConfig,
-  jsonBaseSchema,
-  jsonDefaultValues,
-  jsonSchema,
-  SecretsJson,
-} from "./secrets/secrets-json";
-import {
   createMemorySecretsConfig,
   memoryBaseSchema,
   memoryDefaultValues,
   memorySchema,
   SecretsMemory,
 } from "./secrets/secrets-memory";
+import {
+  awsSecretsBaseSchema,
+  awsSecretsDefaultValues,
+  awsSecretsSchema,
+  createAwsSecretsConfig,
+  SecretsAws,
+} from "./secrets/secrets-aws";
 
 // Base schema, sets the structure and types for all variants
 const secretsBaseSchema = z.object({
   provider: z.enum(SecretsManagerConfigType),
   memory: memoryBaseSchema,
-  json: jsonBaseSchema,
+  aws: awsSecretsBaseSchema,
 });
 
 // Refined schema, provides validation for each choice branch
 export const secretsSectionSchema = z.discriminatedUnion("provider", [
   secretsBaseSchema.extend({
     provider: z.literal(SecretsManagerConfigType.Aws),
-  }),
-  secretsBaseSchema.extend({
-    provider: z.literal(SecretsManagerConfigType.Json),
-    json: jsonSchema,
+    aws: awsSecretsSchema,
   }),
   secretsBaseSchema.extend({
     provider: z.literal(SecretsManagerConfigType.Memory),
@@ -44,19 +41,17 @@ export const secretsSectionSchema = z.discriminatedUnion("provider", [
 export const secretsSectionDefaultValues: z.input<typeof secretsBaseSchema> = {
   provider: SecretsManagerConfigType.Aws,
   memory: memoryDefaultValues,
-  json: jsonDefaultValues,
+  aws: awsSecretsDefaultValues,
 };
 
 export function createSecretsConfig(
-  values: z.output<typeof secretsSectionSchema>
+  values: z.output<typeof secretsSectionSchema>,
 ): SecretManagerConfig {
   switch (values.provider) {
     case SecretsManagerConfigType.Memory:
       return createMemorySecretsConfig(values.memory);
-    case SecretsManagerConfigType.Json:
-      return createJsonSecretsConfig(values.json);
     case SecretsManagerConfigType.Aws:
-      return { provider: SecretsManagerConfigType.Aws };
+      return createAwsSecretsConfig(values.aws);
     default:
       throw new Error("unhandled secrets manager provider");
   }
@@ -67,7 +62,7 @@ export const SecretsSection = withFieldGroup({
   render: function Render({ group }) {
     const valid = useStore(
       group.store,
-      (group) => secretsSectionSchema.safeParse(group.values).success
+      (group) => secretsSectionSchema.safeParse(group.values).success,
     );
 
     const provider = useStore(group.store, (group) => group.values.provider);
@@ -91,11 +86,7 @@ export const SecretsSection = withFieldGroup({
               helperText="Select a provider for where secrets should be sourced from and stored in"
             >
               <ToggleButton value={SecretsManagerConfigType.Aws}>
-                AWS
-              </ToggleButton>
-
-              <ToggleButton value={SecretsManagerConfigType.Json}>
-                Encrypted JSON
+                AWS Secrets Manager <i>Compatible</i>
               </ToggleButton>
 
               <ToggleButton value={SecretsManagerConfigType.Memory}>
@@ -105,8 +96,8 @@ export const SecretsSection = withFieldGroup({
           )}
         />
 
-        {provider === SecretsManagerConfigType.Json && (
-          <SecretsJson form={group} fields="json" />
+        {provider === SecretsManagerConfigType.Aws && (
+          <SecretsAws form={group} fields="aws" />
         )}
 
         {provider === SecretsManagerConfigType.Memory && (
