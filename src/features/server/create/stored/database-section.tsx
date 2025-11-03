@@ -34,7 +34,7 @@ export const databaseSectionDefaultValues: z.input<
 };
 
 export function createAdminDatabaseConfig(
-  values: z.output<typeof databaseSectionSchema>
+  values: z.output<typeof databaseSectionSchema>,
 ): AdminDatabaseConfig {
   let setup_user: AdminDatabaseSetupUserConfig | undefined;
   let setup_user_secret_name: string | undefined;
@@ -62,7 +62,7 @@ export const DatabaseSection = withFieldGroup({
   render: function Render({ group }) {
     const valid = useStore(
       group.store,
-      (group) => databaseSectionSchema.safeParse(group.values).success
+      (group) => databaseSectionSchema.safeParse(group.values).success,
     );
 
     return (
@@ -83,9 +83,8 @@ export const DatabaseSection = withFieldGroup({
         <group.AppField
           name="port"
           children={(field) => (
-            <field.TextField
+            <field.NumberField
               required
-              type="number"
               variant="outlined"
               size="medium"
               label="Database Port"

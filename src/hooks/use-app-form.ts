@@ -8,12 +8,14 @@ import Select from "@components/form/Select";
 import Autocomplete from "@/components/form/Autocomplete";
 import Checkbox from "@/components/form/Checkbox";
 import UploadFiles from "@/components/form/UploadFiles";
+import NumberField from "@/components/form/NumberField";
 
 export const { useAppForm, withFieldGroup, withForm } = createFormHook({
   fieldContext,
   formContext,
   fieldComponents: {
     TextField,
+    NumberField,
     Switch,
     ToggleButtonGroup,
     Select,
