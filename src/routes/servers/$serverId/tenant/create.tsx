@@ -44,6 +44,7 @@ import {
 import { getTenants } from "@/api/tenant/tenant.requests";
 import ServerToolbar from "@/components/ServerToolbar";
 import { useServerContext } from "@/context/server-context";
+import { v4 } from "uuid";
 
 export const Route = createFileRoute("/servers/$serverId/tenant/create")({
   component: TenantCreate,
@@ -170,7 +171,7 @@ function TenantCreate() {
         return null;
       },
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({ value, formApi }) => {
       const {
         db_name,
         db_secret_name,
@@ -197,6 +198,13 @@ function TenantCreate() {
       });
       toast.success("Created tenant");
       navigate({ to: "/servers/$serverId", params: { serverId } });
+
+      // Reset and rotate ID on submission
+      formApi.reset();
+
+      // Update the default values
+      tenantSectionDefaultValues.id = v4();
+      formApi.setFieldValue("tenant.id", v4());
     },
     listeners: {
       onChange({ formApi, fieldApi }) {

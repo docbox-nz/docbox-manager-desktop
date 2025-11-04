@@ -93,7 +93,7 @@ function RouteComponent() {
 
   const form = useAppForm({
     ...formOpts,
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({ value, formApi }) => {
       const config: ServerConfigData = {
         api: createApiConfig(value.api),
         database: createAdminDatabaseConfig(value.database),
@@ -107,7 +107,7 @@ function RouteComponent() {
       if (value.encryption.encrypted) {
         const encryptedConfig = await encrypt(
           value.encryption.password,
-          JSON.stringify(config)
+          JSON.stringify(config),
         );
 
         serverConfig = {
@@ -132,6 +132,8 @@ function RouteComponent() {
 
       toast.success("Added new server!");
       navigate({ to: "/" });
+
+      formApi.reset();
     },
   });
 

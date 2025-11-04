@@ -15,7 +15,6 @@ import RouterLink from "@/components/RouterLink";
 import Container from "@mui/material/Container";
 import { toast } from "sonner";
 import { useAppForm } from "@/hooks/use-app-form";
-import MenuItem from "@mui/material/MenuItem";
 
 export const Route = createFileRoute("/servers/create/aws-secret")({
   component: RouteComponent,
@@ -36,7 +35,7 @@ function RouteComponent() {
         secret_name: z.string().nonempty(),
       }),
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({ value, formApi }) => {
       await createServerMutation.mutateAsync({
         id: v4(),
         name: value.name,
@@ -49,6 +48,7 @@ function RouteComponent() {
 
       toast.success("Added new server!");
       navigate({ to: "/" });
+      formApi.reset();
     },
   });
 
