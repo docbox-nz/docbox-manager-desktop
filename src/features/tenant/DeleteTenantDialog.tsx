@@ -27,6 +27,7 @@ const deleteTenantSchema = z.object({
   deleteStorage: z.boolean(),
   deleteSearch: z.boolean(),
   deleteDatabase: z.boolean(),
+  permanentlyDeleteSecret: z.boolean(),
 });
 
 const deleteTenantDefaultValues: z.input<typeof deleteTenantSchema> = {
@@ -34,6 +35,7 @@ const deleteTenantDefaultValues: z.input<typeof deleteTenantSchema> = {
   deleteStorage: true,
   deleteSearch: true,
   deleteDatabase: true,
+  permanentlyDeleteSecret: false,
 };
 
 export default function DeleteTenantDialog({
@@ -58,6 +60,7 @@ export default function DeleteTenantDialog({
           delete_storage: value.deleteStorage,
           delete_search: value.deleteSearch,
           delete_database: value.deleteDatabase,
+          permanently_delete_secret: value.permanentlyDeleteSecret,
         },
       });
 
@@ -74,6 +77,11 @@ export default function DeleteTenantDialog({
   const deleteContents = useStore(
     form.store,
     (form) => form.values.deleteContents,
+  );
+
+  const deleteDatabase = useStore(
+    form.store,
+    (form) => form.values.deleteDatabase,
   );
 
   return (
@@ -143,6 +151,17 @@ export default function DeleteTenantDialog({
                   label="Delete Database"
                   helperText="Delete the attached tenant database role, secret, and database (Requires: Delete Contents)"
                   disabled={!deleteContents}
+                />
+              )}
+            />
+
+            <form.AppField
+              name="permanentlyDeleteSecret"
+              children={(field) => (
+                <field.Switch
+                  label="Permanently Delete Secret"
+                  helperText="Whether to immediately delete the secret for this tenant. AWS Secret Manager compatible secrets will not be allowed to use a secret with the same name for 30 days by default unless this option is selected"
+                  disabled={!deleteContents || !deleteDatabase}
                 />
               )}
             />

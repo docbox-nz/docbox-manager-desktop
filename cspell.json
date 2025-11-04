@@ -11,6 +11,7 @@
     "roboto",
     "sonner",
     "docbox",
-    "axios"
+    "axios",
+    "reqwest"
   ]
 }

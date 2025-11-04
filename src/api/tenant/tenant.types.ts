@@ -33,4 +33,5 @@ export interface DeleteTenantOptions {
   delete_storage: boolean;
   delete_search: boolean;
   delete_database: boolean;
+  permanently_delete_secret: boolean;
 }
