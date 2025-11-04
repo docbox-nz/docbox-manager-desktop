@@ -1,4 +1,4 @@
-import type { DocboxClientExt } from "@/components/DocboxProvider";
+import { DocboxClientExt } from "@/components/docbox/DocboxProvider";
 import { DocboxClient } from "@docbox-nz/docbox-sdk";
 import {
   hashKey,
@@ -15,7 +15,7 @@ export const queryClient = new QueryClient({
           if (part instanceof DocboxClient) {
             const client = part;
 
-            if (Object.hasOwn(client, "__unique_tenant_key")) {
+            if ("__unique_tenant_key" in client) {
               const tenantKey = (client as DocboxClientExt).__unique_tenant_key;
               return tenantKey;
             }
