@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { CreateTenant, Tenant } from "./tenant.types";
+import type { CreateTenant, DeleteTenantOptions, Tenant } from "./tenant.types";
 
 export function getTenants(serverId: string) {
   return invoke<Tenant[]>("tenant_get_all", { serverId });
@@ -13,6 +13,20 @@ export function createTenant(serverId: string, config: CreateTenant) {
   return invoke<Tenant>("tenant_create", {
     serverId,
     config,
+  });
+}
+
+export function deleteTenant(
+  serverId: string,
+  env: string,
+  tenantId: string,
+  options: DeleteTenantOptions,
+) {
+  return invoke<Tenant>("tenant_delete", {
+    serverId,
+    env,
+    tenantId,
+    options,
   });
 }
 

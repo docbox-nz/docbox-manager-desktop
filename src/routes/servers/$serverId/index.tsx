@@ -20,9 +20,16 @@ import TenantTableFilters from "@/features/tenants/TenantsTableFilters";
 import { useMemo } from "react";
 import TenantsTableActiveFilters from "@/features/tenants/TenantsTableActiveFilters";
 import PendingRootMigrationsLoader from "@/components/PendingRootMigrationsLoader";
+import { z } from "zod/v4";
+import DeleteTenantDialog from "@/features/tenant/DeleteTenantDialog";
+
+const searchSchema = z.object({
+  deleteTenantId: z.string().optional(),
+});
 
 export const Route = createFileRoute("/servers/$serverId/")({
   component: RouteComponent,
+  validateSearch: searchSchema,
   loader: async ({ params }) => {
     const servers = await getServers();
     const server = servers.find((server) => server.id === params.serverId);
@@ -36,8 +43,10 @@ export const Route = createFileRoute("/servers/$serverId/")({
 });
 
 function RouteComponent() {
+  const navigate = Route.useNavigate();
   const { serverId } = Route.useParams();
   const { server } = Route.useLoaderData();
+  const { deleteTenantId } = Route.useSearch();
   const {
     data: tenantsData,
     isLoading: tenantsLoading,
@@ -45,6 +54,11 @@ function RouteComponent() {
   } = useTenants(serverId);
 
   const tenants = useMemo(() => tenantsData ?? [], [tenantsData]);
+
+  const deleteTenant = useMemo(() => {
+    if (!deleteTenantId) return undefined;
+    return tenants.find((tenant) => tenant.id === deleteTenantId);
+  }, [tenants, deleteTenantId]);
 
   const { query, environments, setQuery, setEnvironments } =
     useTenantFiltersStore(
@@ -91,6 +105,12 @@ function RouteComponent() {
       return true;
     });
   }, [filtersApplied, tenants, query, environments]);
+
+  const onCloseDelete = () =>
+    navigate({
+      to: ".",
+      search: (search) => ({ ...search, deleteTenantId: undefined }),
+    });
 
   return (
     <>
@@ -156,6 +176,15 @@ function RouteComponent() {
           </Stack>
         </CardContent>
       </Card>
+
+      {deleteTenant && (
+        <DeleteTenantDialog
+          open
+          onClose={onCloseDelete}
+          serverId={serverId}
+          tenant={deleteTenant}
+        />
+      )}
     </>
   );
 }

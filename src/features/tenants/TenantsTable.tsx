@@ -1,8 +1,14 @@
 import { Tenant } from "@/api/tenant/tenant.types";
 import RouterLink from "@/components/RouterLink";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import Link from "@mui/material/Link";
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridColDef,
+  GridRowParams,
+} from "@mui/x-data-grid";
+import { LinkProps } from "@tanstack/react-router";
 
 type Props = {
   tenants: Tenant[];
@@ -14,11 +20,41 @@ const columns: GridColDef<Tenant>[] = [
     field: "id",
     width: 300,
     headerName: "ID",
+    renderCell({ row }) {
+      return (
+        <Link
+          component={RouterLink}
+          underline="hover"
+          to="/servers/$serverId/tenant/$env/$id"
+          params={{
+            env: row.env,
+            id: row.id,
+          }}
+        >
+          {row.id}
+        </Link>
+      );
+    },
   },
   {
     field: "name",
     flex: 1,
     headerName: "Name",
+    renderCell({ row }) {
+      return (
+        <Link
+          component={RouterLink}
+          underline="hover"
+          to="/servers/$serverId/tenant/$env/$id"
+          params={{
+            env: row.env,
+            id: row.id,
+          }}
+        >
+          {row.name}
+        </Link>
+      );
+    },
   },
   {
     field: "env",
@@ -36,22 +72,36 @@ const columns: GridColDef<Tenant>[] = [
   },
   {
     field: "actions",
+    type: "actions",
     headerName: "Actions",
-    renderCell: ({ row }) => (
-      <Button
+    getActions: ({ row }: GridRowParams) => [
+      <GridActionsCellItem
+        showInMenu
         component={RouterLink}
-        to="/servers/$serverId/tenant/$env/$id"
-        params={{
-          env: row.env,
-          id: row.id,
-        }}
-        variant="contained"
-        size="small"
-        style={{ marginLeft: 16 }}
-      >
-        View
-      </Button>
-    ),
+        {...({
+          // GridActionsCellItem doesn't forward props so this has to be done
+          // to prevent type errors
+          to: "/servers/$serverId/tenant/$env/$id",
+          params: {
+            env: row.env,
+            id: row.id,
+          },
+        } satisfies LinkProps)}
+        label="View"
+      />,
+
+      <GridActionsCellItem
+        showInMenu
+        component={RouterLink}
+        {...({
+          // GridActionsCellItem doesn't forward props so this has to be done
+          // to prevent type errors
+          to: ".",
+          search: (search) => ({ ...search, deleteTenantId: row.id }),
+        } satisfies LinkProps)}
+        label="Delete"
+      />,
+    ],
   },
 ];
 

@@ -27,3 +27,10 @@ export interface CreateTenant {
   search_index_name: string;
   event_queue_url?: string | null;
 }
+
+export interface DeleteTenantOptions {
+  delete_contents: boolean;
+  delete_storage: boolean;
+  delete_search: boolean;
+  delete_database: boolean;
+}
