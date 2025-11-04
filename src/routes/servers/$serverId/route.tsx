@@ -45,6 +45,7 @@ export const Route = createFileRoute("/servers/$serverId")({
 
     return { server };
   },
+  gcTime: 0,
 
   onLeave: ({ params }) => {
     // Unload the server when leaving the server routes
