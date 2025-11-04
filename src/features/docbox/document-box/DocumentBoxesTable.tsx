@@ -32,8 +32,6 @@ const columns: GridColDef<DocumentBox>[] = [
           underline="hover"
           to="/servers/$serverId/tenant/$env/$id/$scope"
           params={{ scope: row.scope }}
-          color="inherit"
-          variant="subtitle2"
         >
           {row.scope}
         </Link>
