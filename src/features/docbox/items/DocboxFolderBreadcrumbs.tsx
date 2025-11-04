@@ -17,7 +17,7 @@ export default function DocboxFolderBreadcrumbs({
   path,
 }: Props) {
   return (
-    <Stack sx={{ pl: 2 }}>
+    <Stack>
       <Breadcrumbs aria-label="breadcrumb">
         <Link
           underline="hover"

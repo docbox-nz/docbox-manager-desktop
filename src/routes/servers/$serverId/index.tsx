@@ -2,26 +2,24 @@ import { getAPIErrorMessage } from "@/api/axios";
 import { getServers } from "@/api/server/server.requests";
 import { useTenants } from "@/api/tenant/tenant.queries";
 import LoadingPage from "@/components/LoadingPage";
-import PendingMigrationsLoader from "@/components/PendingMigrationsLoader";
 import RouterLink from "@/components/RouterLink";
 import { useTenantFiltersStore } from "@/features/tenants/tenants-table-filter-state";
 import TenantsTable from "@/features/tenants/TenantsTable";
 import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import MdiChevronLeft from "~icons/mdi/chevron-left";
 import { useShallow } from "zustand/react/shallow";
 import TenantTableFilters from "@/features/tenants/TenantsTableFilters";
 import { useMemo } from "react";
 import TenantsTableActiveFilters from "@/features/tenants/TenantsTableActiveFilters";
-import PendingRootMigrationsLoader from "@/components/PendingRootMigrationsLoader";
 import { z } from "zod/v4";
 import DeleteTenantDialog from "@/features/tenant/DeleteTenantDialog";
+import Button from "@mui/material/Button";
+import ServerToolbar from "@/components/ServerToolbar";
+import { useServerContext } from "@/context/server-context";
 
 const searchSchema = z.object({
   deleteTenantId: z.string().optional(),
@@ -43,9 +41,10 @@ export const Route = createFileRoute("/servers/$serverId/")({
 });
 
 function RouteComponent() {
+  const server = useServerContext();
+
   const navigate = Route.useNavigate();
   const { serverId } = Route.useParams();
-  const { server } = Route.useLoaderData();
   const { deleteTenantId } = Route.useSearch();
   const {
     data: tenantsData,
@@ -114,24 +113,11 @@ function RouteComponent() {
 
   return (
     <>
+      <ServerToolbar server={server} />
+
       <Card sx={{ m: 3 }}>
         <CardContent>
           <Stack spacing={2}>
-            <Stack direction="row" alignItems="center">
-              <IconButton
-                size="small"
-                sx={{ mr: 1 }}
-                component={RouterLink}
-                to="/"
-              >
-                <MdiChevronLeft width={32} height={32} />
-              </IconButton>
-              <Typography variant="h4">{server.name}</Typography>
-            </Stack>
-
-            <PendingRootMigrationsLoader serverId={serverId} />
-            <PendingMigrationsLoader serverId={serverId} />
-
             <Stack
               direction="row"
               alignItems="center"
@@ -139,7 +125,9 @@ function RouteComponent() {
               sx={{ px: 1, py: 1 }}
             >
               <Typography variant="h6">Tenants</Typography>
+
               <Button
+                variant="contained"
                 component={RouterLink}
                 to="/servers/$serverId/tenant/create"
                 params={{ serverId }}

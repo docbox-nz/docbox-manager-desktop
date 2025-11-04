@@ -34,6 +34,7 @@ export function useCreateDocumentBox() {
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: docboxKeys.instance(client).boxes.root,
+        exact: false,
       });
     },
   });

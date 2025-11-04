@@ -30,8 +30,8 @@ const columns: GridColDef<DocumentBox>[] = [
         <Link
           component={RouterLink}
           underline="hover"
-          to="."
-          search={(search: object) => ({ ...search, scope: row.scope })}
+          to="/servers/$serverId/tenant/$env/$id/$scope"
+          params={{ scope: row.scope }}
           color="inherit"
           variant="subtitle2"
         >
@@ -57,8 +57,8 @@ const columns: GridColDef<DocumentBox>[] = [
         {...({
           // GridActionsCellItem doesn't forward props so this has to be done
           // to prevent type errors
-          to: ".",
-          search: (search) => ({ ...search, scope: row.scope }),
+          to: "/servers/$serverId/tenant/$env/$id/$scope",
+          params: { scope: row.scope },
         } satisfies LinkProps)}
         label="View"
       />,

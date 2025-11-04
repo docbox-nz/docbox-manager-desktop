@@ -11,10 +11,12 @@ import ErrorPage from "@/components/ErrorPage";
 import { InitializeGuard } from "@/components/InitializeGuard";
 import LoadingPage from "@/components/LoadingPage";
 import RouterLink from "@/components/RouterLink";
+import { ServerContext } from "@/context/server-context";
 import EncryptedServerLoad from "@/features/server/load/encrypted-server-load";
 import { queryClient } from "@/integrations/tanstack-query/root-provider";
 import { useAwsProfileStore } from "@/stores/aws-profile-store";
 import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
 import {
   createFileRoute,
   notFound,
@@ -25,14 +27,14 @@ import {
 export const Route = createFileRoute("/servers/$serverId")({
   component: RouteComponent,
   loader: async ({ params }) => {
-    if (await isServerActive(params.serverId)) {
-      return;
-    }
-
     const servers = await getServers();
     const server = servers.find((server) => server.id === params.serverId);
     if (server == undefined) {
       throw notFound();
+    }
+
+    if (await isServerActive(params.serverId)) {
+      return { server };
     }
 
     const { profile } = useAwsProfileStore.getState();
@@ -90,10 +92,15 @@ export const Route = createFileRoute("/servers/$serverId")({
 
 function RouteComponent() {
   const { serverId } = Route.useParams();
+  const { server } = Route.useLoaderData();
 
   return (
-    <InitializeGuard serverId={serverId}>
-      <Outlet />
-    </InitializeGuard>
+    <ServerContext.Provider value={server}>
+      <Stack>
+        <InitializeGuard serverId={serverId}>
+          <Outlet />
+        </InitializeGuard>
+      </Stack>
+    </ServerContext.Provider>
   );
 }

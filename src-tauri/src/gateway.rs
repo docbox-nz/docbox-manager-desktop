@@ -91,7 +91,7 @@ pub async fn handle_gateway_request(
     if let Some(api_key) = server.config.api.api_key.as_ref() {
         req_builder = req_builder.header(
             reqwest::header::HeaderName::from_static("x-docbox-api-key"),
-            HeaderValue::from_str(&api_key).context("failed to make header value")?,
+            HeaderValue::from_str(api_key).context("failed to make header value")?,
         );
     }
 

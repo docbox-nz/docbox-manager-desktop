@@ -42,6 +42,8 @@ import {
   eventsSectionSchema,
 } from "@/features/tenants/create/events-section";
 import { getTenants } from "@/api/tenant/tenant.requests";
+import ServerToolbar from "@/components/ServerToolbar";
+import { useServerContext } from "@/context/server-context";
 
 export const Route = createFileRoute("/servers/$serverId/tenant/create")({
   component: TenantCreate,
@@ -103,6 +105,8 @@ function createTenantFields(value: z.output<typeof createTenantSchema>) {
 
 function TenantCreate() {
   const { serverId } = Route.useParams();
+  const server = useServerContext();
+
   const createTenantMutation = useCreateTenant(serverId);
   const navigate = useNavigate();
 
@@ -223,98 +227,102 @@ function TenantCreate() {
   const environmentTag = ENV_TAG[environment] ?? "unknown";
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        mb: 24,
-      }}
-    >
-      <Card sx={{ maxWidth: 800, width: 1, my: 3 }}>
-        <CardHeader
-          title={
-            <Stack direction="row" alignItems="center">
-              <IconButton
-                size="small"
-                sx={{ mr: 0.5 }}
-                component={RouterLink}
-                to="/servers/$serverId"
-              >
-                <MdiChevronLeft width={32} height={32} />
-              </IconButton>
+    <>
+      <ServerToolbar server={server} />
 
-              <Typography variant="inherit">Create Tenant</Typography>
-            </Stack>
-          }
-          subheader="Configure the new tenant below"
-          slotProps={{
-            subheader: {
-              mt: 1,
-            },
-          }}
-        />
-        <CardContent sx={{ py: 0 }}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              form.handleSubmit();
-            }}
-          >
-            <Stack spacing={3}>
-              <TenantSection form={form} fields="tenant" />
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          mb: 24,
+        }}
+      >
+        <Card sx={{ maxWidth: 800, width: 1, my: 3 }}>
+          <CardHeader
+            title={
+              <Stack direction="row" alignItems="center">
+                <IconButton
+                  size="small"
+                  sx={{ mr: 0.5 }}
+                  component={RouterLink}
+                  to="/servers/$serverId"
+                >
+                  <MdiChevronLeft width={32} height={32} />
+                </IconButton>
 
-              <Stack>
-                <DatabaseSection
-                  form={form}
-                  fields="database"
-                  environmentTag={environmentTag}
-                />
-
-                <StorageSection
-                  form={form}
-                  fields="storage"
-                  environmentTag={environmentTag}
-                />
-
-                <SearchSection
-                  form={form}
-                  fields="search"
-                  environmentTag={environmentTag}
-                />
-
-                <EventsSection form={form} fields="events" />
+                <Typography variant="inherit">Create Tenant</Typography>
               </Stack>
+            }
+            subheader="Configure the new tenant below"
+            slotProps={{
+              subheader: {
+                mt: 1,
+              },
+            }}
+          />
+          <CardContent sx={{ py: 0 }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit();
+              }}
+            >
+              <Stack spacing={3}>
+                <TenantSection form={form} fields="tenant" />
 
-              {createTenantMutation.isError && (
-                <Alert severity="error">
-                  Failed to create:{" "}
-                  {getAPIErrorMessage(createTenantMutation.error)}
-                </Alert>
-              )}
+                <Stack>
+                  <DatabaseSection
+                    form={form}
+                    fields="database"
+                    environmentTag={environmentTag}
+                  />
 
-              <form.Subscribe
-                selector={(state) => [state.errorMap]}
-                children={([errorMap]) =>
-                  errorMap.onSubmit ? (
-                    <Alert severity="error">
-                      {errorMap.onSubmit.toString()}
-                    </Alert>
-                  ) : null
-                }
-              />
+                  <StorageSection
+                    form={form}
+                    fields="storage"
+                    environmentTag={environmentTag}
+                  />
 
-              <Button
-                type="submit"
-                variant="contained"
-                loading={createTenantMutation.isPending}
-              >
-                Create
-              </Button>
-            </Stack>
-          </form>
-        </CardContent>
-      </Card>
-    </Box>
+                  <SearchSection
+                    form={form}
+                    fields="search"
+                    environmentTag={environmentTag}
+                  />
+
+                  <EventsSection form={form} fields="events" />
+                </Stack>
+
+                {createTenantMutation.isError && (
+                  <Alert severity="error">
+                    Failed to create:{" "}
+                    {getAPIErrorMessage(createTenantMutation.error)}
+                  </Alert>
+                )}
+
+                <form.Subscribe
+                  selector={(state) => [state.errorMap]}
+                  children={([errorMap]) =>
+                    errorMap.onSubmit ? (
+                      <Alert severity="error">
+                        {errorMap.onSubmit.toString()}
+                      </Alert>
+                    ) : null
+                  }
+                />
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  loading={createTenantMutation.isPending}
+                >
+                  Create
+                </Button>
+              </Stack>
+            </form>
+          </CardContent>
+        </Card>
+      </Box>
+    </>
   );
 }

@@ -26,23 +26,21 @@ import DeleteFolderDialog from "./docbox/DeleteFolderDialog";
 import DeleteLinkDialog from "./docbox/DeleteLinkDialog";
 import DeleteFileDialog from "./docbox/DeleteFileDialog";
 import FilePreviewDialog from "./docbox/FilePreviewDialog";
-import DocumentBoxesView from "@/features/docbox/document-box/DocumentBoxesView";
 import DocboxFolderBreadcrumbs from "@/features/docbox/items/DocboxFolderBreadcrumbs";
 import DocumentBoxStats from "@/features/docbox/document-box/DocumentBoxStats";
 import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
 
 type Props = {
-  scope?: string;
+  scope: string;
   folder_id?: string;
   preview_id?: string;
   edit_id?: string;
   delete_id?: string;
-  deleteScope?: string;
 
   onClosePreview: VoidFunction;
   onCloseEdit: VoidFunction;
   onCloseDelete: VoidFunction;
-  onCloseDeleteScope: VoidFunction;
 };
 
 type ActiveFolder = { folder: DocFolder; children: ResolvedFolder };
@@ -53,12 +51,10 @@ export default function TenantFileBrowser({
   preview_id,
   edit_id,
   delete_id,
-  deleteScope,
 
   onClosePreview,
   onCloseEdit,
   onCloseDelete,
-  onCloseDeleteScope,
 }: Props) {
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [createLinkOpen, setCreateLinkOpen] = useState(false);
@@ -124,21 +120,13 @@ export default function TenantFileBrowser({
     return items.find((item) => item.id === delete_id);
   }, [items, delete_id]);
 
-  // Document box selection
-  if (scope === undefined) {
-    return (
-      <DocumentBoxesView
-        deleteScope={deleteScope}
-        onCloseDeleteScope={onCloseDeleteScope}
-      />
-    );
-  }
-
   return (
     <>
       <Box sx={{ pt: 2 }}>
         <DocumentBoxStats scope={scope} />
       </Box>
+
+      <Divider sx={{ mt: 2 }} />
 
       <Stack
         direction="row"
@@ -147,33 +135,24 @@ export default function TenantFileBrowser({
         sx={{ px: 1, pb: 2, pt: 1 }}
       >
         <Stack direction="row" alignItems="center" spacing={1}>
-          <IconButton
-            size="small"
-            component={RouterLink}
-            to="."
-            search={(search) => {
-              // Currently within a nested directory, back out
-              if (
-                activeFolder &&
-                documentBox &&
-                activeFolder.folder.folder_id !== null
-              ) {
-                const isRoot =
-                  activeFolder.folder.folder_id !== documentBox.root.id;
-
-                return {
-                  ...search,
-                  folder: isRoot
-                    ? (activeFolder.folder.folder_id ?? undefined)
-                    : undefined,
-                };
-              }
-
-              return { ...search, scope: undefined };
-            }}
-          >
-            <MdiChevronLeft />
-          </IconButton>
+          {activeFolder &&
+            documentBox &&
+            activeFolder.folder.id !== documentBox.root.id && (
+              <IconButton
+                size="small"
+                component={RouterLink}
+                to="."
+                search={(search) => {
+                  // Back out of the current nested directory
+                  return {
+                    ...search,
+                    folder: activeFolder.folder.folder_id ?? undefined,
+                  };
+                }}
+              >
+                <MdiChevronLeft />
+              </IconButton>
+            )}
 
           <DocboxFolderBreadcrumbs
             scope={scope}

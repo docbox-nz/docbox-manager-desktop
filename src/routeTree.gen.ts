@@ -17,7 +17,9 @@ import { Route as ServersCreateStoredRouteImport } from './routes/servers/create
 import { Route as ServersCreateAwsSecretRouteImport } from './routes/servers/create/aws-secret'
 import { Route as ServersServerIdInitializeRouteImport } from './routes/servers/$serverId/initialize'
 import { Route as ServersServerIdTenantCreateRouteImport } from './routes/servers/$serverId/tenant/create'
-import { Route as ServersServerIdTenantEnvIdRouteImport } from './routes/servers/$serverId/tenant/$env/$id'
+import { Route as ServersServerIdTenantEnvIdRouteRouteImport } from './routes/servers/$serverId/tenant/$env/$id/route'
+import { Route as ServersServerIdTenantEnvIdIndexRouteImport } from './routes/servers/$serverId/tenant/$env/$id/index'
+import { Route as ServersServerIdTenantEnvIdScopeIndexRouteImport } from './routes/servers/$serverId/tenant/$env/$id/$scope/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -61,11 +63,23 @@ const ServersServerIdTenantCreateRoute =
     path: '/tenant/create',
     getParentRoute: () => ServersServerIdRouteRoute,
   } as any)
-const ServersServerIdTenantEnvIdRoute =
-  ServersServerIdTenantEnvIdRouteImport.update({
+const ServersServerIdTenantEnvIdRouteRoute =
+  ServersServerIdTenantEnvIdRouteRouteImport.update({
     id: '/tenant/$env/$id',
     path: '/tenant/$env/$id',
     getParentRoute: () => ServersServerIdRouteRoute,
+  } as any)
+const ServersServerIdTenantEnvIdIndexRoute =
+  ServersServerIdTenantEnvIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ServersServerIdTenantEnvIdRouteRoute,
+  } as any)
+const ServersServerIdTenantEnvIdScopeIndexRoute =
+  ServersServerIdTenantEnvIdScopeIndexRouteImport.update({
+    id: '/$scope/',
+    path: '/$scope/',
+    getParentRoute: () => ServersServerIdTenantEnvIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -77,7 +91,9 @@ export interface FileRoutesByFullPath {
   '/servers/$serverId/': typeof ServersServerIdIndexRoute
   '/servers/create': typeof ServersCreateIndexRoute
   '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
-  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdRoute
+  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdRouteRouteWithChildren
+  '/servers/$serverId/tenant/$env/$id/': typeof ServersServerIdTenantEnvIdIndexRoute
+  '/servers/$serverId/tenant/$env/$id/$scope': typeof ServersServerIdTenantEnvIdScopeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -87,7 +103,8 @@ export interface FileRoutesByTo {
   '/servers/$serverId': typeof ServersServerIdIndexRoute
   '/servers/create': typeof ServersCreateIndexRoute
   '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
-  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdRoute
+  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdIndexRoute
+  '/servers/$serverId/tenant/$env/$id/$scope': typeof ServersServerIdTenantEnvIdScopeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -99,7 +116,9 @@ export interface FileRoutesById {
   '/servers/$serverId/': typeof ServersServerIdIndexRoute
   '/servers/create/': typeof ServersCreateIndexRoute
   '/servers/$serverId/tenant/create': typeof ServersServerIdTenantCreateRoute
-  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdRoute
+  '/servers/$serverId/tenant/$env/$id': typeof ServersServerIdTenantEnvIdRouteRouteWithChildren
+  '/servers/$serverId/tenant/$env/$id/': typeof ServersServerIdTenantEnvIdIndexRoute
+  '/servers/$serverId/tenant/$env/$id/$scope/': typeof ServersServerIdTenantEnvIdScopeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -113,6 +132,8 @@ export interface FileRouteTypes {
     | '/servers/create'
     | '/servers/$serverId/tenant/create'
     | '/servers/$serverId/tenant/$env/$id'
+    | '/servers/$serverId/tenant/$env/$id/'
+    | '/servers/$serverId/tenant/$env/$id/$scope'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -123,6 +144,7 @@ export interface FileRouteTypes {
     | '/servers/create'
     | '/servers/$serverId/tenant/create'
     | '/servers/$serverId/tenant/$env/$id'
+    | '/servers/$serverId/tenant/$env/$id/$scope'
   id:
     | '__root__'
     | '/'
@@ -134,6 +156,8 @@ export interface FileRouteTypes {
     | '/servers/create/'
     | '/servers/$serverId/tenant/create'
     | '/servers/$serverId/tenant/$env/$id'
+    | '/servers/$serverId/tenant/$env/$id/'
+    | '/servers/$serverId/tenant/$env/$id/$scope/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -206,24 +230,56 @@ declare module '@tanstack/react-router' {
       id: '/servers/$serverId/tenant/$env/$id'
       path: '/tenant/$env/$id'
       fullPath: '/servers/$serverId/tenant/$env/$id'
-      preLoaderRoute: typeof ServersServerIdTenantEnvIdRouteImport
+      preLoaderRoute: typeof ServersServerIdTenantEnvIdRouteRouteImport
       parentRoute: typeof ServersServerIdRouteRoute
+    }
+    '/servers/$serverId/tenant/$env/$id/': {
+      id: '/servers/$serverId/tenant/$env/$id/'
+      path: '/'
+      fullPath: '/servers/$serverId/tenant/$env/$id/'
+      preLoaderRoute: typeof ServersServerIdTenantEnvIdIndexRouteImport
+      parentRoute: typeof ServersServerIdTenantEnvIdRouteRoute
+    }
+    '/servers/$serverId/tenant/$env/$id/$scope/': {
+      id: '/servers/$serverId/tenant/$env/$id/$scope/'
+      path: '/$scope'
+      fullPath: '/servers/$serverId/tenant/$env/$id/$scope'
+      preLoaderRoute: typeof ServersServerIdTenantEnvIdScopeIndexRouteImport
+      parentRoute: typeof ServersServerIdTenantEnvIdRouteRoute
     }
   }
 }
+
+interface ServersServerIdTenantEnvIdRouteRouteChildren {
+  ServersServerIdTenantEnvIdIndexRoute: typeof ServersServerIdTenantEnvIdIndexRoute
+  ServersServerIdTenantEnvIdScopeIndexRoute: typeof ServersServerIdTenantEnvIdScopeIndexRoute
+}
+
+const ServersServerIdTenantEnvIdRouteRouteChildren: ServersServerIdTenantEnvIdRouteRouteChildren =
+  {
+    ServersServerIdTenantEnvIdIndexRoute: ServersServerIdTenantEnvIdIndexRoute,
+    ServersServerIdTenantEnvIdScopeIndexRoute:
+      ServersServerIdTenantEnvIdScopeIndexRoute,
+  }
+
+const ServersServerIdTenantEnvIdRouteRouteWithChildren =
+  ServersServerIdTenantEnvIdRouteRoute._addFileChildren(
+    ServersServerIdTenantEnvIdRouteRouteChildren,
+  )
 
 interface ServersServerIdRouteRouteChildren {
   ServersServerIdInitializeRoute: typeof ServersServerIdInitializeRoute
   ServersServerIdIndexRoute: typeof ServersServerIdIndexRoute
   ServersServerIdTenantCreateRoute: typeof ServersServerIdTenantCreateRoute
-  ServersServerIdTenantEnvIdRoute: typeof ServersServerIdTenantEnvIdRoute
+  ServersServerIdTenantEnvIdRouteRoute: typeof ServersServerIdTenantEnvIdRouteRouteWithChildren
 }
 
 const ServersServerIdRouteRouteChildren: ServersServerIdRouteRouteChildren = {
   ServersServerIdInitializeRoute: ServersServerIdInitializeRoute,
   ServersServerIdIndexRoute: ServersServerIdIndexRoute,
   ServersServerIdTenantCreateRoute: ServersServerIdTenantCreateRoute,
-  ServersServerIdTenantEnvIdRoute: ServersServerIdTenantEnvIdRoute,
+  ServersServerIdTenantEnvIdRouteRoute:
+    ServersServerIdTenantEnvIdRouteRouteWithChildren,
 }
 
 const ServersServerIdRouteRouteWithChildren =

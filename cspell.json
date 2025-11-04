@@ -12,6 +12,9 @@
     "sonner",
     "docbox",
     "axios",
-    "reqwest"
+    "reqwest",
+    "itertools",
+    "tauri",
+    "zustand"
   ]
 }

@@ -48,7 +48,7 @@ function App() {
   const { profile, setProfile } = useAwsProfileStore();
 
   return (
-    <Container sx={{ py: 4 }} maxWidth="md">
+    <Container sx={{ py: 3 }}>
       <Card>
         <CardHeader
           title="Connect"
