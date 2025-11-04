@@ -43,9 +43,14 @@ export default function CreateDocumentBoxDialog({ open, onClose }: Props) {
       });
 
       await promise;
-      onClose();
+      onCloseReset();
     },
   });
+
+  const onCloseReset = () => {
+    onClose();
+    form.reset();
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
