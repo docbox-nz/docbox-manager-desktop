@@ -684,30 +684,9 @@ export function mutateDeleteDocumentBox(
 ) {
   // Remove the stored file data
   queryClient.removeQueries({
-    queryKey: docboxKeys
-      .instance(client)
-      .boxes.specific(scope)
-      .file.specific(file_id).root,
+    queryKey: docboxKeys.instance(client).boxes.specific(scope).root,
     exact: false,
   });
-
-  // Remove from all folders
-  mutateResolvedFolders(queryClient, client, scope, (folder) => ({
-    ...folder,
-    files: folder.files.filter((value) => value.id !== file_id),
-  }));
-
-  // Update the files counter
-  queryClient.setQueryData<DocumentBoxStats>(
-    docboxKeys.instance(client).boxes.specific(scope).stats,
-    (stats) => {
-      if (stats === undefined) return undefined;
-      return {
-        ...stats,
-        total_files: stats.total_files - 1,
-      };
-    },
-  );
 
   // Mutate search results
   invalidateSearch(queryClient, client, scope);
