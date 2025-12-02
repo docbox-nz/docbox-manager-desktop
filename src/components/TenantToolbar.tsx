@@ -49,20 +49,26 @@ export default function TenantToolbar({ server, tenant }: Props) {
             {server.name}
           </Link>
 
-          <Typography
-            sx={{
-              color: "text.primary",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {tenant.name}{" "}
-            <Box component="span" color="text.secondary" sx={{ fontSize: 12 }}>
-              {tenant.id}
-            </Box>{" "}
+          <Stack direction="row" alignItems="center">
+            <Typography
+              sx={{
+                color: "text.primary",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {tenant.name}{" "}
+              <Box
+                component="span"
+                color="text.secondary"
+                sx={{ fontSize: 12 }}
+              >
+                {tenant.id}
+              </Box>{" "}
+            </Typography>
             <Chip label={tenant.env} sx={{ ml: 1 }} />
-          </Typography>
+          </Stack>
         </Breadcrumbs>
 
         <Box flex="auto" />
