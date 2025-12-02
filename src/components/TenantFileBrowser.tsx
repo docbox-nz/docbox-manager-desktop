@@ -64,12 +64,14 @@ export default function TenantFileBrowser({
     data: documentBox,
     error: documentBoxError,
     isLoading: documentBoxLoading,
+    refetch: documentBoxRefetch,
   } = useDocumentBox(scope);
 
   const {
     data: folder,
     error: folderError,
     isLoading: folderLoading,
+    refetch: folderRefetch,
   } = useFolder(scope, folder_id);
 
   const activeFolder: ActiveFolder | undefined = useMemo(() => {
@@ -126,7 +128,7 @@ export default function TenantFileBrowser({
         <DocumentBoxStats scope={scope} />
       </Box>
 
-      <Divider sx={{ mt: 2 }} />
+      <Divider sx={{ mt: 2, mb: 1 }} />
 
       <Stack
         direction="row"
@@ -163,6 +165,18 @@ export default function TenantFileBrowser({
 
         {activeFolder && (
           <Stack direction="row" spacing={2}>
+            <Button
+              disabled={folderLoading || documentBoxLoading}
+              onClick={() => {
+                if (!isNil(folder_id)) {
+                  folderRefetch();
+                }
+                documentBoxRefetch();
+              }}
+            >
+              Refresh
+            </Button>
+
             <Button
               variant="outlined"
               onClick={() => setCreateFolderOpen(true)}

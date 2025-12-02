@@ -50,6 +50,7 @@ function RouteComponent() {
     data: tenantsData,
     isLoading: tenantsLoading,
     error: tenantsError,
+    refetch: tenantsRefetch,
   } = useTenants(serverId);
 
   const tenants = useMemo(() => tenantsData ?? [], [tenantsData]);
@@ -126,14 +127,23 @@ function RouteComponent() {
             >
               <Typography variant="h6">Tenants</Typography>
 
-              <Button
-                variant="contained"
-                component={RouterLink}
-                to="/servers/$serverId/tenant/create"
-                params={{ serverId }}
-              >
-                Create Tenant
-              </Button>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Button
+                  disabled={tenantsLoading}
+                  onClick={() => tenantsRefetch()}
+                >
+                  Refresh
+                </Button>
+
+                <Button
+                  variant="contained"
+                  component={RouterLink}
+                  to="/servers/$serverId/tenant/create"
+                  params={{ serverId }}
+                >
+                  Create Tenant
+                </Button>
+              </Stack>
             </Stack>
 
             {tenantsError && (

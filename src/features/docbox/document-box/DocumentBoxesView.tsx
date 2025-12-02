@@ -51,6 +51,7 @@ export default function DocumentBoxesView({
     data: documentBoxes,
     isLoading: documentBoxesLoading,
     error: documentBoxesError,
+    refetch: documentBoxesRefetch,
   } = useDocumentBoxes(query);
 
   const { results, total } = useMemo(() => {
@@ -73,12 +74,24 @@ export default function DocumentBoxesView({
         sx={{ px: 1, py: 2 }}
       >
         <Typography variant="h6">Document Boxes</Typography>
-        <Button onClick={() => setCreateOpen(true)}>Create Box</Button>
 
-        <CreateDocumentBoxDialog
-          open={createOpen}
-          onClose={() => setCreateOpen(false)}
-        />
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Button
+            disabled={documentBoxesLoading}
+            onClick={() => documentBoxesRefetch()}
+          >
+            Refresh
+          </Button>
+
+          <Button variant="contained" onClick={() => setCreateOpen(true)}>
+            Create Box
+          </Button>
+
+          <CreateDocumentBoxDialog
+            open={createOpen}
+            onClose={() => setCreateOpen(false)}
+          />
+        </Stack>
       </Stack>
 
       {documentBoxesError && (
