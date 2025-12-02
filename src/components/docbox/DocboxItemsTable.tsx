@@ -63,7 +63,7 @@ const columns: GridColDef<DocboxItem>[] = [
                   component={RouterLink}
                   underline="hover"
                   to="."
-                  search={(search) => ({ ...search, preview: row.id })}
+                  search={(search: any) => ({ ...search, preview: row.id })}
                   color="inherit"
                   variant="subtitle2"
                 >
@@ -121,7 +121,7 @@ const columns: GridColDef<DocboxItem>[] = [
                   component={RouterLink}
                   underline="hover"
                   to="."
-                  search={(search) => ({ ...search, folder: row.id })}
+                  search={(search: any) => ({ ...search, folder: row.id })}
                   color="inherit"
                   variant="subtitle2"
                 >
