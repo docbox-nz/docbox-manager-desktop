@@ -12,13 +12,13 @@ import {
   type GridRowParams,
 } from "@mui/x-data-grid";
 import RouterLink from "../RouterLink";
-import MdiInternet from "~icons/mdi/internet";
 import MdiFolder from "~icons/mdi/folder";
 import Link from "@mui/material/Link";
 import type { LinkProps } from "@tanstack/react-router";
 import type { GridInitialStateCommunity } from "node_modules/@mui/x-data-grid/esm/models/gridStateCommunity";
 import DocboxItemPinned from "./DocboxItemPinned";
 import { createContext, useContext } from "react";
+import DocboxLinkThumbnail from "./DocboxLinkThumbnail";
 
 type Props = {
   items: DocboxItem[];
@@ -79,12 +79,16 @@ const columns: GridColDef<DocboxItem>[] = [
 
           {row.type === DocboxItemType.Link && (
             <>
-              <Box
-                component={MdiInternet}
-                width={32}
-                height={32}
-                flexShrink={0}
+              <WithScope
+                render={({ scope }) => (
+                  <DocboxLinkThumbnail
+                    link={row}
+                    scope={scope}
+                    previewTooltip
+                  />
+                )}
               />
+
               <Stack>
                 <Link
                   underline="hover"
