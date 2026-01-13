@@ -1,10 +1,11 @@
-use std::sync::Arc;
-
-use docbox_database::models::tenant::Tenant;
-use docbox_management::tenant::{migrate_tenants::MigrateTenantsConfig, MigrateTenantsOutcome};
+use docbox_management::{
+    database::models::tenant::Tenant,
+    tenant::{migrate_tenants::MigrateTenantsConfig, MigrateTenantsOutcome},
+};
 use eyre::ContextCompat;
 use futures::{stream::FuturesOrdered, TryStreamExt};
 use serde::Serialize;
+use std::sync::Arc;
 use tauri::State;
 use uuid::Uuid;
 

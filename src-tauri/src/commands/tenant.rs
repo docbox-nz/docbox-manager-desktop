@@ -1,11 +1,12 @@
-use std::sync::Arc;
-
-use docbox_database::models::tenant::Tenant;
-use docbox_management::tenant::{
-    create_tenant::CreateTenantConfig,
-    delete_tenant::{DeleteTenant, DeleteTenantOptions},
+use docbox_management::{
+    database::models::tenant::Tenant,
+    tenant::{
+        create_tenant::CreateTenantConfig,
+        delete_tenant::{DeleteTenant, DeleteTenantOptions},
+    },
 };
 use eyre::{Context, ContextCompat};
+use std::sync::Arc;
 use tauri::{http::HeaderValue, State};
 use uuid::Uuid;
 

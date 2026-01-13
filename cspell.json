@@ -15,6 +15,7 @@
     "reqwest",
     "itertools",
     "tauri",
-    "zustand"
+    "zustand",
+    "thiserror"
   ]
 }

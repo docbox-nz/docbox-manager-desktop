@@ -5,16 +5,19 @@ use crate::{
     },
     utils::{aws::get_aws_profiles, encryption::decrypt},
 };
-use docbox_core::{
-    aws::{aws_config, aws_config_with_profile, SqsClient},
-    events::{sqs::SqsEventPublisherFactory, EventPublisherFactory},
+use docbox_management::{
+    core::{
+        aws::{aws_config, aws_config_with_profile, SqsClient},
+        events::{sqs::SqsEventPublisherFactory, EventPublisherFactory},
+    },
+    database::{DatabasePoolCache, DatabasePoolCacheConfig},
+    search::{SearchIndexFactory, SearchIndexFactoryError},
+    secrets::{
+        aws::AwsSecretManagerConfig, SecretManager, SecretManagerError, SecretsManagerConfig,
+    },
+    storage::StorageLayerFactory,
 };
-use docbox_database::{DatabasePoolCache, DatabasePoolCacheConfig};
-use docbox_search::{SearchIndexFactory, SearchIndexFactoryError};
-use docbox_secrets::{
-    aws::AwsSecretManagerConfig, SecretManager, SecretManagerError, SecretsManagerConfig,
-};
-use docbox_storage::StorageLayerFactory;
+
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, future::Future, sync::Arc};
 use thiserror::Error;
@@ -245,14 +248,16 @@ impl docbox_management::database::DatabaseProvider for DatabaseProvider {
     fn connect(
         &self,
         database: &str,
-    ) -> impl Future<Output = docbox_database::DbResult<docbox_database::DbPool>> + Send {
-        let options = docbox_database::PgConnectOptions::new()
+    ) -> impl Future<
+        Output = docbox_management::database::DbResult<docbox_management::database::DbPool>,
+    > + Send {
+        let options = docbox_management::database::PgConnectOptions::new()
             .host(&self.config.host)
             .port(self.config.port)
             .username(&self.username)
             .password(&self.password)
             .database(database);
 
-        docbox_database::sqlx::PgPool::connect_with(options)
+        docbox_management::database::sqlx::PgPool::connect_with(options)
     }
 }

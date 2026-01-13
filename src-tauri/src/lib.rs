@@ -1,6 +1,6 @@
 use std::{error::Error, sync::Arc};
 
-use docbox_core::aws::aws_config;
+use docbox_management::core::aws::aws_config;
 use eyre::Context;
 use reqwest::StatusCode;
 use tauri::{

@@ -1,8 +1,8 @@
-use crate::database::{DbExecutor, DbResult};
-use docbox_database::DbErr;
-use docbox_search::SearchIndexFactoryConfig;
-use docbox_secrets::SecretsManagerConfig;
-use docbox_storage::StorageLayerFactoryConfig;
+use crate::database::{DbErr, DbExecutor, DbResult};
+use docbox_management::{
+    search::SearchIndexFactoryConfig, secrets::SecretsManagerConfig,
+    storage::StorageLayerFactoryConfig,
+};
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
