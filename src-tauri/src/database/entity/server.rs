@@ -1,8 +1,5 @@
 use crate::database::{DbErr, DbExecutor, DbResult};
-use docbox_management::{
-    search::SearchIndexFactoryConfig, secrets::SecretsManagerConfig,
-    storage::StorageLayerFactoryConfig,
-};
+use docbox_management::config::ServerConfigData;
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
@@ -47,37 +44,6 @@ pub enum ServerConfig {
         nonce: Vec<u8>,
         data: Vec<u8>,
     },
-}
-
-#[derive(Clone, Deserialize, Serialize)]
-pub struct AdminDatabaseConfiguration {
-    pub host: String,
-    pub port: u16,
-    pub setup_user: Option<AdminDatabaseSetupUserConfig>,
-    pub setup_user_secret_name: Option<String>,
-    pub root_secret_name: String,
-}
-
-#[derive(Clone, Deserialize, Serialize)]
-pub struct AdminDatabaseSetupUserConfig {
-    #[serde(alias = "user")]
-    pub username: String,
-    pub password: String,
-}
-
-#[derive(Clone, Deserialize, Serialize)]
-pub struct ApiConfig {
-    pub url: String,
-    pub api_key: Option<String>,
-}
-
-#[derive(Clone, Deserialize, Serialize)]
-pub struct ServerConfigData {
-    pub api: ApiConfig,
-    pub database: AdminDatabaseConfiguration,
-    pub secrets: SecretsManagerConfig,
-    pub search: SearchIndexFactoryConfig,
-    pub storage: StorageLayerFactoryConfig,
 }
 
 impl Server {

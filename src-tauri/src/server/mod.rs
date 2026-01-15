@@ -1,25 +1,22 @@
 use crate::{
-    database::entity::server::{
-        AdminDatabaseConfiguration, AdminDatabaseSetupUserConfig, Server, ServerConfig,
-        ServerConfigData, ServerId,
-    },
+    database::entity::server::{Server, ServerConfig, ServerId},
     utils::{aws::get_aws_profiles, encryption::decrypt},
 };
 use docbox_management::{
+    config::{load_server_config_data_secret, ServerConfigData, ServerConfigDataSecretError},
     core::{
-        aws::{aws_config, aws_config_with_profile, SqsClient},
-        events::{sqs::SqsEventPublisherFactory, EventPublisherFactory},
+        aws::{aws_config, aws_config_with_profile},
+        events::EventPublisherFactory,
     },
-    database::{DatabasePoolCache, DatabasePoolCacheConfig},
-    search::{SearchIndexFactory, SearchIndexFactoryError},
-    secrets::{
-        aws::AwsSecretManagerConfig, SecretManager, SecretManagerError, SecretsManagerConfig,
-    },
+    database::{DatabasePoolCache, ServerDatabaseProvider},
+    search::SearchIndexFactory,
+    secrets::SecretManager,
+    server::{load_managed_server, LoadManagedServerError},
     storage::StorageLayerFactory,
 };
 
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, future::Future, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 use thiserror::Error;
 use tokio::sync::Mutex;
 
@@ -58,6 +55,15 @@ impl ServerStore {
 
 #[derive(Debug, Error)]
 pub enum LoadServerError {
+    #[error("failed to get available aws profiles")]
+    GetAwsProfiles,
+
+    #[error("unable to locate requested AWS profile")]
+    AwsProfileNotFound,
+
+    #[error(transparent)]
+    LoadManagedServer(#[from] LoadManagedServerError),
+
     #[error("server config is encrypted")]
     MissingPassword,
 
@@ -65,28 +71,10 @@ pub enum LoadServerError {
     IncorrectPassword,
 
     #[error("failed to load server config secret: {0}")]
-    SecretManager(#[from] SecretManagerError),
-
-    #[error("server config secret not found")]
-    MissingSecret,
-
-    #[error("server config database setup user secret not found")]
-    MissingDatabaseSecret,
-
-    #[error("must provided either setup_user or setup_user_secret_name in database config")]
-    MissingSetupUser,
-
-    #[error("failed to create search index factory: {0}")]
-    CreateSearchFactory(#[from] SearchIndexFactoryError),
+    LoadFromSecret(#[from] ServerConfigDataSecretError),
 
     #[error("failed to deserialize config")]
     Deserialize(serde_json::Error),
-
-    #[error("failed to get available aws profiles")]
-    GetAwsProfiles,
-
-    #[error("unable to locate requested AWS profile")]
-    AwsProfileNotFound,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -120,14 +108,7 @@ pub async fn load_server(
     let config: ServerConfigData = match server.config {
         // Load secret from AWS
         ServerConfig::AwsSecret { secret_name } => {
-            let secrets = SecretManager::from_config(
-                &aws_config,
-                SecretsManagerConfig::Aws(AwsSecretManagerConfig::default()),
-            );
-            secrets
-                .parsed_secret(&secret_name)
-                .await?
-                .ok_or(LoadServerError::MissingSecret)?
+            load_server_config_data_secret(&aws_config, &secret_name).await?
         }
 
         // Secret is directly available
@@ -150,77 +131,18 @@ pub async fn load_server(
         }
     };
 
-    // Setup server secret manager
-    let secrets = SecretManager::from_config(&aws_config, config.secrets.clone());
-
-    // Setup database cache / connector
-    let db_cache = Arc::new(DatabasePoolCache::from_config(
-        DatabasePoolCacheConfig {
-            host: config.database.host.clone(),
-            port: config.database.port,
-            root_secret_name: config.database.root_secret_name.clone(),
-            ..Default::default()
-        },
-        secrets.clone(),
-    ));
-
-    // Setup search factory
-    let search = SearchIndexFactory::from_config(
-        &aws_config,
-        secrets.clone(),
-        db_cache.clone(),
-        config.search.clone(),
-    )?;
-
-    // Setup storage factory
-    let storage = StorageLayerFactory::from_config(&aws_config, config.storage.clone());
-
-    let db_provider = match (
-        config.database.setup_user.as_ref(),
-        config.database.setup_user_secret_name.as_deref(),
-    ) {
-        (Some(setup_user), _) => DatabaseProvider {
-            config: config.database.clone(),
-            username: setup_user.username.clone(),
-            password: setup_user.password.clone(),
-        },
-        (_, Some(setup_user_secret_name)) => {
-            let secret: AdminDatabaseSetupUserConfig = secrets
-                .parsed_secret(setup_user_secret_name)
-                .await?
-                .ok_or(LoadServerError::MissingDatabaseSecret)?;
-
-            tracing::debug!("loaded database secrets from secret manager");
-
-            DatabaseProvider {
-                config: config.database.clone(),
-                username: secret.username.clone(),
-                password: secret.password.clone(),
-            }
-        }
-        (None, None) => {
-            return Err(LoadServerError::MissingSetupUser);
-        }
-    };
-
-    // Create the SQS client
-    // Warning: Will panic if the configuration provided is invalid
-    let sqs_client = SqsClient::new(&aws_config);
-
-    // Setup event publisher factories
-    let sqs_publisher_factory = SqsEventPublisherFactory::new(sqs_client.clone());
-    let events = EventPublisherFactory::new(sqs_publisher_factory);
+    let managed_server = load_managed_server(&aws_config, &config).await?;
 
     Ok(ActiveServer {
         id: server.id,
         name: server.name,
         config,
-        db_provider,
-        db_cache,
-        secrets,
-        search,
-        storage,
-        events,
+        db_provider: managed_server.db_provider,
+        db_cache: managed_server.db_cache,
+        secrets: managed_server.secrets,
+        search: managed_server.search,
+        storage: managed_server.storage,
+        events: managed_server.events,
     })
 }
 
@@ -229,35 +151,11 @@ pub struct ActiveServer {
     pub name: String,
     pub config: ServerConfigData,
     //
-    pub db_provider: DatabaseProvider,
+    pub db_provider: ServerDatabaseProvider,
     //
     pub db_cache: Arc<DatabasePoolCache>,
     pub secrets: SecretManager,
     pub search: SearchIndexFactory,
     pub storage: StorageLayerFactory,
     pub events: EventPublisherFactory,
-}
-
-pub struct DatabaseProvider {
-    pub config: AdminDatabaseConfiguration,
-    pub username: String,
-    pub password: String,
-}
-
-impl docbox_management::database::DatabaseProvider for DatabaseProvider {
-    fn connect(
-        &self,
-        database: &str,
-    ) -> impl Future<
-        Output = docbox_management::database::DbResult<docbox_management::database::DbPool>,
-    > + Send {
-        let options = docbox_management::database::PgConnectOptions::new()
-            .host(&self.config.host)
-            .port(self.config.port)
-            .username(&self.username)
-            .password(&self.password)
-            .database(database);
-
-        docbox_management::database::sqlx::PgPool::connect_with(options)
-    }
 }

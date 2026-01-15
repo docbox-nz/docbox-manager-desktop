@@ -46,7 +46,7 @@ uuid = { version = "1", features = ["v4"] }
 dotenvy = "=0.15.7"
 
 # Management access
-docbox-management = { version = "0.7.0" }
+docbox-management = { version = "0.8.0" }
 
 # Caching
 moka = { version = "=0.12.12", features = ["future"] }
@@ -71,4 +71,4 @@ default-features = false
 features = ["runtime-tokio", "sqlite", "uuid", "chrono", "json", "macros"]
 
 # [patch.crates-io]
-# docbox-management = { version = "0.7.0", path = "../../docbox/packages/docbox-management" }
+# docbox-management = { version = "0.8.0", path = "../../docbox/packages/docbox-management" }
