@@ -21,7 +21,7 @@ const docboxSchema = z.object({
 });
 
 export const Route = createFileRoute(
-  "/servers/$serverId/tenant/$env/$id/$scope/",
+  "/servers/$serverId/_initialized/tenant/$env/$id/$scope/",
 )({
   component: RouteComponent,
   validateSearch: docboxSchema,

@@ -8,7 +8,6 @@ import {
   unloadServer,
 } from "@/api/server/server.requests";
 import ErrorPage from "@/components/ErrorPage";
-import { InitializeGuard } from "@/components/InitializeGuard";
 import LoadingPage from "@/components/LoadingPage";
 import RouterLink from "@/components/RouterLink";
 import { ServerContext } from "@/context/server-context";
@@ -91,15 +90,12 @@ export const Route = createFileRoute("/servers/$serverId")({
 });
 
 function RouteComponent() {
-  const { serverId } = Route.useParams();
   const { server } = Route.useLoaderData();
 
   return (
     <ServerContext.Provider value={server}>
       <Stack>
-        <InitializeGuard serverId={serverId}>
-          <Outlet />
-        </InitializeGuard>
+        <Outlet />
       </Stack>
     </ServerContext.Provider>
   );

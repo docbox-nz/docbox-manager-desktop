@@ -46,7 +46,7 @@ import ServerToolbar from "@/components/ServerToolbar";
 import { useServerContext } from "@/context/server-context";
 import { v4 } from "uuid";
 
-export const Route = createFileRoute("/servers/$serverId/tenant/create")({
+export const Route = createFileRoute("/servers/$serverId/_initialized/tenant/create")({
   component: TenantCreate,
 });
 

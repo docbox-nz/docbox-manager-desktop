@@ -25,7 +25,7 @@ const searchSchema = z.object({
   deleteTenantId: z.string().optional(),
 });
 
-export const Route = createFileRoute("/servers/$serverId/")({
+export const Route = createFileRoute("/servers/$serverId/_initialized/")({
   component: RouteComponent,
   validateSearch: searchSchema,
   loader: async ({ params }) => {

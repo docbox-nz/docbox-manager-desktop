@@ -6,7 +6,7 @@ import LoadingPage from "@/components/LoadingPage";
 import { TenantContext } from "@/context/tenant-context";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/servers/$serverId/tenant/$env/$id")({
+export const Route = createFileRoute("/servers/$serverId/_initialized/tenant/$env/$id")({
   component: RouteComponent,
 });
 
