@@ -8,7 +8,10 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/servers/$serverId/_initialized")({
   component: RouteComponent,
-  loader: async ({ params }) => {
+  loader: async ({ params, parentMatchPromise }) => {
+    //  We need to wait for the parent route to load the server
+    await parentMatchPromise;
+
     const initialized = await isInitialized(params.serverId);
     if (!initialized) {
       throw redirect({
