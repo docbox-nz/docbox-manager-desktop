@@ -46,7 +46,9 @@ import ServerToolbar from "@/components/ServerToolbar";
 import { useServerContext } from "@/context/server-context";
 import { v4 } from "uuid";
 
-export const Route = createFileRoute("/servers/$serverId/_initialized/tenant/create")({
+export const Route = createFileRoute(
+  "/servers/$serverId/_initialized/tenant/create",
+)({
   component: TenantCreate,
 });
 
@@ -77,6 +79,7 @@ function createTenantFields(value: z.output<typeof createTenantSchema>) {
   const db_name = `docbox-${value.database.db_name}-${envTag}`;
   const db_secret_name = `postgres/docbox/${envTag}/${value.database.db_secret_name}`;
   const db_role_name = `docbox_${value.database.db_role_name}_${envTag}_api`;
+  const db_iam_user = value.database.db_iam_user;
   const storage_bucket_name = `docbox-${value.storage.storage_bucket_name}-${envTag}`;
   const search_index_name = `docbox-${value.search.search_index_name}-${envTag}`;
   const event_queue_url =
@@ -95,6 +98,7 @@ function createTenantFields(value: z.output<typeof createTenantSchema>) {
   return {
     db_name,
     db_secret_name,
+    db_iam_user,
     db_role_name,
     storage_bucket_name,
     search_index_name,
@@ -176,6 +180,7 @@ function TenantCreate() {
         db_name,
         db_secret_name,
         db_role_name,
+        db_iam_user,
         storage_bucket_name,
         search_index_name,
         event_queue_url,
@@ -189,6 +194,7 @@ function TenantCreate() {
         env: value.tenant.env,
         db_name,
         db_secret_name,
+        db_iam_user,
         db_role_name,
         storage_bucket_name,
         storage_s3_queue_arn,

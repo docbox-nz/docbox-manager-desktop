@@ -37,12 +37,16 @@ pub async fn root_initialize(
         .get_server(server_id)
         .await
         .context("server not found")?;
-    docbox_management::root::initialize::initialize(
-        &server.db_provider,
-        &server.secrets,
-        &server.db_provider.config.root_secret_name,
-    )
-    .await?;
+    if server.db_provider.config.root_iam {
+        docbox_management::root::initialize::initialize_iam(&server.db_provider).await?;
+    } else if let Some(root_secret_name) = server.db_provider.config.root_secret_name.as_ref() {
+        docbox_management::root::initialize::initialize(
+            &server.db_provider,
+            &server.secrets,
+            root_secret_name,
+        )
+        .await?;
+    }
 
     Ok(())
 }

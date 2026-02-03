@@ -17,8 +17,9 @@ export interface CreateTenant {
   env: string;
 
   db_name: string;
-  db_secret_name: string;
+  db_secret_name: string | null;
   db_role_name: string;
+  db_iam_user: boolean;
 
   storage_bucket_name: string;
   storage_s3_queue_arn?: string | null;

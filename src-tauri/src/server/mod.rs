@@ -7,12 +7,12 @@ use docbox_management::{
     core::{
         aws::{aws_config, aws_config_with_profile},
         events::EventPublisherFactory,
+        search::SearchIndexFactory,
+        secrets::SecretManager,
+        storage::StorageLayerFactory,
     },
     database::{DatabasePoolCache, ServerDatabaseProvider},
-    search::SearchIndexFactory,
-    secrets::SecretManager,
     server::{load_managed_server, LoadManagedServerError},
-    storage::StorageLayerFactory,
 };
 
 use serde::{Deserialize, Serialize};
