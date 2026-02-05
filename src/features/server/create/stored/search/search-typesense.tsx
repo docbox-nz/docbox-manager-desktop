@@ -42,8 +42,25 @@ export const typesenseDefaultValues: z.input<typeof typesenseBaseSchema> = {
   },
 };
 
+export function createTypesenseSearchConfigForm(
+  values: Extract<
+    SearchConfig,
+    { provider: SearchIndexFactoryConfigType.Typesense }
+  >,
+): z.output<typeof typesenseSchema> {
+  return {
+    url: values.url,
+    api_key: {
+      use_secret: !!values.api_key_secret_name,
+      api_key_secret_name:
+        values.api_key_secret_name ?? "typesense/docbox/credentials",
+      api_key: values.api_key ?? "",
+    },
+  };
+}
+
 export function createTypesenseSearchConfig(
-  values: z.output<typeof typesenseSchema>
+  values: z.output<typeof typesenseSchema>,
 ): SearchConfig {
   let api_key: string | undefined;
   let api_key_secret_name: string | undefined;
@@ -67,7 +84,7 @@ export const SearchTypesense = withFieldGroup({
   render: function Render({ group }) {
     const useSecret = useStore(
       group.store,
-      (group) => group.values.api_key.use_secret
+      (group) => group.values.api_key.use_secret,
     );
 
     return (

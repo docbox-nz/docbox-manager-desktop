@@ -15,6 +15,7 @@ import { Route as ServersCreateIndexRouteImport } from './routes/servers/create/
 import { Route as ServersCreateStoredRouteImport } from './routes/servers/create/stored'
 import { Route as ServersCreateAwsSecretRouteImport } from './routes/servers/create/aws-secret'
 import { Route as ServersServerIdInitializeRouteImport } from './routes/servers/$serverId/initialize'
+import { Route as ServersServerIdEditRouteImport } from './routes/servers/$serverId/edit'
 import { Route as ServersServerIdInitializedRouteRouteImport } from './routes/servers/$serverId/_initialized/route'
 import { Route as ServersServerIdInitializedIndexRouteImport } from './routes/servers/$serverId/_initialized/index'
 import { Route as ServersServerIdInitializedTenantCreateRouteImport } from './routes/servers/$serverId/_initialized/tenant/create'
@@ -53,6 +54,11 @@ const ServersServerIdInitializeRoute =
     path: '/initialize',
     getParentRoute: () => ServersServerIdRouteRoute,
   } as any)
+const ServersServerIdEditRoute = ServersServerIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => ServersServerIdRouteRoute,
+} as any)
 const ServersServerIdInitializedRouteRoute =
   ServersServerIdInitializedRouteRouteImport.update({
     id: '/_initialized',
@@ -92,6 +98,7 @@ const ServersServerIdInitializedTenantEnvIdScopeIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/servers/$serverId': typeof ServersServerIdInitializedRouteRouteWithChildren
+  '/servers/$serverId/edit': typeof ServersServerIdEditRoute
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
   '/servers/create/stored': typeof ServersCreateStoredRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/servers/$serverId': typeof ServersServerIdInitializedIndexRoute
+  '/servers/$serverId/edit': typeof ServersServerIdEditRoute
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
   '/servers/create/stored': typeof ServersCreateStoredRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/servers/$serverId': typeof ServersServerIdRouteRouteWithChildren
   '/servers/$serverId/_initialized': typeof ServersServerIdInitializedRouteRouteWithChildren
+  '/servers/$serverId/edit': typeof ServersServerIdEditRoute
   '/servers/$serverId/initialize': typeof ServersServerIdInitializeRoute
   '/servers/create/aws-secret': typeof ServersCreateAwsSecretRoute
   '/servers/create/stored': typeof ServersCreateStoredRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/servers/$serverId'
+    | '/servers/$serverId/edit'
     | '/servers/$serverId/initialize'
     | '/servers/create/aws-secret'
     | '/servers/create/stored'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/servers/$serverId'
+    | '/servers/$serverId/edit'
     | '/servers/$serverId/initialize'
     | '/servers/create/aws-secret'
     | '/servers/create/stored'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
     | '/'
     | '/servers/$serverId'
     | '/servers/$serverId/_initialized'
+    | '/servers/$serverId/edit'
     | '/servers/$serverId/initialize'
     | '/servers/create/aws-secret'
     | '/servers/create/stored'
@@ -219,6 +231,13 @@ declare module '@tanstack/react-router' {
       path: '/initialize'
       fullPath: '/servers/$serverId/initialize'
       preLoaderRoute: typeof ServersServerIdInitializeRouteImport
+      parentRoute: typeof ServersServerIdRouteRoute
+    }
+    '/servers/$serverId/edit': {
+      id: '/servers/$serverId/edit'
+      path: '/edit'
+      fullPath: '/servers/$serverId/edit'
+      preLoaderRoute: typeof ServersServerIdEditRouteImport
       parentRoute: typeof ServersServerIdRouteRoute
     }
     '/servers/$serverId/_initialized': {
@@ -306,12 +325,14 @@ const ServersServerIdInitializedRouteRouteWithChildren =
 
 interface ServersServerIdRouteRouteChildren {
   ServersServerIdInitializedRouteRoute: typeof ServersServerIdInitializedRouteRouteWithChildren
+  ServersServerIdEditRoute: typeof ServersServerIdEditRoute
   ServersServerIdInitializeRoute: typeof ServersServerIdInitializeRoute
 }
 
 const ServersServerIdRouteRouteChildren: ServersServerIdRouteRouteChildren = {
   ServersServerIdInitializedRouteRoute:
     ServersServerIdInitializedRouteRouteWithChildren,
+  ServersServerIdEditRoute: ServersServerIdEditRoute,
   ServersServerIdInitializeRoute: ServersServerIdInitializeRoute,
 }
 

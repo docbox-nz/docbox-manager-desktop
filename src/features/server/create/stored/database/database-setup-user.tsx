@@ -1,3 +1,4 @@
+import { AdminDatabaseConfig } from "@/api/server";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import Alert from "@mui/material/Alert";
 import Paper from "@mui/material/Paper";
@@ -35,6 +36,17 @@ export const setupUserDefaultValues: z.input<typeof setupUserBaseSchema> = {
   secret_name: "postgres/docbox/master",
   use_secret: true,
 };
+
+export function createSetupUserForm(
+  values: AdminDatabaseConfig,
+): z.output<typeof setupUserSchema> {
+  return {
+    use_secret: !!values.setup_user_secret_name,
+    secret_name: values.setup_user_secret_name ?? "postgres/docbox/master",
+    username: values.setup_user?.username ?? "",
+    password: values.setup_user?.password ?? "",
+  };
+}
 
 export const DatabaseSetupUser = withFieldGroup({
   defaultValues: setupUserDefaultValues,

@@ -145,7 +145,8 @@ export const adminDatabaseConfigSchema = z.object({
   port: z.number(),
   setup_user: adminDatabaseSetupUserConfigSchema.optional().nullable(),
   setup_user_secret_name: z.string().optional().nullable(),
-  root_secret_name: z.string(),
+  root_secret_name: z.string().optional().nullable(),
+  root_iam: z.boolean().optional().nullable(),
 });
 
 export type AdminDatabaseConfig = z.infer<typeof adminDatabaseConfigSchema>;

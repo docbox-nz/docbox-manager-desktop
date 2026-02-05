@@ -15,8 +15,17 @@ export const apiSectionDefaultValues: z.input<typeof apiSectionSchema> = {
   api_key: "",
 };
 
+export function createApiConfigForm(
+  values: ApiConfig,
+): z.output<typeof apiSectionSchema> {
+  return {
+    url: values.url,
+    api_key: values.api_key ?? "",
+  };
+}
+
 export function createApiConfig(
-  values: z.output<typeof apiSectionSchema>
+  values: z.output<typeof apiSectionSchema>,
 ): ApiConfig {
   const url = values.url;
   let api_key: string | undefined = values.api_key.trim();
@@ -35,7 +44,7 @@ export const ApiSection = withFieldGroup({
   render: function Render({ group }) {
     const valid = useStore(
       group.store,
-      (group) => apiSectionSchema.safeParse(group.values).success
+      (group) => apiSectionSchema.safeParse(group.values).success,
     );
 
     return (

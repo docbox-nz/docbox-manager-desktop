@@ -10,6 +10,7 @@ import ToggleButton from "@mui/material/ToggleButton";
 
 import {
   createS3StorageConfig,
+  createS3StorageConfigForm,
   s3BaseSchema,
   s3DefaultValues,
   s3Schema,
@@ -36,7 +37,7 @@ export const storageSectionDefaultValues: z.input<typeof storageBaseSchema> = {
 };
 
 export function createStorageConfig(
-  values: z.output<typeof storageSectionSchema>
+  values: z.output<typeof storageSectionSchema>,
 ): StorageLayerConfig {
   switch (values.provider) {
     case StorageLayerFactoryConfigType.S3:
@@ -45,13 +46,21 @@ export function createStorageConfig(
       throw new Error("unhandled secrets manager provider");
   }
 }
+export function createStorageConfigForm(
+  values: StorageLayerConfig,
+): z.output<typeof storageSectionSchema> {
+  return {
+    provider: values.provider,
+    s3: createS3StorageConfigForm(values),
+  };
+}
 
 export const StorageSection = withFieldGroup({
   defaultValues: storageSectionDefaultValues,
   render: function Render({ group }) {
     const valid = useStore(
       group.store,
-      (group) => storageSectionSchema.safeParse(group.values).success
+      (group) => storageSectionSchema.safeParse(group.values).success,
     );
 
     const provider = useStore(group.store, (group) => group.values.provider);

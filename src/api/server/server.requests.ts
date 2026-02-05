@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { CreateServer, LoadServerConfig, Server } from "./server.types";
+import { ServerConfigData } from "../server";
 
 export function getServers() {
   return invoke<Server[]>("server_get_all");
@@ -27,4 +28,8 @@ export function deleteServer(serverId: string) {
 
 export function isServerActive(serverId: string) {
   return invoke<boolean>("server_is_active", { serverId });
+}
+
+export function getServerConfig(serverId: string) {
+  return invoke<ServerConfigData>("server_get_active_config", { serverId });
 }

@@ -14,6 +14,7 @@ import {
 } from "@/api/server";
 import ToggleButton from "@mui/material/ToggleButton";
 import { useStore } from "@tanstack/react-form";
+import { createCustomEndpointForm } from "../secrets/secrets-custom-endpoint";
 
 const storageEndpointBaseSchema = z.object({
   type: z.enum(S3EndpointType),
@@ -44,7 +45,7 @@ export const s3DefaultValues: z.input<typeof s3BaseSchema> = {
 };
 
 export function createS3StorageConfig(
-  values: z.output<typeof s3Schema>
+  values: z.output<typeof s3Schema>,
 ): StorageLayerConfig {
   let endpoint: S3Endpoint;
   switch (values.endpoint.type) {
@@ -72,13 +73,29 @@ export function createS3StorageConfig(
     endpoint,
   };
 }
+export function createS3StorageConfigForm(
+  values: Extract<
+    StorageLayerConfig,
+    { provider: StorageLayerFactoryConfigType.S3 }
+  >,
+): z.output<typeof s3Schema> {
+  return {
+    endpoint: {
+      type: values.endpoint.type ?? S3EndpointType.Aws,
+      custom:
+        values.endpoint && values.endpoint.type === S3EndpointType.Custom
+          ? createCustomEndpointForm(values.endpoint)
+          : customEndpointDefaultValues,
+    },
+  };
+}
 
 export const StorageS3 = withFieldGroup({
   defaultValues: s3DefaultValues,
   render: function Render({ group }) {
     const endpointType = useStore(
       group.store,
-      (group) => group.values.endpoint.type
+      (group) => group.values.endpoint.type,
     );
 
     return (

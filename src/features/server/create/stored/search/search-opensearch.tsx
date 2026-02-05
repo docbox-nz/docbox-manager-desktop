@@ -15,8 +15,19 @@ export const opensearchDefaultValues: z.input<typeof opensearchBaseSchema> = {
   url: "",
 };
 
+export function createOpensearchSearchConfigForm(
+  values: Extract<
+    SearchConfig,
+    { provider: SearchIndexFactoryConfigType.OpenSearch }
+  >,
+): z.output<typeof opensearchSchema> {
+  return {
+    url: values.url,
+  };
+}
+
 export function createOpensearchSearchConfig(
-  values: z.output<typeof opensearchSchema>
+  values: z.output<typeof opensearchSchema>,
 ): SearchConfig {
   return {
     provider: SearchIndexFactoryConfigType.OpenSearch,

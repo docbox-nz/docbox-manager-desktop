@@ -6,6 +6,7 @@ import { z } from "zod/v4";
 import ToggleButton from "@mui/material/ToggleButton";
 import {
   createMemorySecretsConfig,
+  createMemorySecretsConfigForm,
   memoryBaseSchema,
   memoryDefaultValues,
   memorySchema,
@@ -16,6 +17,7 @@ import {
   awsSecretsDefaultValues,
   awsSecretsSchema,
   createAwsSecretsConfig,
+  createAwsSecretsConfigForm,
   SecretsAws,
 } from "./secrets/secrets-aws";
 
@@ -43,6 +45,26 @@ export const secretsSectionDefaultValues: z.input<typeof secretsBaseSchema> = {
   memory: memoryDefaultValues,
   aws: awsSecretsDefaultValues,
 };
+
+export function createSecretsConfigForm(
+  values: SecretManagerConfig,
+): z.output<typeof secretsSectionSchema> {
+  let memory =
+    values.provider === SecretsManagerConfigType.Memory
+      ? createMemorySecretsConfigForm(values)
+      : memoryDefaultValues;
+
+  let aws =
+    values.provider === SecretsManagerConfigType.Aws
+      ? createAwsSecretsConfigForm(values)
+      : awsSecretsDefaultValues;
+
+  return {
+    provider: values.provider,
+    memory,
+    aws,
+  };
+}
 
 export function createSecretsConfig(
   values: z.output<typeof secretsSectionSchema>,

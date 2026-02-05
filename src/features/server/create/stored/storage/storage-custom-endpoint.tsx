@@ -1,3 +1,4 @@
+import { S3Endpoint, S3EndpointType } from "@/api/server";
 import { withFieldGroup } from "@/hooks/use-app-form";
 import { z } from "zod/v4";
 
@@ -20,6 +21,16 @@ export const customEndpointDefaultValues: z.input<
   access_key_id: "",
   access_key_secret: "",
 };
+
+export function createCustomEndpointForm(
+  values: Extract<S3Endpoint, { type: S3EndpointType.Custom }>,
+): z.output<typeof customEndpointSchema> {
+  return {
+    endpoint: values.endpoint,
+    access_key_id: values.access_key_id,
+    access_key_secret: values.access_key_secret,
+  };
+}
 
 export const StorageCustomEndpoint = withFieldGroup({
   defaultValues: customEndpointDefaultValues,

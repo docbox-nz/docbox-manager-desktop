@@ -6,6 +6,7 @@ import { z } from "zod/v4";
 import ToggleButton from "@mui/material/ToggleButton";
 import {
   createTypesenseSearchConfig,
+  createTypesenseSearchConfigForm,
   SearchTypesense,
   typesenseBaseSchema,
   typesenseDefaultValues,
@@ -13,6 +14,7 @@ import {
 } from "./search/search-typesense";
 import {
   createOpensearchSearchConfig,
+  createOpensearchSearchConfigForm,
   opensearchBaseSchema,
   opensearchDefaultValues,
   opensearchSchema,
@@ -47,8 +49,24 @@ export const searchSectionDefaultValues: z.input<typeof searchBaseSchema> = {
   opensearch: opensearchDefaultValues,
 };
 
+export function createSearchConfigForm(
+  values: SearchConfig,
+): z.output<typeof searchSectionSchema> {
+  return {
+    provider: values.provider,
+    typesense:
+      values.provider === SearchIndexFactoryConfigType.Typesense
+        ? createTypesenseSearchConfigForm(values)
+        : typesenseDefaultValues,
+    opensearch:
+      values.provider === SearchIndexFactoryConfigType.OpenSearch
+        ? createOpensearchSearchConfigForm(values)
+        : opensearchDefaultValues,
+  };
+}
+
 export function createSearchConfig(
-  values: z.output<typeof searchSectionSchema>
+  values: z.output<typeof searchSectionSchema>,
 ): SearchConfig {
   switch (values.provider) {
     case SearchIndexFactoryConfigType.Typesense:
@@ -67,7 +85,7 @@ export const SearchSection = withFieldGroup({
   render: function Render({ group }) {
     const valid = useStore(
       group.store,
-      (group) => searchSectionSchema.safeParse(group.values).success
+      (group) => searchSectionSchema.safeParse(group.values).success,
     );
 
     const provider = useStore(group.store, (group) => group.values.provider);

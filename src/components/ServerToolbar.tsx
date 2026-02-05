@@ -12,6 +12,8 @@ import Stack from "@mui/material/Stack";
 import PendingRootMigrationsLoader from "./PendingRootMigrationsLoader";
 import PendingMigrationsLoader from "./PendingMigrationsLoader";
 import Button from "@mui/material/Button";
+import SolarSettingsBold from "~icons/solar/settings-bold";
+import { IconButton } from "@mui/material";
 
 type Props = {
   server: Server;
@@ -88,6 +90,25 @@ export default function ServerToolbar({ server }: Props) {
               <PendingRootMigrationsLoader serverId={serverId} />
               <PendingMigrationsLoader serverId={serverId} />
             </>
+          )}
+
+          {!matchRoute({ to: "/servers/$serverId/edit" }) ? (
+            <Button
+              variant="contained"
+              component={RouterLink}
+              to="/servers/$serverId/edit"
+              color="error"
+            >
+              Edit Server
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              component={RouterLink}
+              to="/servers/$serverId"
+            >
+              Back
+            </Button>
           )}
 
           <Button

@@ -1,3 +1,4 @@
+use docbox_management::config::ServerConfigData;
 use eyre::ContextCompat;
 use std::{ops::Deref, sync::Arc};
 use tauri::State;
@@ -88,6 +89,19 @@ pub async fn server_get_active(
 ) -> CmdResult<Vec<ServerId>> {
     let server = server_store.get_servers().await;
     Ok(server.into_iter().map(|server| server.id).collect())
+}
+
+/// Get the config of a active server
+#[tauri::command]
+pub async fn server_get_active_config(
+    server_store: State<'_, Arc<ServerStore>>,
+    server_id: Uuid,
+) -> CmdResult<ServerConfigData> {
+    let server = server_store
+        .get_server(server_id)
+        .await
+        .context("server not active")?;
+    Ok(server.config.clone())
 }
 
 /// Delete a server

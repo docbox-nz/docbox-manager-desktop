@@ -8,7 +8,7 @@ export const memoryBaseSchema = z.object({
     z.object({
       key: z.string(),
       value: z.string(),
-    })
+    }),
   ),
   default: z.string(),
 });
@@ -19,7 +19,7 @@ export const memorySchema = z.object({
     z.object({
       key: z.string(),
       value: z.string(),
-    })
+    }),
   ),
   default: z.string(),
 });
@@ -29,8 +29,23 @@ export const memoryDefaultValues: z.input<typeof memoryBaseSchema> = {
   default: "",
 };
 
+export function createMemorySecretsConfigForm(
+  values: Extract<
+    SecretManagerConfig,
+    { provider: SecretsManagerConfigType.Memory }
+  >,
+): z.output<typeof memoryBaseSchema> {
+  return {
+    secrets: Object.entries(values.secrets ?? {}).map(([key, value]) => ({
+      key,
+      value,
+    })),
+    default: values.default ?? "",
+  };
+}
+
 export function createMemorySecretsConfig(
-  values: z.output<typeof memorySchema>
+  values: z.output<typeof memorySchema>,
 ): SecretManagerConfig {
   let defaultValue: string | undefined = values.default;
   if (defaultValue.trim().length < 1) {
@@ -44,7 +59,7 @@ export function createMemorySecretsConfig(
         output[key] = value;
         return output;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     ),
     default: defaultValue,
   };

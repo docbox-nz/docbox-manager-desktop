@@ -1,6 +1,7 @@
 import { withFieldGroup } from "@/hooks/use-app-form";
 import { z } from "zod/v4";
 import {
+  createCustomEndpointForm,
   customEndpointBaseSchema,
   customEndpointDefaultValues,
   customEndpointSchema,
@@ -42,6 +43,23 @@ export const awsSecretsDefaultValues: z.input<typeof awsSecretsBaseSchema> = {
     custom: customEndpointDefaultValues,
   },
 };
+
+export function createAwsSecretsConfigForm(
+  values: Extract<
+    SecretManagerConfig,
+    { provider: SecretsManagerConfigType.Aws }
+  >,
+): z.output<typeof awsSecretsSchema> {
+  return {
+    endpoint: {
+      type: values.endpoint?.type ?? SecretsEndpointType.Aws,
+      custom:
+        values.endpoint && values.endpoint.type === SecretsEndpointType.Custom
+          ? createCustomEndpointForm(values.endpoint)
+          : customEndpointDefaultValues,
+    },
+  };
+}
 
 export function createAwsSecretsConfig(
   values: z.output<typeof awsSecretsSchema>,
